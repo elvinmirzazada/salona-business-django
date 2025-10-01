@@ -1,54 +1,108 @@
-// Login functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const loginForm = document.getElementById('login-form');
+// Authentication and user related functions
+const Auth = (() => {
+    // Authentication header creator for API requests
+    const getAuthHeader = () => {
+        const accessToken = localStorage.getItem('accessToken');
+        return {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+        };
+    };
 
-    if (loginForm) {
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('error-message');
-
-            // Clear any previous error messages
-            errorDiv.style.display = 'none';
-            errorDiv.textContent = '';
-
-            // Make API call to login endpoint
-            fetch('http://127.0.0.1:8000/api/v1/users/auth/login', {
-                method: 'POST',
+    // Fetch current user information
+    const fetchCurrentUser = async () => {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/v1/users/me', {
+                method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json',
+                    ...getAuthHeader(),
                     'Accept': 'application/json'
                 },
-                mode: 'cors', // Explicitly set CORS mode
-                body: JSON.stringify({
-                    email: email,
-                    password: password
-                })
-                // Remove credentials: 'include' to avoid preflight complexity
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Store access token in localStorage for later use
-                    localStorage.setItem('accessToken', data.data.access_token);
-                    localStorage.setItem('tokenType', data.data.token_type);
-                    localStorage.setItem('tokenExpiresIn', Date.now() + (data.data.expires_in * 1000));
-
-                    // Redirect to dashboard or home page
-                    window.location.href = '/dashboard/';
-                } else {
-                    // Display error message
-                    errorDiv.textContent = data.message || 'Login failed. Please check your credentials.';
-                    errorDiv.style.display = 'block';
-                }
-            })
-            .catch(error => {
-                errorDiv.textContent = 'An error occurred. Please try again later.';
-                errorDiv.style.display = 'block';
-                console.error('Login error:', error);
+                mode: 'cors' // Explicitly set CORS mode
             });
-        });
-    }
-});
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    // If unauthorized, redirect to login
+                    localStorage.removeItem('accessToken');
+                    window.location.href = '/users/login/';
+                    return null;
+                }
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.data; // Return the user data from the response
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            return null;
+        }
+    };
+
+    // Update the UI with user information
+    const updateUserInfo = (userData) => {
+        if (!userData) return;
+
+        // Update the welcome message with user's name
+        const userNameElement = document.querySelector('.user-name');
+        if (userNameElement) {
+            userNameElement.textContent = `Welcome, ${userData.first_name} ${userData.last_name}!`;
+        }
+    };
+
+    // Logout functionality
+    const setupLogout = () => {
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('tokenType');
+                localStorage.removeItem('tokenExpiresIn');
+                window.location.href = '/users/login/';
+            });
+        }
+    };
+
+    // Initialize user data
+    const init = async () => {
+        const userData = await fetchCurrentUser();
+        updateUserInfo(userData);
+        setupLogout();
+    };
+
+    // Function to fetch data from API with authorization
+    const fetchData = async (url) => {
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: getAuthHeader(),
+            });
+
+            if (!response.ok) {
+                // If unauthorized, redirect to login
+                if (response.status === 401) {
+                    localStorage.removeItem('accessToken');
+                    window.location.href = '/users/login/';
+                    return null;
+                }
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('API request failed:', error);
+            return null;
+        }
+    };
+
+    return {
+        init,
+        getAuthHeader,
+        fetchCurrentUser,
+        fetchData
+    };
+})();
+
+// Export the Auth module
+window.Auth = Auth;

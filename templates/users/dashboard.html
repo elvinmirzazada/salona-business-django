@@ -6,6 +6,7 @@
     <title>Salona - Dashboard</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/fixes.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Immediate authentication check -->
     <script>
@@ -99,7 +100,15 @@
     <div id="event-popup" class="event-popup">
         <div class="event-popup-header">
             <div class="event-popup-title">Booking Details</div>
-            <button class="event-popup-close">&times;</button>
+            <div class="event-popup-actions">
+                <button id="event-popup-edit" class="event-popup-edit-btn" title="Edit booking">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button id="event-popup-delete" class="event-popup-delete-btn" title="Delete booking">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+                <button class="event-popup-close">&times;</button>
+            </div>
         </div>
         <div class="event-popup-body">
             <!-- Time information -->
@@ -185,9 +194,15 @@
             <form id="booking-form">
                 <!-- Step 1: Date, Time, Service Selection -->
                 <div id="booking-step-1" class="booking-step-content active">
-                    <div class="form-group">
-                        <label for="booking-date">Date:</label>
-                        <input type="date" id="booking-date" name="booking-date" required>
+                    <div class="form-group time-inputs">
+                        <div>
+                            <label for="booking-start-date">Start Date:</label>
+                            <input type="date" id="booking-start-date" name="booking-start-date" required>
+                        </div>
+                        <div>
+                            <label for="booking-end-date">End Date:</label>
+                            <input type="date" id="booking-end-date" name="booking-end-date" required>
+                        </div>
                     </div>
                     <div class="form-group time-inputs">
                         <div>
@@ -287,6 +302,23 @@
         </div>
     </div>
 
+    <!-- Confirmation Popup -->
+    <div id="confirmation-popup" class="confirmation-popup">
+        <div class="confirmation-popup-content">
+            <div class="confirmation-popup-header">
+                <h3>Confirm Action</h3>
+                <button class="confirmation-popup-close">&times;</button>
+            </div>
+            <div class="confirmation-popup-body">
+                <p id="confirmation-message">Are you sure you want to delete this booking?</p>
+            </div>
+            <div class="confirmation-popup-footer">
+                <button id="confirmation-cancel-btn" class="secondary-button">Cancel</button>
+                <button id="confirmation-confirm-btn" class="primary-button confirmation-danger">Yes, Delete</button>
+            </div>
+        </div>
+    </div>
+
     <div id="booking-spinner" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.6);z-index:9999;justify-content:center;align-items:center;">
         <div class="spinner" style="border:8px solid #f3f3f3;border-top:8px solid #3498db;border-radius:50%;width:60px;height:60px;animation:spin 1s linear infinite;"></div>
     </div>
@@ -297,6 +329,14 @@
         }
     </style>
 
+    <script src="{% static 'js/utils.js' %}"></script>
+    <script src="{% static 'js/auth.js' %}"></script>
+    <script src="{% static 'js/staff-manager.js' %}"></script>
+    <script src="{% static 'js/customer-manager.js' %}"></script>
+    <script src="{% static 'js/service-manager.js' %}"></script>
+    <script src="{% static 'js/ui.js' %}"></script>
+    <script src="{% static 'js/booking-service.js' %}"></script>
+    <script src="{% static 'js/calendar.js' %}"></script>
     <script src="{% static 'js/dashboard.js' %}"></script>
 </body>
 </html>

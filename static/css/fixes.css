@@ -1,0 +1,38 @@
+/* CSS fixes for dashboard */
+
+/* Fix for event popup icons */
+.event-popup-edit-btn i, .event-popup-delete-btn i {
+    display: inline-block !important;
+    font-size: 16px !important;
+    width: 100% !important;
+    height: 100% !important;
+    line-height: 28px !important;
+    text-align: center !important;
+}
+
+.event-popup-edit-btn {
+    color: #00A884 !important; /* Using primary color */
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.event-popup-delete-btn {
+    color: #e74c3c !important; /* Red color for delete */
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Fix for making icon buttons more visible with a light background */
+.event-popup-edit-btn:hover {
+    background-color: rgba(0, 168, 132, 0.1) !important;
+}
+
+.event-popup-delete-btn:hover {
+    background-color: rgba(231, 76, 60, 0.1) !important;
+}
+
+/* Ensure popup close button is visible */
+.event-popup-close {
+    font-size: 20px !important;
+    font-weight: bold !important;
+}
