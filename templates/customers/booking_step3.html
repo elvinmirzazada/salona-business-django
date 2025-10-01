@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book an Appointment - Review</title>
+    {% load static %}
+    <style>
+        :root {
+            --primary: #00A884;
+            --light-gray: #f5f5f5;
+            --medium-gray: #e0e0e0;
+            --dark-gray: #757575;
+            --white: #ffffff;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-gray);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Steps indicator */
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .steps::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: var(--medium-gray);
+            z-index: 1;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            background: var(--light-gray);
+            padding: 0 10px;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: var(--medium-gray);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .step.active .step-number, .step.completed .step-number {
+            background-color: var(--primary);
+        }
+
+        .step-text {
+            font-size: 16px;
+            color: var(--dark-gray);
+        }
+
+        .step.active .step-text, .step.completed .step-text {
+            color: #333;
+            font-weight: bold;
+        }
+
+        .step.completed .step-number::after {
+            content: '✓';
+            position: absolute;
+            font-size: 14px;
+        }
+
+        /* Section headers */
+        h1 {
+            font-size: 32px;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--medium-gray);
+            padding-bottom: 10px;
+        }
+
+        /* Booking summary */
+        .booking-summary {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .summary-row {
+            display: flex;
+            margin-bottom: 20px;
+            align-items: flex-start;
+        }
+
+        .summary-label {
+            width: 140px;
+            font-weight: 500;
+            color: var(--dark-gray);
+        }
+
+        .summary-value {
+            flex: 1;
+        }
+
+        .service-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .service-item:last-child {
+            border-bottom: none;
+        }
+
+        .service-name {
+            font-weight: 500;
+        }
+
+        .service-price {
+            font-weight: 500;
+        }
+
+        .total-row {
+            font-weight: bold;
+            padding-top: 20px;
+            margin-top: 20px;
+            border-top: 2px solid var(--medium-gray);
+            font-size: 1.2em;
+        }
+
+        /* Customer info form */
+        .customer-info-form {
+            margin-top: 40px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--medium-gray);
+            font-size: 16px;
+        }
+
+        /* Footer actions */
+        .actions {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .back-btn {
+            background-color: white;
+            color: var(--dark-gray);
+            border: 1px solid var(--medium-gray);
+            padding: 12px 30px;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .confirm-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Steps indicator -->
+        <div class="steps">
+            <div class="step completed">
+                <div class="step-number">1</div>
+                <div class="step-text">Select Services</div>
+            </div>
+            <div class="step completed">
+                <div class="step-number">2</div>
+                <div class="step-text">Choose Professional & Time</div>
+            </div>
+            <div class="step active">
+                <div class="step-number">3</div>
+                <div class="step-text">Review Booking</div>
+            </div>
+        </div>
+
+        <h1>Review Your Booking</h1>
+
+        <!-- Notification messages -->
+        <div id="notification-success" style="display: none; background-color: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+            Your booking has been confirmed successfully! We've sent the details to your email.
+        </div>
+        <div id="notification-error" style="display: none; background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+            There was an error processing your booking. Please try again or contact us directly.
+        </div>
+
+        <form id="booking-form" method="post" action="{% url 'customers_booking' company_id=company_id %}">
+            {% csrf_token %}
+            <input type="hidden" name="step" value="3">
+            <input type="hidden" id="company-id" value="{{ company_id }}">
+
+            <!-- Hidden fields to store session data -->
+            <input type="hidden" id="booking-date-value" value="{{ booking_date_iso }}">
+            <input type="hidden" id="booking-time-value" value="{{ booking_time_value }}">
+            <input type="hidden" id="professional-id" value="{{ professional_id }}">
+            <input type="hidden" id="services-data" value="{{ services_json }}">
+
+            <div class="booking-summary">
+                <h2>Booking Details</h2>
+
+                <div class="summary-row">
+                    <div class="summary-label">Date:</div>
+                    <div class="summary-value" id="booking-date">{{ booking_date }}</div>
+                </div>
+
+                <div class="summary-row">
+                    <div class="summary-label">Time:</div>
+                    <div class="summary-value" id="booking-time">{{ booking_time }}</div>
+                </div>
+
+                <div class="summary-row">
+                    <div class="summary-label">Professional:</div>
+                    <div class="summary-value" id="booking-professional">{{ professional_name }}</div>
+                </div>
+
+                <h2>Selected Services</h2>
+
+                <div id="services-list">
+                    {% for service in services %}
+                    <div class="service-item">
+                        <div class="service-name">{{ service.name }}</div>
+                        <div class="service-price">€{{ service.price }}</div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="service-item total-row">
+                        <div class="service-name">Total:</div>
+                        <div class="service-price" id="total-price">€{{ total_price }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="customer-info-form">
+                <h2>Your Information</h2>
+
+                <div class="form-group">
+                    <label for="first-name">First Name:</label>
+                    <input type="text" id="first-name" name="first_name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="last-name">Last Name:</label>
+                    <input type="text" id="last-name" name="last_name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="customer-email">Email:</label>
+                    <input type="email" id="customer-email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="customer-phone">Phone:</label>
+                    <input type="tel" id="customer-phone" name="phone" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="customer-notes">Notes (optional):</label>
+                    <textarea id="customer-notes" name="notes" rows="3"></textarea>
+                </div>
+            </div>
+
+            <div class="actions">
+                <a href="javascript:history.back()" class="back-btn">BACK</a>
+                <button type="submit" class="confirm-btn">CONFIRM BOOKING</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const bookingForm = document.getElementById('booking-form');
+            const successNotification = document.getElementById('notification-success');
+            const errorNotification = document.getElementById('notification-error');
+
+            bookingForm.addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent the default form submission
+
+                // Hide any previous notifications
+                successNotification.style.display = 'none';
+                errorNotification.style.display = 'none';
+
+                // Disable the submit button to prevent multiple submissions
+                const submitButton = document.querySelector('.confirm-btn');
+                submitButton.disabled = true;
+                submitButton.innerText = 'PROCESSING...';
+
+                // Get values from form
+                const companyId = document.getElementById('company-id').value;
+                const bookingDate = document.getElementById('booking-date-value').value;
+                const bookingTime = document.getElementById('booking-time-value').value;
+                const professionalId = document.getElementById('professional-id').value;
+
+                // Format start time in ISO format (YYYY-MM-DDTHH:MM:SSZ)
+                // Ensure the date and time are properly formatted
+                const startTime = `${bookingDate}T${bookingTime}:00Z`;
+
+                // Get services data (assuming it's a JSON string that needs to be parsed)
+                let servicesData = [];
+                try {
+                    // Try to parse the services JSON data
+                    const servicesJson = document.getElementById('services-data').value;
+                    if (servicesJson) {
+                        servicesData = JSON.parse(servicesJson);
+                        console.log('Parsed services data:', servicesData);
+                    } else {
+                        console.error('Services data is empty');
+                    }
+                } catch (error) {
+                    console.error('Error parsing services data:', error);
+                }
+
+                // Format services for the API - ensure we have proper company_service_id and user_id
+                const formattedServices = servicesData.map(service => ({
+                    company_service_id: service.id,
+                    user_id: professionalId !== 'any' ? professionalId : null,
+                    notes: service.notes || ""
+                }));
+
+                console.log('Formatted services:', formattedServices);
+
+                // Create the request payload
+                const payload = {
+                    company_id: companyId,
+                    start_time: startTime,
+                    customer_info: {
+                        first_name: document.getElementById('first-name').value,
+                        last_name: document.getElementById('last-name').value,
+                        email: document.getElementById('customer-email').value,
+                        phone: document.getElementById('customer-phone').value
+                    },
+                    services: formattedServices,
+                    notes: document.getElementById('customer-notes').value
+                };
+
+                console.log('Sending booking request:', JSON.stringify(payload));
+
+                // Send the request to the API endpoint
+                fetch('http://127.0.0.1:8000/api/v1/bookings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Remove CSRF token as FastAPI doesn't use it
+                        'Accept': 'application/json'
+                    },
+                    // Remove credentials to avoid preflight complexity
+                    mode: 'cors', // Explicitly set CORS mode
+                    body: JSON.stringify(payload)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.message || 'Booking request failed');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Show success message
+                    successNotification.style.display = 'block';
+                    successNotification.textContent = 'Your appointment has been booked successfully! We\'ve sent a confirmation to your email.';
+
+                    // Redirect to confirmation page
+                    setTimeout(() => {
+                        window.location.href = `/customers/booking/${companyId}/confirmation?booking_id=${data.id}`;
+                    }, 2000);
+                })
+                .catch(error => {
+                    // Enable submit button again
+                    submitButton.disabled = false;
+                    submitButton.innerText = 'CONFIRM BOOKING';
+
+                    // Show error message
+                    errorNotification.style.display = 'block';
+                    errorNotification.textContent = error.message || 'There was an error processing your booking. Please try again.';
+                    console.error('Error submitting booking:', error);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

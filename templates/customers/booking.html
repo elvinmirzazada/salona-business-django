@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book an Appointment</title>
+    {% load static %}
+    <style>
+        :root {
+            --primary: #00A884;
+            --light-gray: #f5f5f5;
+            --medium-gray: #e0e0e0;
+            --dark-gray: #757575;
+            --white: #ffffff;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-gray);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Steps indicator */
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .steps::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: var(--medium-gray);
+            z-index: 1;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            background: var(--light-gray);
+            padding: 0 10px;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: var(--medium-gray);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .step.active .step-number {
+            background-color: var(--primary);
+        }
+
+        .step-text {
+            font-size: 16px;
+            color: var(--dark-gray);
+        }
+
+        .step.active .step-text {
+            color: #333;
+            font-weight: bold;
+        }
+
+        /* Services section */
+        h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--medium-gray);
+            margin-bottom: 30px;
+        }
+
+        .tab {
+            padding: 10px 30px;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--dark-gray);
+            position: relative;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--primary);
+        }
+
+        /* Service cards */
+        .services-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .service-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: white;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--medium-gray);
+            transition: all 0.2s;
+        }
+
+        .service-card.selected {
+            border: 2px solid var(--primary);
+        }
+
+        .service-info {
+            flex-grow: 1;
+        }
+
+        .service-name {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .service-details {
+            color: var(--dark-gray);
+            font-size: 14px;
+        }
+
+        .service-price {
+            font-size: 18px;
+            font-weight: 500;
+            margin-right: 20px;
+        }
+
+        .select-button {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--dark-gray);
+            border: 2px solid var(--medium-gray);
+            background: white;
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+
+        .service-card.selected .select-button {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Footer actions */
+        .actions {
+            margin-top: 40px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .next-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .next-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Hide services that don't match the active tab */
+        .service-card[data-category] {
+            display: flex;
+        }
+
+        .tab-content:not(.active) {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Steps indicator -->
+        <div class="steps">
+            <div class="step active">
+                <div class="step-number">1</div>
+                <div class="step-text">Select Services</div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-text">Choose Professional & Time</div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-text">Review Booking</div>
+            </div>
+        </div>
+
+        <h1>Services</h1>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" data-tab="all">ALL</div>
+            <div class="tab" data-tab="men">MEN</div>
+            <div class="tab" data-tab="women">WOMEN</div>
+        </div>
+
+        <!-- Service listings -->
+        <form id="booking-form" method="post" action="{% url 'customers_booking' company_id=company_id %}">
+            {% csrf_token %}
+            <input type="hidden" name="step" value="1">
+            <input type="hidden" id="selected-services" name="selected_services" value="">
+
+            <div id="all-services" class="tab-content active">
+                <div class="services-list">
+                    <!-- Services will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="next-btn" id="next-button">NEXT</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const companyId = '{{ company_id }}';
+            const servicesList = document.querySelector('.services-list');
+            const selectedServices = new Set();
+
+            // Fetch services from API
+            fetchServices();
+
+            async function fetchServices() {
+                try {
+                    const response = await fetch(`http://127.0.0.1:8000/api/v1/services/companies/${companyId}/services`);
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch services');
+                    }
+
+                    const data = await response.json();
+                    if (data.success && data.data) {
+                        renderServices(data.data);
+                        setupEventListeners();
+                    } else {
+                        throw new Error('Invalid response format');
+                    }
+                } catch (error) {
+                    console.error('Error fetching services:', error);
+                    servicesList.innerHTML = `
+                        <div class="service-card error">
+                            <div class="service-info">
+                                <div class="service-name">Error loading services</div>
+                                <div class="service-details">Please try again later</div>
+                            </div>
+                        </div>`;
+                }
+            }
+
+            function renderServices(categories) {
+                // Clear existing services
+                servicesList.innerHTML = '';
+
+                // Create HTML for all services
+                categories.forEach(category => {
+                    if (category.services && category.services.length > 0) {
+                        category.services.forEach(service => {
+                            if (service.status === 'active') {
+                                const price = service.discount_price || service.price;
+                                const card = document.createElement('div');
+                                card.className = 'service-card';
+                                card.dataset.id = service.id;
+                                card.dataset.category = category.name.toLowerCase();
+                                card.innerHTML = `
+                                    <div class="service-info">
+                                        <div class="service-name">${service.name}</div>
+                                        <div class="service-details">${service.duration} min • ${category.name}</div>
+                                    </div>
+                                    <div class="service-price">€${price}</div>
+                                    <div class="select-button">+</div>
+                                `;
+                                servicesList.appendChild(card);
+                            }
+                        });
+                    }
+                });
+            }
+
+            function setupEventListeners() {
+                // Tab switching functionality
+                const tabs = document.querySelectorAll('.tab');
+                const serviceCards = document.querySelectorAll('.service-card');
+
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        // Remove active class from all tabs
+                        tabs.forEach(t => t.classList.remove('active'));
+                        // Add active class to clicked tab
+                        this.classList.add('active');
+
+                        const category = this.dataset.tab;
+
+                        // Show/hide services based on the selected tab
+                        serviceCards.forEach(card => {
+                            if (category === 'all' || card.dataset.category === category) {
+                                card.style.display = 'flex';
+                            } else {
+                                card.style.display = 'none';
+                            }
+                        });
+                    });
+                });
+
+                // Service selection functionality
+                serviceCards.forEach(card => {
+                    card.addEventListener('click', function() {
+                        const serviceId = this.dataset.id;
+
+                        if (this.classList.contains('selected')) {
+                            // Deselect
+                            this.classList.remove('selected');
+                            selectedServices.delete(serviceId);
+                            this.querySelector('.select-button').textContent = '+';
+                        } else {
+                            // Select
+                            this.classList.add('selected');
+                            selectedServices.add(serviceId);
+                            this.querySelector('.select-button').textContent = '✓';
+                        }
+
+                        // Update hidden field with selected services
+                        document.getElementById('selected-services').value = Array.from(selectedServices).join(',');
+
+                        // Enable/disable next button based on selection
+                        document.getElementById('next-button').disabled = selectedServices.size === 0;
+                    });
+                });
+
+                // Form submission
+                document.getElementById('booking-form').addEventListener('submit', function(e) {
+                    if (selectedServices.size === 0) {
+                        e.preventDefault();
+                        alert('Please select at least one service to continue.');
+                        return false;
+                    }
+
+                    // Update hidden field with selected services before submit
+                    document.getElementById('selected-services').value = Array.from(selectedServices).join(',');
+                    return true;
+                });
+            }
+        });
+    </script>
+</body>
+</html>

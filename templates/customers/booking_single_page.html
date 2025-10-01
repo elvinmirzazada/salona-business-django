@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book an Appointment</title>
+    {% load static %}
+    <style>
+        :root {
+            --primary: #00A884;
+            --light-gray: #f5f5f5;
+            --medium-gray: #e0e0e0;
+            --dark-gray: #757575;
+            --white: #ffffff;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-gray);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Steps indicator */
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .steps::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: var(--medium-gray);
+            z-index: 1;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            background: var(--light-gray);
+            padding: 0 10px;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: var(--medium-gray);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .step.active .step-number, .step.completed .step-number {
+            background-color: var(--primary);
+        }
+
+        .step-text {
+            font-size: 16px;
+            color: var(--dark-gray);
+        }
+
+        .step.active .step-text, .step.completed .step-text {
+            color: #333;
+            font-weight: bold;
+        }
+
+        .step.completed .step-number::after {
+            content: '✓';
+            position: absolute;
+            font-size: 14px;
+        }
+
+        /* Section headers */
+        h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            margin-top: 40px;
+        }
+
+        h1:first-child {
+            margin-top: 0;
+        }
+
+        /* Service selection */
+        .categories-list {
+            margin-bottom: 20px;
+        }
+
+        .category-item {
+            margin-bottom: 30px;
+        }
+
+        .category-header {
+            font-size: 24px;
+            border-bottom: 2px solid var(--medium-gray);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .services-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .service-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            width: calc(50% - 15px);
+            box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+            cursor: pointer;
+            border: 1px solid var(--medium-gray);
+            transition: all 0.2s;
+        }
+
+        .service-card.selected {
+            border-color: var(--primary);
+            background-color: rgba(0, 168, 132, 0.05);
+        }
+
+        .service-info {
+            flex: 1;
+        }
+
+        .service-name {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .service-description {
+            color: var(--dark-gray);
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .service-duration {
+            display: flex;
+            align-items: center;
+            color: var(--dark-gray);
+            font-size: 14px;
+        }
+
+        .service-price {
+            font-weight: bold;
+            margin-left: 15px;
+            font-size: 16px;
+            color: var(--primary);
+        }
+
+        .service-checkbox {
+            width: 18px;
+            height: 18px;
+            margin-right: 15px;
+        }
+
+        /* Professional selection */
+        .professionals-list {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .professional-card {
+            width: 180px;
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            cursor: pointer;
+            border: 1px solid var(--medium-gray);
+            transition: all 0.2s;
+        }
+
+        .professional-card.selected {
+            border: 2px solid var(--primary);
+        }
+
+        .professional-avatar {
+            width: 60px;
+            height: 60px;
+            background-color: var(--medium-gray);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .professional-avatar.primary {
+            background-color: var(--primary);
+        }
+
+        .professional-name {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .professional-title {
+            color: var(--dark-gray);
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .professional-rating {
+            display: flex;
+            align-items: center;
+        }
+
+        .star {
+            color: #FFB400;
+            margin-right: 5px;
+        }
+
+        /* Date selection */
+        .calendar {
+            margin-bottom: 30px;
+        }
+
+        .week-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .week-nav-btn {
+            background: white;
+            border: 1px solid var(--medium-gray);
+            padding: 8px 15px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .date-grid {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: space-between;
+        }
+
+        .date-cell {
+            flex: 1;
+            background: white;
+            border: 1px solid var(--medium-gray);
+            border-radius: var(--border-radius);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .date-cell.selected, .date-cell.today {
+            border-color: var(--primary);
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .date-cell.today {
+            font-weight: bold;
+        }
+
+        .date-day {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        /* Time slot selection */
+        .time-slots {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 40px;
+        }
+
+        .time-slot {
+            padding: 10px 15px;
+            background: white;
+            border: 1px solid var(--medium-gray);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .time-slot.selected {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .no-slots {
+            padding: 20px;
+            text-align: center;
+            color: var(--dark-gray);
+            width: 100%;
+        }
+
+        /* Booking summary */
+        .booking-summary {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .summary-row {
+            display: flex;
+            margin-bottom: 20px;
+            align-items: flex-start;
+        }
+
+        .summary-label {
+            width: 140px;
+            font-weight: 500;
+            color: var(--dark-gray);
+        }
+
+        .summary-value {
+            flex: 1;
+        }
+
+        .service-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .service-item:last-child {
+            border-bottom: none;
+        }
+
+        .service-name {
+            font-weight: 500;
+        }
+
+        .service-price {
+            font-weight: 500;
+        }
+
+        .total-row {
+            font-weight: bold;
+            padding-top: 20px;
+            margin-top: 20px;
+            border-top: 2px solid var(--medium-gray);
+            font-size: 1.2em;
+        }
+
+        /* Customer info form */
+        .customer-info-form {
+            margin-top: 40px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--medium-gray);
+            font-size: 16px;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--medium-gray);
+            padding-bottom: 10px;
+        }
+
+        /* Footer actions */
+        .actions {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .back-btn {
+            background-color: white;
+            color: var(--dark-gray);
+            border: 1px solid var(--medium-gray);
+            padding: 12px 30px;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .next-btn, .confirm-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .next-btn:disabled, .confirm-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Step containers */
+        .step-container {
+            display: none;
+        }
+
+        .step-container.active {
+            display: block;
+        }
+
+        /* Notification messages */
+        .notification {
+            display: none;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .notification-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .notification-error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Steps indicator -->
+        <div class="steps">
+            <div id="step-indicator-1" class="step active">
+                <div class="step-number">1</div>
+                <div class="step-text">Select Services</div>
+            </div>
+            <div id="step-indicator-2" class="step">
+                <div class="step-number">2</div>
+                <div class="step-text">Choose Professional & Time</div>
+            </div>
+            <div id="step-indicator-3" class="step">
+                <div class="step-number">3</div>
+                <div class="step-text">Review Booking</div>
+            </div>
+        </div>
+
+        <!-- Notification messages -->
+        <div id="notification-success" class="notification notification-success">
+            Your booking has been confirmed successfully! We've sent the details to your email.
+        </div>
+        <div id="notification-error" class="notification notification-error">
+            There was an error processing your booking. Please try again or contact us directly.
+        </div>
+
+        <form id="booking-form">
+            {% csrf_token %}
+            <input type="hidden" id="company-id" value="{{ company_id }}">
+
+            <!-- Step 1: Service Selection -->
+            <div id="step-1" class="step-container active">
+                <h1>Select services</h1>
+                <div id="categories-container" class="categories-list">
+                    <!-- Will be populated by JavaScript -->
+                    <div class="loading">Loading services...</div>
+                </div>
+
+                <div class="actions">
+                    <div></div> <!-- Empty div to maintain flex spacing -->
+                    <button type="button" id="step1-next" class="next-btn" disabled>NEXT</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Professional & Time Selection -->
+            <div id="step-2" class="step-container">
+                <h1>Select professional</h1>
+                <div class="professionals-list" id="professionals-container">
+                    <!-- Will be populated by JavaScript -->
+                    <div class="professional-card" data-id="any">
+                        <div class="professional-avatar primary">A</div>
+                        <div class="professional-name">Any Professional</div>
+                        <div class="professional-title">for maximum availability</div>
+                        <div class="professional-rating">
+                            <span class="star">★</span>
+                            <span>5.0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="time-selection-container">
+                    <h1>Select time</h1>
+                    <div class="calendar">
+                        <div class="week-navigation">
+                            <button type="button" class="week-nav-btn" id="prev-week-btn">PREVIOUS WEEK</button>
+                            <button type="button" class="week-nav-btn" id="next-week-btn">NEXT WEEK</button>
+                        </div>
+                        <div class="date-grid" id="date-grid">
+                            <!-- Date cells will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="time-slots" id="time-slots-container">
+                        <div class="no-slots">Please select a professional and date first</div>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button type="button" id="step2-back" class="back-btn">BACK</button>
+                    <button type="button" id="step2-next" class="next-btn" disabled>NEXT</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Review & Submit -->
+            <div id="step-3" class="step-container">
+                <h1>Review Your Booking</h1>
+
+                <div class="booking-summary">
+                    <h2>Booking Details</h2>
+
+                    <div class="summary-row">
+                        <div class="summary-label">Date:</div>
+                        <div class="summary-value" id="booking-date"></div>
+                    </div>
+
+                    <div class="summary-row">
+                        <div class="summary-label">Time:</div>
+                        <div class="summary-value" id="booking-time"></div>
+                    </div>
+
+                    <div class="summary-row">
+                        <div class="summary-label">Professional:</div>
+                        <div class="summary-value" id="booking-professional"></div>
+                    </div>
+
+                    <h2>Selected Services</h2>
+
+                    <div id="services-list">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="customer-info-form">
+                    <h2>Your Information</h2>
+
+                    <div class="form-group">
+                        <label for="first-name">First Name:</label>
+                        <input type="text" id="first-name" name="first_name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="last-name">Last Name:</label>
+                        <input type="text" id="last-name" name="last_name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customer-email">Email:</label>
+                        <input type="email" id="customer-email" name="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customer-phone">Phone:</label>
+                        <input type="tel" id="customer-phone" name="phone" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customer-notes">Notes (optional):</label>
+                        <textarea id="customer-notes" name="notes" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button type="button" id="step3-back" class="back-btn">BACK</button>
+                    <button type="button" id="confirm-booking" class="confirm-btn">CONFIRM BOOKING</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Common variables
+            const companyId = document.getElementById('company-id').value;
+            const successNotification = document.getElementById('notification-success');
+            const errorNotification = document.getElementById('notification-error');
+
+            // Step navigation variables
+            const stepContainers = document.querySelectorAll('.step-container');
+            const stepIndicators = document.querySelectorAll('.steps .step');
+
+            // Step 1 variables
+            const categoriesContainer = document.getElementById('categories-container');
+            const step1NextBtn = document.getElementById('step1-next');
+
+            // Step 2 variables
+            const professionalContainer = document.getElementById('professionals-container');
+            const timeSelectionContainer = document.getElementById('time-selection-container');
+            const dateGrid = document.getElementById('date-grid');
+            const timeSlotsContainer = document.getElementById('time-slots-container');
+            const prevWeekBtn = document.getElementById('prev-week-btn');
+            const nextWeekBtn = document.getElementById('next-week-btn');
+            const step2BackBtn = document.getElementById('step2-back');
+            const step2NextBtn = document.getElementById('step2-next');
+
+            // Step 3 variables
+            const bookingDateElement = document.getElementById('booking-date');
+            const bookingTimeElement = document.getElementById('booking-time');
+            const bookingProfessionalElement = document.getElementById('booking-professional');
+            const servicesListElement = document.getElementById('services-list');
+            const step3BackBtn = document.getElementById('step3-back');
+            const confirmBookingBtn = document.getElementById('confirm-booking');
+
+            // Booking data storage
+            let bookingData = {
+                selectedServices: [],
+                selectedProfessional: null,
+                professionalName: "Any Professional",
+                selectedDate: null,
+                selectedDateFormatted: null,
+                selectedTimeSlot: null,
+                selectedTimeFormatted: null,
+                totalPrice: 0
+            };
+
+            // Current state
+            let currentStep = 1;
+            let currentWeekStart = new Date();
+            let isInitialWeek = true;
+            let weeklyAvailabilityData = null;
+            let allServices = [];
+
+            // Initialize with the current date
+            currentWeekStart = getWeekStart(new Date());
+
+            // Initially disable the previous week button
+            prevWeekBtn.disabled = true;
+
+            // Initialize step 1 - fetch services
+            fetchServices();
+
+            // Step navigation functions
+            function showStep(stepNumber) {
+                // Hide all steps
+                stepContainers.forEach(container => {
+                    container.classList.remove('active');
+                });
+
+                // Update step indicators
+                stepIndicators.forEach((indicator, index) => {
+                    const stepNum = index + 1;
+                    indicator.classList.remove('active', 'completed');
+
+                    if (stepNum === stepNumber) {
+                        indicator.classList.add('active');
+                    } else if (stepNum < stepNumber) {
+                        indicator.classList.add('completed');
+                    }
+                });
+
+                // Show the current step
+                document.getElementById(`step-${stepNumber}`).classList.add('active');
+                currentStep = stepNumber;
+
+                // Perform step-specific initializations
+                if (stepNumber === 2) {
+                    initStep2();
+                } else if (stepNumber === 3) {
+                    updateBookingSummary();
+                }
+            }
+
+            // Step 1: Service Selection
+            async function fetchServices() {
+                try {
+                    const response = await fetch(`http://127.0.0.1:8000/api/v1/services/companies/${companyId}/services`);
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch services');
+                    }
+
+                    const data = await response.json();
+                    if (data.success && data.data) {
+                        allServices = data.data;
+                        renderCategories(data.data);
+                    } else {
+                        throw new Error('Invalid response format');
+                    }
+                } catch (error) {
+                    console.error('Error fetching services:', error);
+                    categoriesContainer.innerHTML = '<div class="error">Failed to load services. Please refresh the page.</div>';
+                }
+            }
+
+            function renderCategories(categories) {
+                categoriesContainer.innerHTML = '';
+
+                categories.forEach(category => {
+                    const categoryElement = document.createElement('div');
+                    categoryElement.className = 'category-item';
+
+                    categoryElement.innerHTML = `
+                        <div class="category-header">${category.name}</div>
+                        <div class="services-list" data-category-id="${category.id}">
+                            ${renderServices(category.services)}
+                        </div>
+                    `;
+
+                    categoriesContainer.appendChild(categoryElement);
+                });
+
+                // Add event listeners to service cards
+                document.querySelectorAll('.service-card').forEach(card => {
+                    card.addEventListener('click', toggleServiceSelection);
+                });
+            }
+
+            function renderServices(services) {
+                if (!services || services.length === 0) {
+                    return '<div class="no-services">No services available in this category</div>';
+                }
+
+                return services.map(service => `
+                    <div class="service-card" data-id="${service.id}" data-name="${service.name}" data-price="${service.price || 0}" data-duration="${service.duration || 60}">
+                        <div class="service-info">
+                            <div class="service-name">${service.name}</div>
+                            <div class="service-description">${service.description || ''}</div>
+                            <div class="service-duration">
+                                <span>${service.duration || 60} min</span>
+                            </div>
+                        </div>
+                        <div class="service-price">€${service.price || 0}</div>
+                    </div>
+                `).join('');
+            }
+
+            function toggleServiceSelection() {
+                const serviceId = this.dataset.id;
+                const serviceName = this.dataset.name;
+                const servicePrice = parseFloat(this.dataset.price);
+                const serviceDuration = parseInt(this.dataset.duration);
+
+                // Toggle selection in UI
+                this.classList.toggle('selected');
+
+                // Update selected services array
+                if (this.classList.contains('selected')) {
+                    // Add to selected services
+                    bookingData.selectedServices.push({
+                        id: serviceId,
+                        name: serviceName,
+                        price: servicePrice,
+                        duration: serviceDuration,
+                        notes: ''
+                    });
+                } else {
+                    // Remove from selected services
+                    bookingData.selectedServices = bookingData.selectedServices.filter(service => service.id !== serviceId);
+                }
+
+                // Calculate total price
+                bookingData.totalPrice = bookingData.selectedServices.reduce((total, service) => total + service.price, 0);
+
+                // Enable/disable next button based on selection
+                step1NextBtn.disabled = bookingData.selectedServices.length === 0;
+            }
+
+            // Step 1 navigation
+            step1NextBtn.addEventListener('click', () => {
+                showStep(2);
+            });
+
+            // Step 2: Professional & Time Selection
+            function initStep2() {
+                // Fetch professionals if needed
+                if (professionalContainer.children.length <= 1) {
+                    fetchProfessionals();
+                }
+
+                // Render date grid
+                renderDateGrid();
+
+                // Setup professional selection if not already done
+                setupProfessionalSelection();
+            }
+
+            async function fetchProfessionals() {
+                try {
+                    const response = await fetch(`http://127.0.0.1:8000/api/v1/services/companies/${companyId}/users`);
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch professionals');
+                    }
+
+                    const data = await response.json();
+                    if (data.success && data.data) {
+                        renderProfessionals(data.data);
+                    } else {
+                        throw new Error('Invalid response format');
+                    }
+                } catch (error) {
+                    console.error('Error fetching professionals:', error);
+                }
+            }
+
+            function renderProfessionals(professionals) {
+                professionals.forEach(item => {
+                    // Check if the item has a user property and is active
+                    if (item.user && item.status === 'active') {
+                        const professional = item.user;
+
+                        const card = document.createElement('div');
+                        card.className = 'professional-card';
+                        card.dataset.id = professional.id;
+
+                        // Get initials for avatar
+                        const initials = getInitials(professional.first_name, professional.last_name);
+
+                        card.innerHTML = `
+                            <div class="professional-avatar">${initials}</div>
+                            <div class="professional-name">${professional.first_name} ${professional.last_name}</div>
+                            <div class="professional-title">${item.role || 'Staff'}</div>
+                            <div class="professional-rating">
+                                <span class="star">★</span>
+                                <span>${professional.rating || '4.9'}</span>
+                            </div>
+                        `;
+                        professionalContainer.appendChild(card);
+                    }
+                });
+
+                // Setup professional selection
+                setupProfessionalSelection();
+            }
+
+            function getInitials(firstName, lastName) {
+                let initials = '';
+                if (firstName) {
+                    initials += firstName.charAt(0);
+                }
+                if (lastName) {
+                    initials += lastName.charAt(0);
+                }
+                return initials || 'P';
+            }
+
+            function setupProfessionalSelection() {
+                const professionalCards = document.querySelectorAll('.professional-card');
+
+                professionalCards.forEach(card => {
+                    card.addEventListener('click', async function() {
+                        // Deselect all cards
+                        professionalCards.forEach(c => c.classList.remove('selected'));
+
+                        // Select this card
+                        this.classList.add('selected');
+                        bookingData.selectedProfessional = this.dataset.id;
+                        bookingData.professionalName = this.querySelector('.professional-name').textContent;
+
+                        // Reset time selection
+                        resetTimeSlots();
+
+                        // Fetch availability data for this professional
+                        await fetchAvailabilityData(bookingData.selectedProfessional);
+                    });
+                });
+
+                // Auto-select "Any Professional" if it's the only option
+                if (professionalCards.length === 1) {
+                    professionalCards[0].click();
+                }
+            }
+
+            // Week navigation
+            prevWeekBtn.addEventListener('click', () => {
+                // Get today's date as reference
+                const today = getWeekStart(new Date());
+
+                // Move 7 days back, but don't go before today
+                const newStart = new Date(currentWeekStart);
+                newStart.setDate(newStart.getDate() - 7);
+
+                // If going back would take us before today, just set to today
+                if (newStart < today) {
+                    currentWeekStart = new Date(today);
+                    isInitialWeek = true;
+                    prevWeekBtn.disabled = true;
+                } else {
+                    currentWeekStart = newStart;
+                    // We're still in a future week, keep prev button enabled
+                }
+
+                renderDateGrid();
+                resetTimeSlots();
+
+                // If we have a selected professional, update availability
+                if (bookingData.selectedProfessional) {
+                    fetchAvailabilityData(bookingData.selectedProfessional);
+                }
+            });
+
+            nextWeekBtn.addEventListener('click', () => {
+                // Move to the next week (7 days forward)
+                currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+
+                // We're no longer in the initial week
+                isInitialWeek = false;
+                prevWeekBtn.disabled = false;
+
+                renderDateGrid();
+                resetTimeSlots();
+
+                // If we have a selected professional, update availability
+                if (bookingData.selectedProfessional) {
+                    fetchAvailabilityData(bookingData.selectedProfessional);
+                }
+            });
+
+            function getWeekStart(date) {
+                // Always start from today
+                const result = new Date(date);
+                // Reset the time to start of day to avoid time zone issues
+                result.setHours(0, 0, 0, 0);
+                return result;
+            }
+
+            function formatDate(date) {
+                return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            }
+
+            function renderDateGrid() {
+                dateGrid.innerHTML = '';
+
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                // Create 7 date cells (today and the next 6 days)
+                for (let i = 0; i < 7; i++) {
+                    // Calculate the date for this cell (starting from current week start)
+                    const currentDate = new Date(currentWeekStart);
+                    currentDate.setDate(currentWeekStart.getDate() + i);
+
+                    // Check if this is today's date
+                    const isToday = currentDate.getTime() === today.getTime();
+
+                    // Create the date cell element
+                    const dateCell = document.createElement('div');
+                    dateCell.className = `date-cell${isToday ? ' today' : ''}`;
+                    dateCell.dataset.date = formatDate(currentDate);
+
+                    // Format date display
+                    const dayOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][currentDate.getDay()];
+                    const dayOfMonth = currentDate.getDate();
+
+                    dateCell.innerHTML = `
+                        <div class="date-day">${dayOfWeek}</div>
+                        <div class="date-number">${dayOfMonth}</div>
+                        ${isToday ? '<div class="date-today">(TODAY)</div>' : ''}
+                    `;
+
+                    dateCell.addEventListener('click', function() {
+                        // Only allow selection if a professional is selected
+                        if (!bookingData.selectedProfessional) {
+                            return;
+                        }
+
+                        // Deselect all dates
+                        document.querySelectorAll('.date-cell').forEach(cell => {
+                            if (!cell.classList.contains('today')) {
+                                cell.classList.remove('selected');
+                            }
+                        });
+
+                        // Select this date
+                        if (!this.classList.contains('today')) {
+                            this.classList.add('selected');
+                        }
+
+                        bookingData.selectedDate = this.dataset.date;
+
+                        // Format date for display
+                        const dateObj = new Date(bookingData.selectedDate);
+                        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                        bookingData.selectedDateFormatted = dateObj.toLocaleDateString('en-US', options);
+
+                        // Show time slots for this date
+                        showTimeSlotsForDate(bookingData.selectedDate);
+                    });
+
+                    dateGrid.appendChild(dateCell);
+                }
+
+                // Auto-select today
+                const todayCell = document.querySelector('.date-cell.today');
+                if (todayCell) {
+                    bookingData.selectedDate = todayCell.dataset.date;
+
+                    // Format date for display
+                    const dateObj = new Date(bookingData.selectedDate);
+                    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                    bookingData.selectedDateFormatted = dateObj.toLocaleDateString('en-US', options);
+                }
+            }
+
+            async function fetchAvailabilityData(professionalId) {
+                try {
+                    resetTimeSlots();
+
+                    const dateFrom = formatDate(currentWeekStart);
+
+                    // Use the API endpoint format
+                    const endpoint = professionalId === 'any'
+                        ? `http://127.0.0.1:8000/api/v1/companies/${companyId}/availability?date_from=${dateFrom}&availability_type=weekly`
+                        : `http://127.0.0.1:8000/api/v1/companies/${companyId}/users/${professionalId}/availability?date_from=${dateFrom}&availability_type=weekly`;
+
+                    const response = await fetch(endpoint);
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch availability');
+                    }
+
+                    const data = await response.json();
+                    if (data.success && data.data) {
+                        // Store the weekly availability data
+                        weeklyAvailabilityData = data.data.weekly;
+
+                        // Show time slots for the selected date if any
+                        if (bookingData.selectedDate) {
+                            showTimeSlotsForDate(bookingData.selectedDate);
+                        }
+                    } else {
+                        throw new Error('Invalid response format');
+                    }
+                } catch (error) {
+                    console.error('Error fetching availability data:', error);
+                    showNoSlots();
+                }
+            }
+
+            function showTimeSlotsForDate(date) {
+                resetTimeSlots();
+
+                if (!weeklyAvailabilityData || !weeklyAvailabilityData.daily_slots) {
+                    showNoSlots();
+                    return;
+                }
+
+                // Find the daily slot data for the selected date
+                const dailyData = weeklyAvailabilityData.daily_slots.find(slot => slot.date === date);
+
+                if (!dailyData || !dailyData.time_slots || dailyData.time_slots.length === 0) {
+                    showNoSlots();
+                    return;
+                }
+
+                // Generate 15-minute slots from the available time ranges
+                const generatedTimeSlots = generateTimeSlots(dailyData.time_slots);
+
+                if (generatedTimeSlots.length === 0) {
+                    showNoSlots();
+                    return;
+                }
+
+                renderTimeSlots(generatedTimeSlots);
+            }
+
+            // Generate 15-minute time slots from available time ranges
+            function generateTimeSlots(availableRanges) {
+                const allSlots = [];
+
+                availableRanges.filter(range => range.is_available).forEach(range => {
+                    // Parse the start and end times
+                    const startParts = range.start_time.split(':');
+                    const endParts = range.end_time.split(':');
+
+                    // Create Date objects to handle time calculations
+                    const startDate = new Date();
+                    startDate.setHours(parseInt(startParts[0], 10), parseInt(startParts[1], 10), 0);
+
+                    const endDate = new Date();
+                    endDate.setHours(parseInt(endParts[0], 10), parseInt(endParts[1], 10), 0);
+
+                    // Generate 15-minute slots between start and end time
+                    const currentTime = new Date(startDate);
+
+                    while (currentTime < endDate) {
+                        // Format the current time slot
+                        const hours = currentTime.getHours().toString().padStart(2, '0');
+                        const minutes = currentTime.getMinutes().toString().padStart(2, '0');
+                        const timeSlot = `${hours}:${minutes}`;
+
+                        // Add slot to our array
+                        allSlots.push({
+                            time: timeSlot,
+                            displayTime: formatTimeDisplay(timeSlot)
+                        });
+
+                        // Move to next 15-minute slot
+                        currentTime.setMinutes(currentTime.getMinutes() + 15);
+
+                        // Don't include the end time if it's exactly at the boundary
+                        if (currentTime.getTime() === endDate.getTime()) {
+                            break;
+                        }
+                    }
+                });
+
+                // Sort all slots chronologically
+                return allSlots.sort((a, b) => a.time.localeCompare(b.time));
+            }
+
+            function renderTimeSlots(slots) {
+                timeSlotsContainer.innerHTML = '';
+
+                if (!slots || slots.length === 0) {
+                    showNoSlots();
+                    return;
+                }
+
+                slots.forEach(slot => {
+                    const timeSlot = document.createElement('div');
+                    timeSlot.className = 'time-slot';
+                    timeSlot.dataset.slot = slot.time;
+                    timeSlot.textContent = slot.displayTime;
+
+                    timeSlot.addEventListener('click', function() {
+                        // Deselect all time slots
+                        document.querySelectorAll('.time-slot').forEach(ts => ts.classList.remove('selected'));
+
+                        // Select this time slot
+                        this.classList.add('selected');
+                        bookingData.selectedTimeSlot = this.dataset.slot;
+                        bookingData.selectedTimeFormatted = this.textContent;
+
+                        // Enable next button
+                        step2NextBtn.disabled = false;
+                    });
+
+                    timeSlotsContainer.appendChild(timeSlot);
+                });
+            }
+
+            function formatTimeDisplay(timeString) {
+                // Convert "14:00" to "2:00 PM"
+                const [hours, minutes] = timeString.split(':');
+                let hour = parseInt(hours, 10);
+                const period = hour >= 12 ? 'PM' : 'AM';
+
+                hour = hour % 12;
+                if (hour === 0) hour = 12;
+
+                return `${hour}:${minutes} ${period}`;
+            }
+
+            function showNoSlots() {
+                timeSlotsContainer.innerHTML = '<div class="no-slots">No available slots</div>';
+                step2NextBtn.disabled = true;
+            }
+
+            function resetTimeSlots() {
+                timeSlotsContainer.innerHTML = '<div class="no-slots">Select a date to see available time slots</div>';
+                bookingData.selectedTimeSlot = null;
+                bookingData.selectedTimeFormatted = null;
+                step2NextBtn.disabled = true;
+            }
+
+            // Step 2 navigation
+            step2BackBtn.addEventListener('click', () => {
+                showStep(1);
+            });
+
+            step2NextBtn.addEventListener('click', () => {
+                showStep(3);
+            });
+
+            // Step 3: Review & Confirm
+            function updateBookingSummary() {
+                // Update booking date and time
+                bookingDateElement.textContent = bookingData.selectedDateFormatted || '';
+                bookingTimeElement.textContent = bookingData.selectedTimeFormatted || '';
+                bookingProfessionalElement.textContent = bookingData.professionalName || 'Any Professional';
+
+                // Update services list
+                servicesListElement.innerHTML = '';
+
+                bookingData.selectedServices.forEach(service => {
+                    const serviceItem = document.createElement('div');
+                    serviceItem.className = 'service-item';
+                    serviceItem.innerHTML = `
+                        <div class="service-name">${service.name}</div>
+                        <div class="service-price">€${service.price}</div>
+                    `;
+                    servicesListElement.appendChild(serviceItem);
+                });
+
+                // Add total row
+                const totalRow = document.createElement('div');
+                totalRow.className = 'service-item total-row';
+                totalRow.innerHTML = `
+                    <div class="service-name">Total:</div>
+                    <div class="service-price">€${bookingData.totalPrice}</div>
+                `;
+                servicesListElement.appendChild(totalRow);
+            }
+
+            // Step 3 navigation
+            step3BackBtn.addEventListener('click', () => {
+                showStep(2);
+            });
+
+            // Confirm booking
+            confirmBookingBtn.addEventListener('click', async function() {
+                // Hide any previous notifications
+                successNotification.style.display = 'none';
+                errorNotification.style.display = 'none';
+
+                // Validate form
+                const firstNameInput = document.getElementById('first-name');
+                const lastNameInput = document.getElementById('last-name');
+                const emailInput = document.getElementById('customer-email');
+                const phoneInput = document.getElementById('customer-phone');
+
+                if (!firstNameInput.value || !lastNameInput.value || !emailInput.value || !phoneInput.value) {
+                    errorNotification.textContent = 'Please fill out all required fields.';
+                    errorNotification.style.display = 'block';
+                    return;
+                }
+
+                // Disable the submit button to prevent multiple submissions
+                this.disabled = true;
+                this.innerText = 'PROCESSING...';
+
+                // Format services for the API
+                const formattedServices = bookingData.selectedServices.map(service => ({
+                    category_service_id: service.id,
+                    user_id: bookingData.selectedProfessional !== 'any' ? bookingData.selectedProfessional : null,
+                    notes: service.notes || ""
+                }));
+
+                // Format start time in ISO format (YYYY-MM-DDTHH:MM:SSZ)
+                const startTime = `${bookingData.selectedDate}T${bookingData.selectedTimeSlot}:00Z`;
+
+                // Create the request payload
+                const payload = {
+                    company_id: companyId,
+                    start_time: startTime,
+                    customer_info: {
+                        first_name: firstNameInput.value,
+                        last_name: lastNameInput.value,
+                        email: emailInput.value,
+                        phone: phoneInput.value
+                    },
+                    services: formattedServices,
+                    notes: document.getElementById('customer-notes').value
+                };
+
+                console.log('Sending booking request:', JSON.stringify(payload));
+
+                try {
+                    // Send the request to the API endpoint
+                    const response = await fetch('http://127.0.0.1:8000/api/v1/bookings', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        mode: 'cors',
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'Booking request failed');
+                    }
+
+                    const data = await response.json();
+
+                    // Show success message
+                    successNotification.textContent = 'Your appointment has been booked successfully! We\'ve sent a confirmation to your email.';
+                    successNotification.style.display = 'block';
+
+                    // Scroll to top to see notification
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                    // Disable form elements
+                    document.querySelectorAll('input, textarea, button').forEach(el => {
+                        el.disabled = true;
+                    });
+
+                    // Re-enable the button with success message
+                    this.disabled = false;
+                    this.innerText = 'BOOKING CONFIRMED';
+
+                } catch (error) {
+                    // Re-enable submit button
+                    this.disabled = false;
+                    this.innerText = 'CONFIRM BOOKING';
+
+                    // Show error message
+                    errorNotification.textContent = error.message || 'There was an error processing your booking. Please try again.';
+                    errorNotification.style.display = 'block';
+
+                    // Scroll to top to see notification
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                    console.error('Error submitting booking:', error);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

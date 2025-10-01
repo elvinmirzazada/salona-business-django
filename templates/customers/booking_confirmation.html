@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmation</title>
+    {% load static %}
+    <style>
+        :root {
+            --primary: #00A884;
+            --light-gray: #f5f5f5;
+            --medium-gray: #e0e0e0;
+            --dark-gray: #757575;
+            --white: #ffffff;
+            --border-radius: 8px;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-gray);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .confirmation-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .icon-container {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .success-icon {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .error-icon {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .confirmation-message {
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+
+        .booking-details {
+            margin: 30px auto;
+            max-width: 400px;
+            text-align: left;
+            padding: 20px;
+            background-color: var(--light-gray);
+            border-radius: var(--border-radius);
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .detail-label {
+            font-weight: bold;
+        }
+
+        .buttons {
+            margin-top: 30px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 16px;
+            margin: 0 10px;
+        }
+
+        .primary-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        .secondary-btn {
+            background-color: white;
+            color: var(--dark-gray);
+            border: 1px solid var(--medium-gray);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="confirmation-card">
+            {% if success %}
+                <div class="icon-container success-icon">✓</div>
+                <h1>Booking Confirmed!</h1>
+                <p class="confirmation-message">Your appointment has been successfully booked. We look forward to seeing you!</p>
+
+                <div class="booking-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Date:</span>
+                        <span>{{ booking_date }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Time:</span>
+                        <span>{{ booking_time }}</span>
+                    </div>
+                </div>
+
+                <div class="buttons">
+                    <a href="{% url 'customers_booking' company_id=company_id %}" class="btn primary-btn">Book Another Appointment</a>
+                </div>
+            {% else %}
+                <div class="icon-container error-icon">✕</div>
+                <h1>Booking Failed</h1>
+                <p class="confirmation-message">
+                    We're sorry, but there was an issue processing your booking.
+                    {% if error_message %}
+                        <br>{{ error_message }}
+                    {% endif %}
+                </p>
+
+                <div class="buttons">
+                    <a href="javascript:history.back()" class="btn secondary-btn">Go Back</a>
+                    <a href="{% url 'customers_booking' company_id=company_id %}" class="btn primary-btn">Start Over</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
+

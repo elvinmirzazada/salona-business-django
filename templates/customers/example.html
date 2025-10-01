@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Customer Booking Example</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+    <div class="container" style="max-width:600px;margin:40px auto;padding:32px;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.08)">
+        <h2>Book a Time</h2>
+        <form>
+            <div class="form-group">
+                <label for="booking-date">Date:</label>
+                <input type="date" id="booking-date" name="booking-date" required>
+            </div>
+            <div class="form-group">
+                <label for="booking-time">Time:</label>
+                <input type="time" id="booking-time" name="booking-time" required>
+            </div>
+            <div class="form-group">
+                <label for="customer-name">Your Name:</label>
+                <input type="text" id="customer-name" name="customer-name" required>
+            </div>
+            <div class="form-group">
+                <label for="customer-email">Email:</label>
+                <input type="email" id="customer-email" name="customer-email" required>
+            </div>
+            <button type="submit" class="primary-button">Book Now</button>
+        </form>
+    </div>
+</body>
+</html>
+
