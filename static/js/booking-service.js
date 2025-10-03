@@ -1,7 +1,7 @@
 // Booking service - handles all booking related operations
 const BookingService = (() => {
     // Fetch bookings from API with date range parameters
-    const fetchBookings = async (startDate, endDate) => {
+    const fetchBookings = async (startDate, endDate, staffIds = null) => {
         try {
             // Format dates for API request
             const formattedStartDate = Utils.formatDate(startDate);
@@ -13,9 +13,14 @@ const BookingService = (() => {
             const queryParams = new URLSearchParams({
                 start_date: formattedStartDate,
                 end_date: formattedEndDate
-            }).toString();
+            });
 
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/bookings?${queryParams}`, {
+            // Add staff filter if provided
+            if (staffIds && staffIds.length) {
+                staffIds.forEach(id => queryParams.append('staff_id', id));
+            }
+
+            const response = await fetch(`http://127.0.0.1:8000/api/v1/bookings?${queryParams.toString()}`, {
                 method: 'GET',
                 headers: Auth.getAuthHeader(),
                 credentials: 'include'
@@ -71,6 +76,71 @@ const BookingService = (() => {
                 totalPrice: booking.total_price,
                 status: booking.status,
                 customer: customer
+            };
+        });
+    };
+
+    // Fetch time offs from API with date range parameters
+    const fetchTimeOffs = async (startDate, endDate) => {
+        try {
+            // Format dates for API request - get start date as 3 days before the first day in calendar
+            const calendarStartDate = new Date(startDate);
+            const timeOffStartDate = new Date(calendarStartDate);
+
+            const formattedStartDate = Utils.formatDate(timeOffStartDate);
+            const formattedEndDate = Utils.formatDate(endDate);
+
+            console.log(`Fetching time offs from ${formattedStartDate} to ${formattedEndDate}`);
+
+            // Build query parameters
+            const queryParams = new URLSearchParams({
+                start_date: formattedStartDate,
+                availability_type: 'weekly'
+            }).toString();
+
+            const response = await fetch(`http://127.0.0.1:8000/api/v1/users/time-offs?${queryParams}`, {
+                method: 'GET',
+                headers: Auth.getAuthHeader(),
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    // If unauthorized, redirect to login
+                    localStorage.removeItem('accessToken');
+                    window.location.href = '/users/login/';
+                    return [];
+                }
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.success ? data.data : [];
+        } catch (error) {
+            console.error('Error fetching time offs:', error);
+            return [];
+        }
+    };
+
+    // Convert API time-offs to calendar events
+    const convertTimeOffsToEvents = (timeOffs) => {
+        return timeOffs.map(timeOff => {
+            const startDate = new Date(timeOff.start_date);
+            const endDate = new Date(timeOff.end_date);
+
+            // Create staff name from user info
+            const staffName = timeOff.user ?
+                `${timeOff.user.first_name} ${timeOff.user.last_name}` : 'Staff';
+
+            return {
+                id: timeOff.id,
+                title: `${staffName} - Time Off`,
+                description: timeOff.reason || 'Time off',
+                start: startDate,
+                end: endDate,
+                color: 'event-gray', // Gray color for time off
+                isTimeOff: true,
+                user: timeOff.user
             };
         });
     };
@@ -642,8 +712,123 @@ const BookingService = (() => {
     
     // Create time off for staff member
     const createTimeOff = (date) => {
-        alert('Time off feature is coming soon!');
-        // This would be implemented in a future update
+        const timeOffPanel = document.getElementById('time-off-panel');
+        
+        // Reset form
+        document.getElementById('time-off-form').reset();
+        
+        // Format the date string
+        const formattedDate = Utils.formatDate(date);
+
+        // Set the selected date for both start and end date
+        document.getElementById('time-off-start-date').value = formattedDate;
+        document.getElementById('time-off-end-date').value = formattedDate;
+
+        // Set the selected time
+        document.getElementById('time-off-start-time').value = Utils.formatTime(date.getHours(), date.getMinutes());
+        
+        // Calculate default end time (1 hour after start)
+        const endDate = new Date(date);
+        endDate.setHours(endDate.getHours() + 1);
+        document.getElementById('time-off-end-time').value = Utils.formatTime(endDate.getHours(), endDate.getMinutes());
+        
+        // Load staff members
+        StaffManager.loadStaffMembers('time-off-staff');
+
+        // Show the form panel
+        timeOffPanel.classList.add('active');
+    };
+
+    // Submit time off to API
+    const submitTimeOff = async (timeOffData) => {
+        try {
+            // Show spinner
+            Utils.toggleSpinner(true);
+            
+            // Format the data according to API requirements
+            const formattedData = {
+                start_date: timeOffData.start_time,
+                end_date: timeOffData.end_time,
+                user_id: timeOffData.user_id,
+                reason: timeOffData.reason
+            };
+
+            console.log('Creating time off with data:', formattedData);
+
+            // Send the time off data to the correct API endpoint
+            const response = await fetch('http://127.0.0.1:8000/api/v1/users/time-offs', {
+                method: 'POST',
+                headers: Auth.getAuthHeader(),
+                body: JSON.stringify(formattedData),
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `Failed to create time off: ${response.status}`);
+            }
+
+            // Show success message
+            Utils.showMessage('Time off created successfully!', 'success');
+
+            // Close the form panel
+            document.getElementById('time-off-panel').classList.remove('active');
+
+            // Refresh the calendar to show the new time off period
+            await Calendar.renderCalendar(Calendar.getCurrentDate());
+
+        } catch (error) {
+            // Show error message
+            Utils.showMessage(`Failed to create time off: ${error.message}`, 'error', 8000);
+            console.error('Error creating time off:', error);
+        } finally {
+            // Hide spinner
+            Utils.toggleSpinner(false);
+        }
+    };
+
+    // Confirm a booking (change status from scheduled to confirmed)
+    const confirmBooking = async (bookingId) => {
+        try {
+            // Show spinner during confirmation
+            Utils.toggleSpinner(true);
+
+            // Clear message
+            const messageBox = document.getElementById('booking-message');
+            if (messageBox) messageBox.style.display = 'none';
+
+            // Prepare the update data - only changing the status
+            const updateData = {
+                status: 'confirmed'
+            };
+
+            // Send the update to the API
+            const response = await fetch(`http://127.0.0.1:8000/api/v1/bookings/${bookingId}/confirm`, {
+                method: 'PUT',
+                headers: Auth.getAuthHeader(),
+                body: JSON.stringify(updateData),
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: `Failed to confirm booking: ${response.status}` }));
+                throw new Error(errorData.message || `Failed to confirm booking: ${response.status}`);
+            }
+
+            // Show success message
+            Utils.showMessage('Booking confirmed successfully!', 'success');
+
+            // Refresh the calendar to show the updated booking
+            await Calendar.renderCalendar(Calendar.getCurrentDate());
+
+        } catch (error) {
+            // Show error message
+            Utils.showMessage(error.message, 'error', 8000);
+            console.error('Error confirming booking:', error);
+        } finally {
+            // Hide spinner
+            Utils.toggleSpinner(false);
+        }
     };
 
     return {
@@ -654,7 +839,11 @@ const BookingService = (() => {
         createTimeOff,
         deleteBooking,
         submitBooking,
-        updateBooking
+        updateBooking,
+        submitTimeOff,
+        fetchTimeOffs,
+        convertTimeOffsToEvents,
+        confirmBooking
     };
 })();
 

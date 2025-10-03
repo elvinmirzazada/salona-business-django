@@ -18,11 +18,18 @@ document.addEventListener('DOMContentLoaded', function() {
             // Initialize UI components
             UI.setupBookingFormNavigation();
 
+            // Load staff members and populate staff filter dropdown
+            await StaffManager.loadStaffMembers();
+            StaffManager.setupStaffFilter();
+
             // Set up customer dropdown change event
             CustomerManager.setupCustomerChangeEvent();
 
             // Initialize booking form submission
             setupBookingFormSubmission();
+
+            // Initialize time off functionality
+            TimeOffManager.initTimeOffForm();
 
             // Initialize the calendar
             await Calendar.init();

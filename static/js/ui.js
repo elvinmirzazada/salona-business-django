@@ -86,8 +86,14 @@ const UI = (() => {
         }, 10);
     };
 
-    // Show event popup with details
+    // Show event popup with details - checks if this is a regular booking or a time off event
     const showEventPopup = (event, x, y) => {
+        // Check if this is a time off event
+        if (event.isTimeOff) {
+            showTimeOffPopup(event, x, y);
+            return;
+        }
+
         const popup = document.getElementById('event-popup');
 
         // Store the current event data for editing
@@ -146,29 +152,36 @@ const UI = (() => {
         document.querySelector('#event-popup-notes-value').textContent =
             event.description || 'No notes';
 
+        // Show or hide confirm button based on booking status
+        const confirmButton = document.getElementById('event-popup-confirm');
+        if (confirmButton) {
+            // Only show the confirm button for bookings with "scheduled" status
+            if (event.status === 'scheduled') {
+                confirmButton.style.display = 'block';
+
+                // Remove any existing event listeners to avoid duplicates
+                const newConfirmButton = confirmButton.cloneNode(true);
+                confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
+
+                // Add click handler to confirm button
+                newConfirmButton.addEventListener('click', () => {
+                    // Show confirmation popup for confirming the booking
+                    showConfirmationPopup(
+                        `Are you sure you want to mark this booking as confirmed?`,
+                        () => {
+                            // Call the API to update the booking status to confirmed
+                            BookingService.confirmBooking(event.id);
+                            popup.style.display = 'none'; // Hide popup after confirming
+                        }
+                    );
+                });
+            } else {
+                confirmButton.style.display = 'none';
+            }
+        }
+
         // Position popup near the click but ensure it stays in viewport
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-        const popupWidth = 300; // Match the CSS width
-
-        // Calculate position to keep popup within viewport
-        let left = x + 10;
-        let top = y + 10;
-
-        // Adjust if popup would go off right edge
-        if (left + popupWidth > viewportWidth) {
-            left = Math.max(10, x - popupWidth - 10);
-        }
-
-        // Adjust if popup would go off bottom edge
-        const popupHeight = popup.offsetHeight || 200; // Estimate if not yet shown
-        if (top + popupHeight > viewportHeight) {
-            top = Math.max(10, viewportHeight - popupHeight - 10);
-        }
-
-        // Set popup position
-        popup.style.left = `${left}px`;
-        popup.style.top = `${top}px`;
+        positionPopup(popup, x, y);
 
         // Show popup
         popup.style.display = 'block';
@@ -200,7 +213,7 @@ const UI = (() => {
                     () => {
                         // Confirmed action - delete the booking
                         BookingService.deleteBooking(event.id);
-                        popup.style.display = 'none'; // Hide popup after clicking delete
+                        popup.style.display = 'none'; // Hide popup after confirming delete
                     }
                 );
             });
@@ -208,160 +221,202 @@ const UI = (() => {
 
         // Add click handler to close button
         const closeButton = popup.querySelector('.event-popup-close');
-        const closePopup = () => {
-            popup.style.display = 'none';
-            closeButton.removeEventListener('click', closePopup);
-            document.removeEventListener('click', documentClickHandler);
+        if (closeButton) {
+            // Remove any existing event listeners to avoid duplicates
+            const newCloseButton = closeButton.cloneNode(true);
+            closeButton.parentNode.replaceChild(newCloseButton, closeButton);
 
-            // Remove event handlers to prevent memory leaks
-            if (editButton) {
-                editButton.replaceWith(editButton.cloneNode(true));
-            }
-            if (deleteButton) {
-                deleteButton.replaceWith(deleteButton.cloneNode(true));
-            }
-        };
+            newCloseButton.addEventListener('click', () => {
+                popup.style.display = 'none';
+            });
+        }
 
-        closeButton.addEventListener('click', closePopup);
-
-        // Close when clicking outside the popup
-        const documentClickHandler = (e) => {
+        // Close popup when clicking outside
+        document.addEventListener('click', function closePopupHandler(e) {
             if (!popup.contains(e.target) && e.target.closest('.event') === null) {
-                closePopup();
+                popup.style.display = 'none';
+                document.removeEventListener('click', closePopupHandler);
             }
-        };
-
-        // Use setTimeout to prevent the immediate closing of popup
-        setTimeout(() => {
-            document.addEventListener('click', documentClickHandler);
-        }, 10);
+        });
     };
 
-    // Show custom confirmation popup
-    const showConfirmationPopup = (message, confirmCallback) => {
+    // Show time off popup with details
+    const showTimeOffPopup = (event, x, y) => {
+        const popup = document.getElementById('time-off-popup');
+
+        // Format the date and time display
+        const startDate = event.start.toLocaleDateString();
+        const endDate = event.end.toLocaleDateString();
+        const startTime = Utils.formatTime(event.start.getHours(), event.start.getMinutes());
+        const endTime = Utils.formatTime(event.end.getHours(), event.end.getMinutes());
+
+        // Create a better formatted date-time display
+        let timeDisplay;
+        if (startDate === endDate) {
+            // Same day event - just show the date once with time range
+            timeDisplay = `${startDate}, ${startTime} - ${endTime}`;
+        } else {
+            // Multi-day event - show full range
+            timeDisplay = `From ${startDate} ${startTime} to ${endDate} ${endTime}`;
+        }
+
+        // Set popup content
+        document.querySelector('#time-off-popup-time-value').textContent = timeDisplay;
+
+        // Set staff information if available
+        if (event.user) {
+            // Set staff name
+            document.querySelector('#time-off-popup-staff-name').textContent =
+                `${event.user.first_name || ''} ${event.user.last_name || ''}`.trim() || 'Unknown';
+
+            // Set staff email
+            document.querySelector('#time-off-popup-staff-email').textContent =
+                event.user.email || 'No email provided';
+
+            // Set staff phone
+            document.querySelector('#time-off-popup-staff-phone').textContent =
+                event.user.phone || 'No phone provided';
+        } else {
+            // If no staff info is available
+            document.querySelector('#time-off-popup-staff-name').textContent = 'Unknown staff member';
+            document.querySelector('#time-off-popup-staff-email').textContent = '';
+            document.querySelector('#time-off-popup-staff-phone').textContent = '';
+        }
+
+        // Set reason
+        document.querySelector('#time-off-popup-reason-value').textContent =
+            event.description || 'No reason provided';
+
+        // Position popup near the click but ensure it stays in viewport
+        positionPopup(popup, x, y);
+
+        // Show popup
+        popup.style.display = 'block';
+
+        // Add click handler to close button
+        const closeButton = popup.querySelector('.event-popup-close');
+        if (closeButton) {
+            // Remove any existing event listeners to avoid duplicates
+            const newCloseButton = closeButton.cloneNode(true);
+            closeButton.parentNode.replaceChild(newCloseButton, closeButton);
+
+            newCloseButton.addEventListener('click', () => {
+                popup.style.display = 'none';
+            });
+        }
+
+        // Close popup when clicking outside
+        document.addEventListener('click', function closePopupHandler(e) {
+            if (!popup.contains(e.target) && e.target.closest('.event') === null) {
+                popup.style.display = 'none';
+                document.removeEventListener('click', closePopupHandler);
+            }
+        });
+    };
+
+    // Position a popup so it's visible in the viewport
+    const positionPopup = (popup, x, y) => {
+        // Position popup near the click but ensure it stays in viewport
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const popupWidth = 300; // Match the CSS width
+
+        // Calculate position to keep popup within viewport
+        let left = x + 10;
+        let top = y + 10;
+
+        // Adjust if popup would go off right edge
+        if (left + popupWidth > viewportWidth) {
+            left = Math.max(10, x - popupWidth - 10);
+        }
+
+        // Adjust if popup would go off bottom edge
+        const popupHeight = popup.offsetHeight || 200; // Estimate if not yet shown
+        if (top + popupHeight > viewportHeight) {
+            top = Math.max(10, viewportHeight - popupHeight - 10);
+        }
+
+        // Set popup position
+        popup.style.left = `${left}px`;
+        popup.style.top = `${top}px`;
+    };
+
+    // Setup booking form navigation
+    const setupBookingFormNavigation = () => {
+        // Setup close button for booking form
+        const closeButton = document.querySelector('#booking-form-panel .close-panel-btn');
+        if (closeButton) {
+            closeButton.addEventListener('click', () => {
+                document.getElementById('booking-form-panel').classList.remove('active');
+            });
+        }
+    };
+
+    // Show a custom confirmation popup
+    const showConfirmationPopup = (message, onConfirm) => {
         const popup = document.getElementById('confirmation-popup');
         const messageElement = document.getElementById('confirmation-message');
 
-        // Set the message
+        // Set the confirmation message
         messageElement.textContent = message;
 
-        // Show the popup with flex display to center content
-        popup.style.display = 'flex';
-        document.body.classList.add('modal-open');
+        // Show the popup
+        popup.style.display = 'block';
 
-        // Set up the confirm button
-        const confirmBtn = document.getElementById('confirmation-confirm-btn');
-        const newConfirmBtn = confirmBtn.cloneNode(true);
-        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+        // Setup confirm button
+        const confirmButton = document.getElementById('confirmation-confirm-btn');
+        const newConfirmButton = confirmButton.cloneNode(true);
+        confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
 
-        newConfirmBtn.addEventListener('click', () => {
-            // Execute the callback and close the popup
-            confirmCallback();
-            closeConfirmationPopup();
-        });
-
-        // Set up the cancel button
-        const cancelBtn = document.getElementById('confirmation-cancel-btn');
-        const newCancelBtn = cancelBtn.cloneNode(true);
-        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
-
-        newCancelBtn.addEventListener('click', closeConfirmationPopup);
-
-        // Set up the close button
-        const closeBtn = popup.querySelector('.confirmation-popup-close');
-        const newCloseBtn = closeBtn.cloneNode(true);
-        closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
-
-        newCloseBtn.addEventListener('click', closeConfirmationPopup);
-
-        // Close popup function
-        function closeConfirmationPopup() {
+        newConfirmButton.addEventListener('click', () => {
+            onConfirm();
             popup.style.display = 'none';
-            document.body.classList.remove('modal-open');
-        }
-
-        // Close when clicking outside the popup content
-        popup.addEventListener('click', (e) => {
-            if (e.target === popup) {
-                closeConfirmationPopup();
-            }
         });
 
-        // Close on escape key
-        document.addEventListener('keydown', escapeHandler);
+        // Setup cancel button
+        const cancelButton = document.getElementById('confirmation-cancel-btn');
+        const newCancelButton = cancelButton.cloneNode(true);
+        cancelButton.parentNode.replaceChild(newCancelButton, cancelButton);
 
-        function escapeHandler(e) {
-            if (e.key === 'Escape') {
-                closeConfirmationPopup();
-                document.removeEventListener('keydown', escapeHandler);
-            }
-        }
+        newCancelButton.addEventListener('click', () => {
+            popup.style.display = 'none';
+        });
+
+        // Setup close button
+        const closeButton = popup.querySelector('.confirmation-popup-close');
+        const newCloseButton = closeButton.cloneNode(true);
+        closeButton.parentNode.replaceChild(newCloseButton, closeButton);
+
+        newCloseButton.addEventListener('click', () => {
+            popup.style.display = 'none';
+        });
     };
 
-    // Setup close button for the booking form panel
-    const setupPanelCloseButton = () => {
-        const closeBtn = document.querySelector('.booking-form-panel .close-panel-btn');
-        const formPanel = document.getElementById('booking-form-panel');
+    // Show a message to the user
+    const showMessage = (message, type, duration = 5000) => {
+        const messageBox = document.getElementById('booking-message');
+        if (!messageBox) return;
 
-        if (closeBtn && formPanel) {
-            closeBtn.addEventListener('click', () => {
-                formPanel.classList.remove('active');
-                // Reset form to create mode for next time
-                formPanel.dataset.mode = 'create';
-                formPanel.querySelector('.booking-form-header h3').textContent = 'Add New Booking';
-                document.getElementById('booking-submit-btn').textContent = 'Create Booking';
-            });
-        }
-    };
+        // Set message content and style
+        messageBox.textContent = message;
+        messageBox.className = ''; // Clear existing classes
+        messageBox.classList.add(type === 'error' ? 'error-message' : 'success-message');
+        messageBox.style.display = 'block';
 
-    // Set up form step navigation
-    const setupBookingFormNavigation = () => {
-        // Step tabs click event
-        document.querySelectorAll('.booking-step').forEach(tab => {
-            tab.addEventListener('click', function() {
-                const step = parseInt(this.dataset.step);
-                goToStep(step);
-            });
-        });
-
-        // Next step buttons
-        document.querySelectorAll('.next-step-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const currentStep = parseInt(this.closest('.booking-step-content').dataset.step);
-                goToStep(currentStep + 1);
-            });
-        });
-
-        // Back step buttons
-        document.querySelectorAll('.prev-step-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const currentStep = parseInt(this.closest('.booking-step-content').dataset.step);
-                goToStep(currentStep - 1);
-            });
-        });
-
-        // Set up the close button
-        setupPanelCloseButton();
-
-        // Add event listeners for the step navigation buttons
-        const step1Next = document.getElementById('step-1-next');
-        if (step1Next) {
-            step1Next.addEventListener('click', () => goToStep(2));
-        }
-
-        const step2Back = document.getElementById('step-2-back');
-        if (step2Back) {
-            step2Back.addEventListener('click', () => goToStep(1));
-        }
+        // Auto-hide after duration
+        setTimeout(() => {
+            messageBox.style.display = 'none';
+        }, duration);
     };
 
     return {
         goToStep,
-        showSlotActionPopup,
         showEventPopup,
+        showTimeOffPopup,
+        showSlotActionPopup,
         showConfirmationPopup,
         setupBookingFormNavigation,
-        setupPanelCloseButton
+        showMessage
     };
 })();
 

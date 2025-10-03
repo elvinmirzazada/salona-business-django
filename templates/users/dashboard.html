@@ -41,7 +41,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#settings">
+                        <a href="{% url 'users:settings' %}">
                             <i class="fas fa-cog"></i>
                             <span>Settings</span>
                         </a>
@@ -82,6 +82,15 @@
                     <button id="next-week"><i class="fas fa-chevron-right"></i></button>
                 </div>
 
+                <!-- Staff selection dropdown -->
+                <div class="staff-filter-container">
+                    <label for="staff-filter">Filter by staff:</label>
+                    <select id="staff-filter" class="staff-filter-dropdown">
+                        <option value="all">All Staff</option>
+                        <!-- Staff options will be populated by JavaScript -->
+                    </select>
+                </div>
+
                 <div class="calendar-grid-container" style="position: relative;">
                     <!-- Loading spinner overlay -->
                     <div id="calendar-spinner" class="spinner-overlay" style="display: none;">
@@ -101,6 +110,9 @@
         <div class="event-popup-header">
             <div class="event-popup-title">Booking Details</div>
             <div class="event-popup-actions">
+                <button id="event-popup-confirm" class="event-popup-confirm-btn" title="Confirm booking" style="display: none;">
+                    <i class="fas fa-check"></i>
+                </button>
                 <button id="event-popup-edit" class="event-popup-edit-btn" title="Edit booking">
                     <i class="fas fa-edit"></i>
                 </button>
@@ -313,8 +325,8 @@
                 <p id="confirmation-message">Are you sure you want to delete this booking?</p>
             </div>
             <div class="confirmation-popup-footer">
-                <button id="confirmation-cancel-btn" class="secondary-button">Cancel</button>
-                <button id="confirmation-confirm-btn" class="primary-button confirmation-danger">Yes, Delete</button>
+                <button id="confirmation-cancel-btn" class="secondary-button">No</button>
+                <button id="confirmation-confirm-btn" class="primary-button">Yes</button>
             </div>
         </div>
     </div>
@@ -322,10 +334,256 @@
     <div id="booking-spinner" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.6);z-index:9999;justify-content:center;align-items:center;">
         <div class="spinner" style="border:8px solid #f3f3f3;border-top:8px solid #3498db;border-radius:50%;width:60px;height:60px;animation:spin 1s linear infinite;"></div>
     </div>
+
+    <!-- Time Off Form Panel -->
+    <div id="time-off-panel" class="booking-form-panel">
+        <div class="booking-form-header">
+            <h3>Schedule Time Off</h3>
+            <button id="time-off-close-btn" class="close-panel-btn">&times;</button>
+        </div>
+        <div class="booking-form-content">
+            <form id="time-off-form">
+                <div class="form-group time-inputs">
+                    <div>
+                        <label for="time-off-start-date">Start Date:</label>
+                        <input type="date" id="time-off-start-date" name="time-off-start-date" required>
+                    </div>
+                    <div>
+                        <label for="time-off-end-date">End Date:</label>
+                        <input type="date" id="time-off-end-date" name="time-off-end-date" required>
+                    </div>
+                </div>
+                <div class="form-group time-inputs">
+                    <div>
+                        <label for="time-off-start-time">Start Time:</label>
+                        <input type="time" id="time-off-start-time" name="time-off-start-time" required>
+                    </div>
+                    <div>
+                        <label for="time-off-end-time">End Time:</label>
+                        <input type="time" id="time-off-end-time" name="time-off-end-time" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="time-off-staff">Staff Member:</label>
+                    <select id="time-off-staff" name="time-off-staff" required>
+                        <option value="">Select staff member</option>
+                        <!-- Options will be populated via API -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="time-off-reason">Reason:</label>
+                    <textarea id="time-off-reason" name="time-off-reason" rows="3" placeholder="Provide a reason for the time off (optional)"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" id="time-off-submit-btn" class="primary-button">Schedule Time Off</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Time Off Details Popup -->
+    <div id="time-off-popup" class="event-popup time-off-popup">
+        <div class="event-popup-header">
+            <div class="event-popup-title">Time Off Details</div>
+            <div class="event-popup-actions">
+                <button class="event-popup-close">&times;</button>
+            </div>
+        </div>
+        <div class="event-popup-body">
+            <!-- Time information -->
+            <div class="event-popup-time">
+                <i class="fas fa-clock"></i>
+                <span id="time-off-popup-time-value"></span>
+            </div>
+
+            <!-- Staff information section -->
+            <div class="event-popup-customer">
+                <div class="event-popup-section-title">Staff Information</div>
+                <!-- Staff name -->
+                <div class="event-popup-customer-detail">
+                    <i class="fas fa-user"></i>
+                    <span id="time-off-popup-staff-name"></span>
+                </div>
+                <!-- Staff email -->
+                <div class="event-popup-customer-detail">
+                    <i class="fas fa-envelope"></i>
+                    <span id="time-off-popup-staff-email"></span>
+                </div>
+                <!-- Staff phone -->
+                <div class="event-popup-customer-detail">
+                    <i class="fas fa-phone"></i>
+                    <span id="time-off-popup-staff-phone"></span>
+                </div>
+            </div>
+
+            <!-- Reason section -->
+            <div class="event-popup-notes">
+                <div class="event-popup-notes-title">Reason:</div>
+                <div id="time-off-popup-reason-value"></div>
+            </div>
+        </div>
+    </div>
+
     <style>
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        /* Staff filter dropdown styling */
+        .staff-filter-container {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+        }
+
+        .staff-filter-container label {
+            margin-right: 10px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .staff-filter-dropdown {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            font-size: 14px;
+            min-width: 200px;
+            cursor: pointer;
+        }
+
+        .staff-filter-dropdown:focus {
+            outline: none;
+            border-color: #4361EE;
+            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+        }
+
+        /* Staff circles styling */
+        .staff-circles-container {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .staff-circles-container h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        .staff-circles {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 5px 0;
+        }
+
+        .staff-circle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #4361EE;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .staff-circle:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .staff-circle.active {
+            border: 3px solid #38B000;
+        }
+
+        .staff-info {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0,0,0,0.7);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: 10;
+        }
+
+        .staff-circle:hover .staff-info {
+            opacity: 1;
+        }
+
+        /* Modern event colors */
+        .event-blue {
+            background-color: #4361EE;
+            border-color: #3A56D4;
+        }
+
+        .event-completed, .status-completed {
+            background-color: #38B000;
+            border-color: #2E9800;
+        }
+
+        .event-gray, .event-time-off {
+            background-color: #9D4EDD;
+            border-color: #8A44C5;
+        }
+
+        .event-cancelled, .status-cancelled {
+            background-color: #D90429;
+            border-color: #BF0413;
+        }
+
+        /* 3D effect for event elements */
+        .event-blue {
+          height: 100px;
+          background: #9D4EDD;
+          color: white;
+          align-items: center;
+          justify-content: center;
+          font-family: sans-serif;
+
+          /* 3D effect */
+          box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+        }
+
+        .event-gray {
+          height: 100px;
+          background: #3498db;
+          color: white;
+          align-items: center;
+          justify-content: center;
+          font-family: sans-serif;
+
+          /* 3D effect */
+          box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+        }
+
+        .event:hover {
+            box-shadow: 0 8px 32px 0 rgba(60, 60, 100, 0.22), 0 3px 8px 0 rgba(60, 60, 100, 0.13);
+            transform: translateY(-2px) scale(1.02);
+            z-index: 2;
         }
     </style>
 
@@ -338,5 +596,6 @@
     <script src="{% static 'js/booking-service.js' %}"></script>
     <script src="{% static 'js/calendar.js' %}"></script>
     <script src="{% static 'js/dashboard.js' %}"></script>
+    <script src="{% static 'js/time-off-manager.js' %}"></script>
 </body>
 </html>

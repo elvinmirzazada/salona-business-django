@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salona - Settings</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/fixes.css' %}">
+    <link rel="stylesheet" href="{% static 'css/settings.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Immediate authentication check -->
+    <script>
+        // Check authentication before page fully loads
+        (function() {
+            const accessToken = localStorage.getItem('accessToken');
+            if (!accessToken) {
+                window.location.href = '/users/login/';
+            }
+        })();
+    </script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Left sidebar navigation -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Salona</h2>
+            </div>
+            <div class="sidebar-menu">
+                <ul>
+                    <li>
+                        <a href="{% url 'users:dashboard' %}">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#profile">
+                            <i class="fas fa-user"></i>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'users:dashboard' %}#calendar">
+                            <i class="fas fa-calendar"></i>
+                            <span>Calendar</span>
+                        </a>
+                    </li>
+                    <li class="active">
+                        <a href="{% url 'users:settings' %}">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" id="logout-link">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main content area -->
+        <div class="main-content">
+            <!-- Top header with user info -->
+            <div class="top-header">
+                <div class="user-info">
+{#                    <img src="https://via.placeholder.com/40" alt="User">#}
+{#                    <span id="user-name">Loading...</span>#}
+                </div>
+            </div>
+
+            <!-- Settings content -->
+            <div class="content-wrapper">
+                <div class="page-header">
+                    <h1>Settings</h1>
+                </div>
+
+                <!-- Settings Tabs Navigation -->
+                <div class="settings-tabs">
+                    <div class="tab-nav">
+                        <button class="tab-btn active" data-tab="services">Services</button>
+                        <button class="tab-btn" data-tab="company">Company Information</button>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content">
+                        <!-- Services Tab -->
+                        <div class="tab-pane active" id="services-tab">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Manage Services</h2>
+                                    <button id="add-service-btn" class="btn-primary">
+                                        <i class="fas fa-plus"></i> Add Service
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="service-list-container">
+                                        <table class="service-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Duration</th>
+                                                    <th>Price</th>
+                                                    <th>Discount Price</th>
+                                                    <th>Staff</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="service-list">
+                                                <!-- Services will be loaded here dynamically -->
+                                            </tbody>
+                                        </table>
+                                        <div id="service-loading" class="loading-container">
+                                            <div class="spinner"></div>
+                                        </div>
+                                        <div id="service-empty" class="empty-state" style="display:none;">
+                                            <p>No services found. Click "Add Service" to create your first service.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Company Information Tab -->
+                        <div class="tab-pane" id="company-tab">
+                            <!-- Section 1: Company Details -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h2>Company Details</h2>
+                                </div>
+                                <div class="card-body">
+                                    <form id="company-details-form">
+                                        <div class="form-group">
+                                            <label for="company-name">Company Name</label>
+                                            <input type="text" id="company-name" name="company-name" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="company-logo-url">Company Logo URL</label>
+                                            <input type="url" id="company-logo-url" name="company-logo-url" placeholder="https://example.com/logo.png">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="company-website">Website</label>
+                                            <input type="url" id="company-website" name="company-website">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="company-description">Description</label>
+                                            <textarea id="company-description" name="company-description" rows="3"></textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="company-team-size">Team Size</label>
+                                            <input type="number" id="company-team-size" name="company-team-size" min="1">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="company-type">Business Type</label>
+                                            <input type="text" id="company-type" name="company-type">
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn-primary">Save Details</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Section 2: Company Emails -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h2>Company Emails</h2>
+                                    <button id="add-email-btn" class="btn-primary">
+                                        <i class="fas fa-plus"></i> Add Email
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <form id="company-emails-form">
+                                        <div id="emails-container">
+                                            <!-- Initial email field -->
+                                            <div class="email-entry">
+                                                <div class="form-row">
+                                                    <div class="form-group flex-grow-1">
+                                                        <label for="company-email-0">Email</label>
+                                                        <input type="email" id="company-email-0" name="company-email-0" class="company-email" required>
+                                                    </div>
+                                                    <div class="form-group email-type-group">
+                                                        <label for="company-email-type-0">Type</label>
+                                                        <select id="company-email-type-0" name="company-email-type-0" class="email-type">
+                                                            <option value="primary">Primary</option>
+                                                            <option value="billing">Billing</option>
+                                                            <option value="support">Support</option>
+                                                            <option value="other">Other</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group delete-btn-container">
+                                                        <label>&nbsp;</label>
+                                                        <button type="button" class="btn-danger delete-email-btn" data-index="0" disabled>
+                                                            <i class="fas fa-trash-alt"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- Additional email entries will be added dynamically -->
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn-primary">Save Emails</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Section 3: Company Phone Numbers -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h2>Company Phone Numbers</h2>
+                                    <button id="add-phone-btn" class="btn-primary">
+                                        <i class="fas fa-plus"></i> Add Phone
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <form id="company-phones-form">
+                                        <div id="phones-container">
+                                            <!-- Initial phone field -->
+                                            <div class="phone-entry">
+                                                <div class="form-row">
+                                                    <div class="form-group flex-grow-1">
+                                                        <label for="company-phone-0">Phone Number</label>
+                                                        <input type="tel" id="company-phone-0" name="company-phone-0" class="company-phone" required>
+                                                    </div>
+                                                    <div class="form-group phone-type-group">
+                                                        <label for="company-phone-type-0">Type</label>
+                                                        <select id="company-phone-type-0" name="company-phone-type-0" class="phone-type">
+                                                            <option value="primary">Primary</option>
+                                                            <option value="business">Business</option>
+                                                            <option value="mobile">Mobile</option>
+                                                            <option value="fax">Fax</option>
+                                                            <option value="other">Other</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group delete-btn-container">
+                                                        <label>&nbsp;</label>
+                                                        <button type="button" class="btn-danger delete-phone-btn" data-index="0" disabled>
+                                                            <i class="fas fa-trash-alt"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- Additional phone entries will be added dynamically -->
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn-primary">Save Phone Numbers</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Section 4: Company Address -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>Company Address</h2>
+                                </div>
+                                <div class="card-body">
+                                    <form id="company-address-form">
+                                        <div class="form-group">
+                                            <label for="company-address">Street Address</label>
+                                            <input type="text" id="company-address" name="company-address">
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="company-city">City</label>
+                                                <input type="text" id="company-city" name="company-city">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="company-state">State/Province</label>
+                                                <input type="text" id="company-state" name="company-state">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="company-zip">ZIP/Postal Code</label>
+                                                <input type="text" id="company-zip" name="company-zip">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="company-phone">Phone Number</label>
+                                            <input type="tel" id="company-phone" name="company-phone">
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn-primary">Save Address</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Modal -->
+    <div id="service-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="service-modal-title">Add Service</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="service-form">
+                    <input type="hidden" id="service-id">
+                    <div class="form-group">
+                        <label for="service-name">Service Name</label>
+                        <input type="text" id="service-name" name="service-name" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="service-duration">Duration (minutes)</label>
+                            <input type="number" id="service-duration" name="service-duration" min="5" step="5" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="service-price">Price</label>
+                            <div class="price-input">
+                                <span class="currency-symbol">$</span>
+                                <input type="number" id="service-price" name="service-price" min="0" step="0.01" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="service-discount-price">Discount Price (optional)</label>
+                        <div class="price-input">
+                            <span class="currency-symbol">$</span>
+                            <input type="number" id="service-discount-price" name="service-discount-price" min="0" step="0.01">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="service-description">Description</label>
+                        <textarea id="service-description" name="service-description" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Staff who perform this service</label>
+                        <div id="staff-selection" class="checkbox-group">
+                            <!-- Staff checkboxes will be loaded here dynamically -->
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" id="cancel-service-btn">Cancel</button>
+                        <button type="submit" class="btn-primary" id="save-service-btn">Save Service</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Delete Service</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this service?</p>
+                <p>This action cannot be undone.</p>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancel-delete-btn">Cancel</button>
+                    <button type="button" class="btn-danger" id="confirm-delete-btn">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript - Only include what's needed for settings page -->
+    <script src="{% static 'js/utils.js' %}"></script>
+    <script src="{% static 'js/auth.js' %}"></script>
+    <script src="{% static 'js/ui.js' %}"></script>
+    <script src="{% static 'js/service-manager.js' %}"></script>
+    <script src="{% static 'js/settings.js' %}"></script>
+</body>
+</html>

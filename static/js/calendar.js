@@ -1,7 +1,10 @@
 // Calendar related functionality
 const Calendar = (() => {
     let currentDate = new Date();
-    
+    let selectedStaffIds = null;
+    let cachedBookings = []; // Cache to store all fetched bookings
+    let cachedTimeOffs = []; // Cache to store all fetched time offs
+
     // Calendar display configuration
     const calendarConfig = {
         startHour: 8,  // 8:00 AM
@@ -28,7 +31,7 @@ const Calendar = (() => {
     };
 
     // Render calendar with days and time slots
-    const renderCalendar = async (date) => {
+    const renderCalendar = async (date, forceRefresh = false) => {
         const startDate = getStartDate(date);
         updateCalendarHeader(startDate);
 
@@ -43,9 +46,53 @@ const Calendar = (() => {
         Utils.toggleSpinner(true);
 
         try {
-            // Fetch real booking data from API with date range
-            const bookings = await BookingService.fetchBookings(startDate, endDate);
-            const calendarEvents = BookingService.convertBookingsToEvents(bookings);
+            let bookingEvents = [];
+            let timeOffEvents = [];
+
+            // If we don't have cached data or force refresh is true, fetch all data
+            if (cachedBookings.length === 0 || forceRefresh) {
+                // Fetch regular booking data from API with date range (without staff filter)
+                const bookings = await BookingService.fetchBookings(startDate, endDate);
+                cachedBookings = bookings; // Cache the bookings
+
+                // Fetch time off data from API
+                const timeOffs = await BookingService.fetchTimeOffs(startDate, endDate);
+                cachedTimeOffs = timeOffs; // Cache the time offs
+            }
+
+            // Apply staff filtering client-side if needed
+            if (selectedStaffIds && selectedStaffIds.length > 0) {
+                // Filter bookings by staff ID
+                const filteredBookings = cachedBookings.filter(booking => {
+                    // Check if booking has user_ids field (array of staff IDs)
+                    if (booking.user_ids && Array.isArray(booking.user_ids)) {
+                        return booking.user_ids.some(userId =>
+                            selectedStaffIds.includes(userId.toString())
+                        );
+                    }
+                    // Fallback to booking_services check
+                    else if (booking.booking_services) {
+                        return booking.booking_services.some(service =>
+                            selectedStaffIds.includes(service.user_id.toString())
+                        );
+                    }
+                    return false;
+                });
+                bookingEvents = BookingService.convertBookingsToEvents(filteredBookings);
+
+                // Filter time offs by staff ID
+                const filteredTimeOffs = cachedTimeOffs.filter(timeOff =>
+                    timeOff.user && selectedStaffIds.includes(timeOff.user.id.toString())
+                );
+                timeOffEvents = BookingService.convertTimeOffsToEvents(filteredTimeOffs);
+            } else {
+                // No filtering, use all cached data
+                bookingEvents = BookingService.convertBookingsToEvents(cachedBookings);
+                timeOffEvents = BookingService.convertTimeOffsToEvents(cachedTimeOffs);
+            }
+
+            // Combine both types of events
+            const calendarEvents = [...bookingEvents, ...timeOffEvents];
 
             // Create time column first
             const timeColumn = document.createElement('div');
@@ -280,7 +327,13 @@ const Calendar = (() => {
         init,
         renderCalendar,
         getConfig: () => calendarConfig,
-        getCurrentDate: () => currentDate
+        getCurrentDate: () => currentDate,
+        refreshCalendar: async (options = {}) => {
+            if (options.selectedStaffIds !== undefined) {
+                selectedStaffIds = options.selectedStaffIds;
+            }
+            await renderCalendar(currentDate);
+        }
     };
 })();
 

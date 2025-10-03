@@ -28,3 +28,11 @@ class DashboardView(View):
             'is_authenticated': True,
             'company_id': 'fad78242-ba41-4acf-a14d-8dc59f6e8338'  # TODO: Replace with actual company ID logic
         })
+
+class SettingsView(View):
+    def get(self, request):
+        # Similar to dashboard, we'll rely on client-side authentication
+        return render(request, 'users/settings.html', {
+            'is_authenticated': True,
+            'company_id': 'fad78242-ba41-4acf-a14d-8dc59f6e8338'  # TODO: Replace with actual company ID logic
+        })
