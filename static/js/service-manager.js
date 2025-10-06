@@ -384,8 +384,74 @@ const ServiceManager = (() => {
         });
     };
 
+    // Function to load staff members for service popups
+    const loadStaffMembers = async (staffContainer) => {
+        try {
+            // Use the correct endpoint for company users
+            const response = await fetch('http://127.0.0.1:8000/api/v1/companies/users', {
+                method: 'GET',
+                headers: Auth.getAuthHeader(),
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('Staff data received:', data);
+
+            if (!data.success) {
+                throw new Error('Invalid response format or no staff members found');
+            }
+
+            // Clear existing content
+            staffContainer.innerHTML = '';
+
+            // Check if we have staff members
+            if (!Array.isArray(data.data) || data.data.length === 0) {
+                staffContainer.innerHTML = '<div class="no-staff">No staff members available.</div>';
+                return;
+            }
+
+            // Create staff selection elements
+            data.data.forEach(staffMember => {
+                if (!staffMember.user) return;
+
+                const user = staffMember.user;
+                const staffEl = document.createElement('div');
+                staffEl.className = 'staff-select-item';
+
+                // Create checkbox for staff selection
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `staff-${staffMember.id}`;
+                checkbox.value = staffMember.id;
+                checkbox.name = 'staff_members';
+                checkbox.dataset.userId = user.id;
+
+                // Create label with staff name
+                const label = document.createElement('label');
+                label.htmlFor = `staff-${staffMember.id}`;
+                label.className = 'staff-name';
+                label.textContent = `${user.first_name} ${user.last_name}`;
+
+                // Add elements to staff item
+                staffEl.appendChild(checkbox);
+                staffEl.appendChild(label);
+
+                // Add staff item to container
+                staffContainer.appendChild(staffEl);
+            });
+        } catch (error) {
+            console.error('Error loading staff members:', error);
+            staffContainer.innerHTML = '<div class="error">Error loading staff members. Please try again.</div>';
+        }
+    };
+
     return {
         loadServices,
+        loadStaffMembers,
         updateSelectedServicesSummary,
         setupServiceSearch
     };
