@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Salona - Dashboard</title>
     {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-    <link rel="stylesheet" href="{% static 'css/fixes.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{#    <link rel="stylesheet" href="{% static 'css/fixes.css' %}">#}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Immediate authentication check -->
     <script>
-        // Check authentication before page fully loads
         (function() {
             const accessToken = localStorage.getItem('accessToken');
             if (!accessToken) {
@@ -20,89 +21,65 @@
     </script>
 </head>
 <body>
-    <div class="dashboard-container">
-        <!-- Left sidebar navigation -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h2>Salona</h2>
-            </div>
-            <div class="sidebar-menu">
-                <ul>
-                    <li class="active">
-                        <a href="{% url 'users:dashboard' %}">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>Dashboard</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#profile">
-                            <i class="fas fa-user"></i>
-                            <span>Profile</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'users:settings' %}">
-                            <i class="fas fa-cog"></i>
-                            <span>Settings</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/customer/{{ company_id }}/">
-                            <i class="fas fa-calendar-check"></i>
-                            <span>Customer Booking</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" id="logout-btn">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Log out</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
+    <!-- 3D Background Shapes -->
+    <div class="bg-shape bg-shape-1"></div>
+    <div class="bg-shape bg-shape-2"></div>
+    <div class="bg-shape bg-shape-3"></div>
+
+    <div class="app-container">
+        <!-- Include reusable sidebar -->
+        {% include 'partials/sidebar.html' %}
 
         <!-- Main content area -->
-        <div class="main-content">
-            <div class="header">
-                <div class="header-title">
-                    <h1>Dashboard</h1>
-                </div>
-                <div class="user-info">
+        <main class="main-content">
+
+            <header class="header">
+                <h2 class="page-title">Dashboard</h2>
+                <div class="user-info welcome-message">
                     <span class="user-name">Welcome!</span>
+                </div>
+            </header>
+
+                  <!-- Calendar Controls -->
+            <div class="calendar-controls">
+                <button class="nav-button" id="prev-week">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                  </svg>
+                </button>
+
+                <div class="date-range" id="current-week"></div>
+
+                <button class="nav-button" id="next-week">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </button>
+            </div>
+
+                  <!-- Filter -->
+            <div class="filter-section">
+                <label for="staffFilter" class="filter-label">Filter by staff:</label>
+                <select id="staff-filter" class="staff-select">
+                    <option value="all">All Staff</option>
+                    <!-- Staff options will be populated by JavaScript -->
+                </select>
+            </div>
+
+                  <!-- Calendar Grid -->
+            <div class="calendar-container">
+                <div class="calendar-grid">
+                    <!-- Time Column -->
+                    <div class="time-column">
+                    </div>
+
+
                 </div>
             </div>
 
             <div id="booking-message" style="display:none;margin-bottom:16px;padding:10px 20px;border-radius:4px;font-weight:bold;font-size:1.1em;"></div>
 
-            <div class="calendar-container">
-                <div class="calendar-header">
-                    <button id="prev-week"><i class="fas fa-chevron-left"></i></button>
-                    <h2 id="current-week">September 28 - October 4, 2025</h2>
-                    <button id="next-week"><i class="fas fa-chevron-right"></i></button>
-                </div>
-
-                <!-- Staff selection dropdown -->
-                <div class="staff-filter-container">
-                    <label for="staff-filter">Filter by staff:</label>
-                    <select id="staff-filter" class="staff-filter-dropdown">
-                        <option value="all">All Staff</option>
-                        <!-- Staff options will be populated by JavaScript -->
-                    </select>
-                </div>
-
-                <div class="calendar-grid-container" style="position: relative;">
-                    <!-- Loading spinner overlay -->
-                    <div id="calendar-spinner" class="spinner-overlay" style="display: none;">
-                        <div class="spinner"></div>
-                    </div>
-
-                    <div class="calendar-grid">
-                        <!-- Calendar days and time slots will be generated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-        </div>
+        </main>
     </div>
 
     <!-- Event popup -->
@@ -427,174 +404,124 @@
         </div>
     </div>
 
-    <style>
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+{#    <style>#}
+{#        @keyframes spin {#}
+{#            0% { transform: rotate(0deg); }#}
+{#            100% { transform: rotate(360deg); }#}
+{##}
+{#        /* Staff filter dropdown styling */#}
+{#        .staff-filter-container {#}
+{#            margin: 15px 0;#}
+{#            padding: 10px;#}
+{#            background-color: #fff;#}
+{#            border-radius: 8px;#}
+{#            box-shadow: 0 2px 10px rgba(0,0,0,0.1);#}
+{#            display: flex;#}
+{#            align-items: center;#}
+{#        }#}
+{##}
+{#        .staff-filter-container label {#}
+{#            margin-right: 10px;#}
+{#            font-weight: 600;#}
+{#            color: #333;#}
+{#        }#}
+{##}
+{#        .staff-filter-dropdown {#}
+{#            padding: 8px 12px;#}
+{#            border-radius: 4px;#}
+{#            border: 1px solid #ddd;#}
+{#            background-color: #fff;#}
+{#            font-size: 14px;#}
+{#            min-width: 200px;#}
+{#            cursor: pointer;#}
+{#        }#}
+{##}
+{#        .staff-filter-dropdown:focus {#}
+{#            outline: none;#}
+{#            border-color: #4361EE;#}
+{#            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);#}
+{#        }#}
+{##}
+{#        /* Staff circles styling */#}
+{#        .staff-circles-container {#}
+{#            margin: 15px 0;#}
+{#            padding: 10px;#}
+{#            background-color: #fff;#}
+{#            border-radius: 8px;#}
+{#            box-shadow: 0 2px 10px rgba(0,0,0,0.1);#}
+{#        }#}
+{##}
+{#        .staff-circles-container h3 {#}
+{#            margin: 0 0 10px 0;#}
+{#            font-size: 1.2em;#}
+{#            color: #333;#}
+{#        }#}
+{##}
+{#        .staff-circles {#}
+{#            display: flex;#}
+{#            flex-wrap: wrap;#}
+{#            gap: 15px;#}
+{#            padding: 5px 0;#}
+{#        }#}
+{##}
+{#        .staff-circle {#}
+{#            display: flex;#}
+{#            align-items: center;#}
+{#            justify-content: center;#}
+{#            width: 50px;#}
+{#            height: 50px;#}
+{#            border-radius: 50%;#}
+{#            background-color: #4361EE;#}
+{#            color: white;#}
+{#            font-weight: bold;#}
+{#            font-size: 1.2em;#}
+{#            text-transform: uppercase;#}
+{#            cursor: pointer;#}
+{#            transition: all 0.2s ease;#}
+{#            position: relative;#}
+{#        }#}
+{##}
+{#        .staff-circle:hover {#}
+{#            transform: translateY(-3px);#}
+{#            box-shadow: 0 5px 15px rgba(0,0,0,0.2);#}
+{#        }#}
+{##}
+{#        .staff-circle.active {#}
+{#            border: 3px solid #38B000;#}
+{#        }#}
+{##}
+{#        .staff-info {#}
+{#            position: absolute;#}
+{#            bottom: -30px;#}
+{#            left: 50%;#}
+{#            transform: translateX(-50%);#}
+{#            background-color: rgba(0,0,0,0.7);#}
+{#            color: white;#}
+{#            padding: 3px 8px;#}
+{#            border-radius: 4px;#}
+{#            font-size: 0.7em;#}
+{#            white-space: nowrap;#}
+{#            opacity: 0;#}
+{#            transition: opacity 0.2s ease;#}
+{#            z-index: 10;#}
+{#        }#}
+{##}
+{#        .staff-circle:hover .staff-info {#}
+{#            opacity: 1;#}
+{#        }#}
+{##}
 
-        /* Staff filter dropdown styling */
-        .staff-filter-container {
-            margin: 15px 0;
-            padding: 10px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-        }
-
-        .staff-filter-container label {
-            margin-right: 10px;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .staff-filter-dropdown {
-            padding: 8px 12px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-            background-color: #fff;
-            font-size: 14px;
-            min-width: 200px;
-            cursor: pointer;
-        }
-
-        .staff-filter-dropdown:focus {
-            outline: none;
-            border-color: #4361EE;
-            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
-        }
-
-        /* Staff circles styling */
-        .staff-circles-container {
-            margin: 15px 0;
-            padding: 10px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .staff-circles-container h3 {
-            margin: 0 0 10px 0;
-            font-size: 1.2em;
-            color: #333;
-        }
-
-        .staff-circles {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            padding: 5px 0;
-        }
-
-        .staff-circle {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-color: #4361EE;
-            color: white;
-            font-weight: bold;
-            font-size: 1.2em;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-
-        .staff-circle:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
-        .staff-circle.active {
-            border: 3px solid #38B000;
-        }
-
-        .staff-info {
-            position: absolute;
-            bottom: -30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0,0,0,0.7);
-            color: white;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 0.7em;
-            white-space: nowrap;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            z-index: 10;
-        }
-
-        .staff-circle:hover .staff-info {
-            opacity: 1;
-        }
-
-        /* Modern event colors */
-        .event-blue {
-            background-color: #4361EE;
-            border-color: #3A56D4;
-        }
-
-        .event-completed, .status-completed {
-            background-color: #38B000;
-            border-color: #2E9800;
-        }
-
-        .event-gray, .event-time-off {
-            background-color: #9D4EDD;
-            border-color: #8A44C5;
-        }
-
-        .event-cancelled, .status-cancelled {
-            background-color: #D90429;
-            border-color: #BF0413;
-        }
-
-        /* 3D effect for event elements */
-        .event-blue {
-          height: 100px;
-          background: #9D4EDD;
-          color: white;
-          align-items: center;
-          justify-content: center;
-          font-family: sans-serif;
-
-          /* 3D effect */
-          box-shadow: 0 8px 15px rgba(0,0,0,0.3);
-        }
-
-        .event-gray {
-          height: 100px;
-          background: #3498db;
-          color: white;
-          align-items: center;
-          justify-content: center;
-          font-family: sans-serif;
-
-          /* 3D effect */
-          box-shadow: 0 8px 15px rgba(0,0,0,0.3);
-        }
-
-        .event:hover {
-            box-shadow: 0 8px 32px 0 rgba(60, 60, 100, 0.22), 0 3px 8px 0 rgba(60, 60, 100, 0.13);
-            transform: translateY(-2px) scale(1.02);
-            z-index: 2;
-        }
-    </style>
+{#    </style>#}
 
     <script src="{% static 'js/utils.js' %}"></script>
+    <script src="{% static 'js/script.js' %}"></script>
+    <script src="{% static 'js/calendar.js' %}"></script>
     <script src="{% static 'js/auth.js' %}"></script>
     <script src="{% static 'js/staff-manager.js' %}"></script>
     <script src="{% static 'js/customer-manager.js' %}"></script>
     <script src="{% static 'js/service-manager.js' %}"></script>
     <script src="{% static 'js/ui.js' %}"></script>
     <script src="{% static 'js/booking-service.js' %}"></script>
-    <script src="{% static 'js/calendar.js' %}"></script>
     <script src="{% static 'js/dashboard.js' %}"></script>
     <script src="{% static 'js/time-off-manager.js' %}"></script>
 </body>

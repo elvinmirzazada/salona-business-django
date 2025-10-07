@@ -100,7 +100,7 @@ const Calendar = (() => {
 
             // Add header to time column
             const timeHeader = document.createElement('div');
-            timeHeader.className = 'day-header';
+            timeHeader.className = 'time-header';
             timeHeader.innerHTML = '&nbsp;'; // Empty header for time column
             timeColumn.appendChild(timeHeader);
 
@@ -109,7 +109,7 @@ const Calendar = (() => {
                 const timeSlot = document.createElement('div');
                 timeSlot.className = 'time-slot';
                 timeSlot.textContent = Utils.formatTime(hour, 0);
-                timeSlot.style.height = 'var(--time-slot-height)';
+                // timeSlot.style.height = 'var(--time-slot-height)';
                 timeColumn.appendChild(timeSlot);
             }
 
@@ -122,8 +122,7 @@ const Calendar = (() => {
             for (let i = 0; i < 7; i++) {
                 const currentDateInLoop = new Date(startDate);
                 currentDateInLoop.setDate(startDate.getDate() + i);
-
-                const isToday = currentDateInLoop.toDateString() === today.toDateString();
+                const isToday = currentDateInLoop.toDateString() === (new Date()).toDateString();
 
                 const dayColumn = document.createElement('div');
                 dayColumn.className = `day-column ${isToday ? 'today' : ''}`;
@@ -131,7 +130,25 @@ const Calendar = (() => {
                 // Create day header
                 const dayHeader = document.createElement('div');
                 dayHeader.className = 'day-header';
-                dayHeader.textContent = Utils.formatDisplayDate(currentDateInLoop);
+
+                const dayName = document.createElement('div');
+                dayName.className = 'day-name';
+                dayName.textContent = Utils.formatDisplayDate(currentDateInLoop, { weekday: 'short'});
+
+
+                const dayDate = document.createElement('div');
+                dayDate.className = 'day-date';
+                dayDate.textContent = Utils.formatDisplayDate(currentDateInLoop, { month: 'short', day: 'numeric'});
+
+                if(isToday) {
+                    const todayBadge = document.createElement('span')
+                    todayBadge.className = 'today-badge';
+                    todayBadge.textContent = 'Today';
+                    dayDate.appendChild(todayBadge);
+                }
+
+                dayHeader.appendChild(dayName);
+                dayHeader.appendChild(dayDate);
                 dayColumn.appendChild(dayHeader);
 
                 // Container for the slots
@@ -147,7 +164,7 @@ const Calendar = (() => {
                     // Create 4 slots for each hour (15-min intervals)
                     for (let quarter = 0; quarter < 4; quarter++) {
                         const slot = document.createElement('div');
-                        slot.className = 'slot';
+                        slot.className = 'time-quarter-slot';
                         slot.dataset.hour = hour;
                         slot.dataset.minute = quarter * 15;
                         slot.dataset.time = Utils.formatTime(hour, quarter * 15);
@@ -213,17 +230,18 @@ const Calendar = (() => {
 
         // Adjust position calculation based on the configured start hour
         const hourOffset = calendarConfig.startHour;
-        const slotHeight = 60 / (60 / calendarConfig.intervalMinutes); // Height per 15min slot
+        // Height per 15min slot (matches CSS: 768px for 12 hours, 48 slots)
+        const slotHeight = 16;
 
         // Calculate position relative to the start of the displayed calendar (8:00)
-        const startPosition = ((startHour - hourOffset) * 60 + startMinute) * (slotHeight / calendarConfig.intervalMinutes);
+        const startPosition = ((startHour - hourOffset) * 60 + startMinute) / calendarConfig.intervalMinutes * slotHeight;
         let endPosition;
 
         if (endHour > calendarConfig.endHour) {
             // Cap events that extend beyond the visible range
-            endPosition = (calendarConfig.endHour - hourOffset + 1) * 60 * (slotHeight / calendarConfig.intervalMinutes);
+            endPosition = (calendarConfig.endHour - hourOffset + 1) * 60 / calendarConfig.intervalMinutes * slotHeight;
         } else {
-            endPosition = ((endHour - hourOffset) * 60 + endMinute) * (slotHeight / calendarConfig.intervalMinutes);
+            endPosition = ((endHour - hourOffset) * 60 + endMinute) / calendarConfig.intervalMinutes * slotHeight;
         }
 
         const height = endPosition - startPosition;

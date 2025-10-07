@@ -9,8 +9,8 @@ const Utils = (() => {
     };
 
     // Format date for display
-    const formatDisplayDate = (date) => {
-        const options = { weekday: 'short', month: 'short', day: 'numeric' };
+    const formatDisplayDate = (date, options) => {
+        // const options = { weekday: 'short', month: 'short', day: 'numeric' };
         return date.toLocaleDateString('en-US', options);
     };
 
