@@ -2,6 +2,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('login-form');
     const errorMessage = document.getElementById('error-message');
+    const loginSpinner = document.getElementById('login-spinner');
+    const loginFormSpinner = document.getElementById('login-form-spinner');
 
     if (loginForm) {
         loginForm.addEventListener('submit', async function(e) {
@@ -11,6 +13,13 @@ document.addEventListener('DOMContentLoaded', function() {
             errorMessage.style.display = 'none';
             errorMessage.textContent = '';
 
+            // Show both spinners
+            loginFormSpinner.style.display = 'block';
+
+            // Add loading class to button
+            const submitBtn = loginForm.querySelector('button[type="submit"]');
+            submitBtn.classList.add('btn-loading');
+
             // Get form values
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
@@ -18,6 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Validate input
             if (!email || !password) {
                 showError('Please enter both email and password.');
+                hideSpinners();
                 return;
             }
 
@@ -42,6 +52,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const data = await response.json();
                 console.log('Login response data:', data);
+
+                // Hide spinners after response received
+                hideSpinners();
 
                 if (!response.ok) {
                     // Handle error response
@@ -69,6 +82,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     showError('Login successful, but no token received. Please try again.');
                 }
             } catch (error) {
+                // Hide spinners in case of error
+                hideSpinners();
                 console.error('Login error:', error);
                 showError('Network error. Please try again later.');
             }
@@ -79,5 +94,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function showError(message) {
         errorMessage.textContent = message;
         errorMessage.style.display = 'block';
+    }
+
+    // Helper function to hide all spinners and remove loading class
+    function hideSpinners() {
+        loginFormSpinner.style.display = 'none';
+        const submitBtn = loginForm.querySelector('button[type="submit"]');
+        submitBtn.classList.remove('btn-loading');
     }
 });

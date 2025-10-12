@@ -16,8 +16,23 @@
         <form id="signup-form">
             {% csrf_token %}
             <div class="form-group">
+                <label for="first-name">First Name</label>
+                <input type="text" id="first-name" name="first_name" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="last-name">Last Name</label>
+                <input type="text" id="last-name" name="last_name" class="form-control" required>
+            </div>
+
+            <div class="form-group">
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone</label>
+                <input type="tel" id="phone" name="phone" class="form-control" required>
             </div>
 
             <div class="form-group">
@@ -30,7 +45,10 @@
                 <input type="password" id="confirm-password" name="confirm_password" class="form-control" required>
             </div>
 
-            <button type="submit" class="btn">Sign Up</button>
+            <button type="submit" class="btn btn-with-spinner">
+                Sign Up
+                <div class="spinner-inline" id="signup-spinner"></div>
+            </button>
         </form>
 
         <div class="signup-link">
@@ -41,4 +59,3 @@
     <script src="{% static 'js/auth.js' %}"></script>
 </body>
 </html>
-
