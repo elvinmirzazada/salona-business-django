@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Salona - Settings</title>
     {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-    <link rel="stylesheet" href="{% static 'css/fixes.css' %}">
     <link rel="stylesheet" href="{% static 'css/settings.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Immediate authentication check -->
     <script>
         // Check authentication before page fully loads
@@ -19,140 +20,29 @@
             }
         })();
     </script>
-    <style>
-        /* Style for category header rows in the service table */
-        .service-table .category-row td {
-            background: #f5f5f5;
-            font-weight: bold;
-            font-size: 1.05em;
-            color: #333;
-            border-top: 2px solid #e0e0e0;
-        }
-        .category-block {
-            margin-bottom: 2.5rem;
-            background: transparent;
-            border-radius: 18px;
-            box-shadow: none;
-        }
-        .category-header {
-            background: #00d084;
-            color: #fff;
-            font-size: 1.25em;
-            font-weight: bold;
-            border-radius: 18px 18px 0 0;
-            padding: 1rem 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between; /* Add this to push content to ends */
-            margin-bottom: 0;
-        }
 
-        .category-name-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .category-header i {
-            font-size: 1.3em;
-        }
-
-        .category-delete-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: rgba(255, 255, 255, 0.7);
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 4px;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-        }
-
-        .category-delete-btn:hover {
-            background: rgba(255, 0, 0, 0.2);
-            color: white;
-        }
-
-        .category-block .service-table {
-            border-radius: 0 0 18px 18px;
-            overflow: hidden;
-            margin: 0;
-        }
-        .category-block .service-table th,
-        .category-block .service-table td {
-            background: #fff;
-        }
-        .category-block .service-table th {
-            border-top: none;
-        }
-        .category-block .service-table tr:last-child td {
-            border-bottom: none;
-        }
-    </style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <!-- Left sidebar navigation -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h2>Salona</h2>
-            </div>
-            <div class="sidebar-menu">
-                <ul>
-                    <li>
-                        <a href="{% url 'users:dashboard' %}">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>Dashboard</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#profile">
-                            <i class="fas fa-user"></i>
-                            <span>Profile</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'users:dashboard' %}#calendar">
-                            <i class="fas fa-calendar"></i>
-                            <span>Calendar</span>
-                        </a>
-                    </li>
-                    <li class="active">
-                        <a href="{% url 'users:settings' %}">
-                            <i class="fas fa-cog"></i>
-                            <span>Settings</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" id="logout-link">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Logout</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
+    <!-- 3D Background Shapes -->
+    <div class="bg-shape bg-shape-1"></div>
+    <div class="bg-shape bg-shape-2"></div>
+    <div class="bg-shape bg-shape-3"></div>
+
+    <div class="app-container">
+        <!-- Include reusable sidebar -->
+        {% include 'partials/sidebar.html' %}
 
         <!-- Main content area -->
-        <div class="main-content">
-            <!-- Top header with user info -->
-            <div class="top-header">
-                <div class="user-info">
-{#                    <img src="https://via.placeholder.com/40" alt="User">#}
-{#                    <span id="user-name">Loading...</span>#}
+        <main class="main-content">
+            <header class="header">
+                <h2 class="page-title">Settings</h2>
+                <div class="user-info welcome-message">
+                    <span class="user-name">Welcome!</span>
                 </div>
-            </div>
+            </header>
 
             <!-- Settings content -->
             <div class="content-wrapper">
-                <div class="page-header">
-                    <h1>Settings</h1>
-                </div>
-
                 <!-- Settings Tabs Navigation -->
                 <div class="settings-tabs">
                     <div class="tab-nav">
@@ -356,7 +246,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
     </div>
 
     <!-- Service Modal -->

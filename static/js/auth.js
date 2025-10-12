@@ -254,10 +254,11 @@ const Auth = (() => {
         }
     };
 
+    // Expose public methods
     return {
         init,
-        getAuthHeader,
         fetchCurrentUser,
+        getAuthHeader,  // <-- Expose getAuthHeader method
         fetchData
     };
 })();
