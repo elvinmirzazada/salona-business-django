@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Fetch user data from API
     const fetchUserData = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/v1/users', {
+            const response = await fetch('http://127.0.0.1:8000/api/v1/companies/users', {
                 method: 'GET',
                 headers: Auth.getAuthHeader(),
             });

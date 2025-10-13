@@ -85,8 +85,127 @@ const Settings = (() => {
         // Setup company information functionality
         setupCompanyForm();
 
+        // Setup company creation functionality
+        setupCreateCompanyForm();
+
         // Load services and categories data
         await Promise.all([loadServices(), loadCategories()]);
+    };
+
+    // Setup company creation form submission
+    const setupCreateCompanyForm = () => {
+        const createCompanyForm = document.getElementById('create-company-form');
+        const createCompanyBtn = document.getElementById('create-company-btn');
+        if (!createCompanyForm || !createCompanyBtn) return;
+
+        // Add event listener to the Create Company button
+        createCompanyBtn.addEventListener('click', () => {
+            // Toggle the visibility of the create company form
+            if (createCompanyForm.style.display === 'none' || !createCompanyForm.style.display) {
+                createCompanyForm.style.display = 'block';
+                createCompanyBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
+            } else {
+                createCompanyForm.style.display = 'none';
+                createCompanyBtn.innerHTML = '<i class="fas fa-plus"></i> Create Company';
+            }
+        });
+
+        createCompanyForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Show loading spinner
+            const loadingSpinner = document.getElementById('company-loading');
+            const messageContainer = document.getElementById('company-message');
+
+            loadingSpinner.style.display = 'flex';
+            messageContainer.style.display = 'none';
+
+            try {
+                const formData = {
+                    name: document.getElementById('company-name').value.trim(),
+                    type: document.getElementById('company-type').value.trim(),
+                    logo_url: document.getElementById('company-logo-url').value.trim(),
+                    website: document.getElementById('company-website').value.trim(),
+                    description: document.getElementById('company-description').value.trim(),
+                    team_size: parseInt(document.getElementById('company-team-size').value) || 1
+                };
+
+                const result = await createCompany(formData);
+
+                // Hide loading spinner
+                loadingSpinner.style.display = 'none';
+
+                if (result.success) {
+                    // Show success message
+                    messageContainer.style.display = 'block';
+                    messageContainer.textContent = 'Company created successfully!';
+                    messageContainer.style.backgroundColor = '#d4edda';
+                    messageContainer.style.color = '#155724';
+                    messageContainer.style.border = '1px solid #c3e6cb';
+
+                    // Show toast notification
+                    showToast('Company created successfully!', 'success');
+
+                    // Redirect to dashboard after a delay
+                    setTimeout(() => {
+                        window.location.href = '/users/dashboard/';
+                    }, 2000);
+                } else {
+                    // Show error message
+                    messageContainer.style.display = 'block';
+                    messageContainer.textContent = result.message || 'Failed to create company. Please try again.';
+                    messageContainer.style.backgroundColor = '#f8d7da';
+                    messageContainer.style.color = '#721c24';
+                    messageContainer.style.border = '1px solid #f5c6cb';
+                }
+            } catch (error) {
+                console.error('Error creating company:', error);
+
+                // Hide loading spinner
+                loadingSpinner.style.display = 'none';
+
+                // Show error message
+                messageContainer.style.display = 'block';
+                messageContainer.textContent = 'An error occurred while creating the company. Please try again.';
+                messageContainer.style.backgroundColor = '#f8d7da';
+                messageContainer.style.color = '#721c24';
+                messageContainer.style.border = '1px solid #f5c6cb';
+            }
+        });
+    };
+
+    // Create a new company
+    const createCompany = async (companyData) => {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/v1/companies', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...Auth.getAuthHeader()
+                },
+                body: JSON.stringify(companyData)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                return {
+                    success: false,
+                    message: data.message || 'Failed to create company'
+                };
+            }
+
+            return {
+                success: true,
+                data: data.data
+            };
+        } catch (error) {
+            console.error('API error:', error);
+            return {
+                success: false,
+                message: 'Network error occurred'
+            };
+        }
     };
 
     // Setup tab navigation
