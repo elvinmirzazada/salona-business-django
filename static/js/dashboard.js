@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // Initialize UI components
             UI.setupBookingFormNavigation();
 
+            // Initialize live notifications WebSocket
+            setupLiveNotifications();
+
             // Check if user has company data
             const userData = await fetchUserData();
 
@@ -52,6 +55,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Hide loading spinner after all content is loaded
                 hidePageLoader();
+            }
+
+            // Ensure NotificationManager updates icon after everything is loaded
+            if (window.NotificationManager) {
+                console.log('Manually triggering notification icon update after dashboard load');
+                window.NotificationManager.updateNotificationIcon();
             }
 
             console.log('Dashboard initialization completed successfully');
@@ -191,6 +200,93 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
+    };
+
+    // Setup live notifications WebSocket connection
+    const setupLiveNotifications = () => {
+        const wsPath = 'ws://127.0.0.1:8000/live-ws';
+        let ws = new WebSocket(wsPath);
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
+        const reconnectDelay = 3000; // 3 seconds
+
+        ws.onopen = function(event) {
+            console.log('Live notifications WebSocket connected');
+            reconnectAttempts = 0; // Reset reconnection attempts on successful connection
+        };
+
+        ws.onmessage = function(event) {
+            try {
+                const data = JSON.parse(event.data);
+                console.log('Live notification received:', data);
+
+                // Use the NotificationManager to handle the notification
+                if (window.NotificationManager) {
+                    window.NotificationManager.handleNewNotification(data);
+                } else {
+                    // Fallback if NotificationManager is not loaded yet
+                    console.log('NotificationManager not available, showing basic notification');
+                    showBasicNotification(data);
+                }
+            } catch (error) {
+                console.error('Error parsing notification data:', error);
+            }
+        };
+
+        ws.onclose = function(event) {
+            // Only attempt to reconnect if it wasn't a normal closure and we haven't exceeded max attempts
+            if (event.code !== 1000 && reconnectAttempts < maxReconnectAttempts) {
+                reconnectAttempts++;
+                console.warn(`Live notifications WebSocket closed (attempt ${reconnectAttempts}/${maxReconnectAttempts}). Reconnecting in ${reconnectDelay/1000}s...`);
+
+                setTimeout(() => {
+                    setupLiveNotifications();
+                }, reconnectDelay);
+            } else if (reconnectAttempts >= maxReconnectAttempts) {
+                console.error('Max WebSocket reconnection attempts reached. Please refresh the page.');
+            } else {
+                console.log('WebSocket connection closed normally');
+            }
+        };
+
+        ws.onerror = function(error) {
+            console.error('Live notifications WebSocket error:', error);
+        };
+
+        // Store reference for potential cleanup
+        window.notificationWebSocket = ws;
+    };
+
+    // Fallback notification display if NotificationManager is not available
+    const showBasicNotification = (data) => {
+        // Create a simple toast notification
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 9999;
+            max-width: 300px;
+        `;
+
+        notification.innerHTML = `
+            <div style="font-weight: bold; margin-bottom: 5px;">${data.title || 'Notification'}</div>
+            <div style="font-size: 14px; color: #666;">${data.message || data.info || 'New notification received'}</div>
+        `;
+
+        document.body.appendChild(notification);
+
+        // Remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
     };
 
     // Initialize dashboard

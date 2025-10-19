@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salona - Notifications</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
+    <link rel="stylesheet" href="{% static 'css/notification-page.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Immediate authentication check -->
+    <script>
+        (function() {
+            const accessToken = localStorage.getItem('accessToken');
+            if (!accessToken) {
+                window.location.href = '/users/login/';
+            }
+        })();
+    </script>
+</head>
+<body>
+    <!-- Full Page Loading Spinner -->
+    <div id="page-loader" class="page-loader">
+        <div class="loader-container">
+            <div class="loader-spinner"></div>
+            <p class="loader-text">Loading notifications...</p>
+        </div>
+    </div>
+
+    <!-- 3D Background Shapes -->
+    <div class="bg-shape bg-shape-1"></div>
+    <div class="bg-shape bg-shape-2"></div>
+    <div class="bg-shape bg-shape-3"></div>
+
+    <div class="app-container">
+        <!-- Include reusable sidebar -->
+        {% include 'partials/sidebar.html' %}
+
+        <!-- Main content area -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="back-button" onclick="window.location.href='/users/dashboard/'">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h2 class="page-title">Notifications</h2>
+                </div>
+                <div class="header-actions">
+                    {% include 'partials/notification_icon.html' %}
+                    <div class="user-info welcome-message">
+                        <span class="user-name">Welcome!</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Notifications Controls -->
+            <div class="notifications-controls">
+                <div class="notifications-stats">
+                    <span id="total-notifications">0 notifications</span>
+                    <span class="separator">•</span>
+                    <span id="unread-notifications">0 unread</span>
+                </div>
+                <div class="notifications-actions">
+                    <button id="mark-all-read-btn" class="action-button primary" disabled>
+                        <i class="fas fa-check-double"></i>
+                        Mark All Read
+                    </button>
+                    <button id="refresh-notifications-btn" class="action-button secondary">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Notifications Filter -->
+            <div class="notifications-filter">
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="all">
+                        <i class="fas fa-inbox"></i>
+                        All
+                    </button>
+                    <button class="filter-tab" data-filter="unread">
+                        <i class="fas fa-envelope"></i>
+                        Unread
+                    </button>
+                    <button class="filter-tab" data-filter="general">
+                        <i class="fas fa-info-circle"></i>
+                        General
+                    </button>
+                    <button class="filter-tab" data-filter="booking">
+                        <i class="fas fa-calendar"></i>
+                        Booking
+                    </button>
+                    <button class="filter-tab" data-filter="payment">
+                        <i class="fas fa-credit-card"></i>
+                        Payment
+                    </button>
+                </div>
+            </div>
+
+            <!-- Notifications List -->
+            <div class="notifications-container">
+                <div id="notifications-list" class="notifications-list">
+                    <!-- Table Header -->
+                    <div class="notifications-table-header">
+                        <div class="header-cell">
+                            <i class="fas fa-bell"></i>
+                            Type
+                        </div>
+                        <div class="header-cell">
+                            <i class="fas fa-envelope"></i>
+                            Message
+                        </div>
+                        <div class="header-cell">
+                            <i class="fas fa-tag"></i>
+                            Category
+                        </div>
+                        <div class="header-cell">
+                            <i class="fas fa-clock"></i>
+                            Time
+                        </div>
+                        <div class="header-cell">
+                            <i class="fas fa-cog"></i>
+                            Actions
+                        </div>
+                    </div>
+                    <!-- Notifications will be populated here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="empty-state-container" style="display: none;">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-bell-slash"></i>
+                    </div>
+                    <h3>No notifications found</h3>
+                    <p>You're all caught up! No notifications to display.</p>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loading-state" class="loading-state" style="display: none;">
+                    <div class="loading-spinner"></div>
+                    <p>Loading notifications...</p>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div id="pagination-container" class="pagination-container" style="display: none;">
+                <button id="prev-page" class="pagination-btn" disabled>
+                    <i class="fas fa-chevron-left"></i>
+                    Previous
+                </button>
+                <span id="page-info" class="page-info">Page 1 of 1</span>
+                <button id="next-page" class="pagination-btn" disabled>
+                    Next
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Confirmation Dialog -->
+    <div id="confirmation-dialog" class="confirmation-dialog" style="display: none;">
+        <div class="confirmation-content">
+            <div class="confirmation-header">
+                <h3 id="confirmation-title">Confirm Action</h3>
+            </div>
+            <div class="confirmation-body">
+                <p id="confirmation-message">Are you sure you want to perform this action?</p>
+            </div>
+            <div class="confirmation-actions">
+                <button id="confirmation-cancel" class="action-button secondary">Cancel</button>
+                <button id="confirmation-confirm" class="action-button danger">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{% static 'js/utils.js' %}"></script>
+    <script src="{% static 'js/auth.js' %}"></script>
+    <script src="{% static 'js/notifications.js' %}"></script>
+    <script src="{% static 'js/notification-page.js' %}"></script>
+</body>
+</html>
