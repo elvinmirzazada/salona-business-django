@@ -1,10 +1,13 @@
 #!/bin/bash
+set -e
 
-# Install dependencies
+echo "Python version:"
+python --version
+echo "Pip version:"
+pip --version
+
+pip install --upgrade pip
 pip install -r requirements.txt
 
-# Collect static files
 python manage.py collectstatic --noinput
-
-# Run database migrations
 python manage.py migrate --noinput
