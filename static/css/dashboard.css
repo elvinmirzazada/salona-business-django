@@ -242,6 +242,7 @@
     height: calc(var(--time-slot-height) / 4);
     position: relative;
     cursor: pointer;
+    z-index: 1;
 }
 
 .slot:hover::before {

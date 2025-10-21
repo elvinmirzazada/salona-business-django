@@ -22,6 +22,9 @@ const UI = (() => {
         const popup = document.getElementById('slot-action-popup');
         if (!popup) return;
         
+        // Close any existing popup first
+        popup.style.display = 'none';
+
         // Set the date and time in the popup title
         const timeElement = document.getElementById('slot-action-time');
         if (timeElement) {
@@ -72,14 +75,23 @@ const UI = (() => {
             });
         }
         
+        // Remove any existing click handlers first
+        document.removeEventListener('click', window.currentClosePopupHandler);
+
         // Close popup when clicking outside
         const closePopupHandler = (e) => {
-            if (!popup.contains(e.target) && e.target.closest('.slot') === null) {
+            if (!popup.contains(e.target) &&
+                !e.target.closest('.time-quarter-slot') &&
+                !e.target.closest('.slot')) {
                 popup.style.display = 'none';
                 document.removeEventListener('click', closePopupHandler);
+                window.currentClosePopupHandler = null;
             }
         };
-        
+
+        // Store reference to current handler for cleanup
+        window.currentClosePopupHandler = closePopupHandler;
+
         // Use setTimeout to prevent immediate closing
         setTimeout(() => {
             document.addEventListener('click', closePopupHandler);
