@@ -112,7 +112,7 @@ const NotificationPage = {
         this.showLoadingState();
 
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/notifications?page=${this.currentPage}&per_page=${this.perPage}`, {
+            const response = await fetch(`${API_BASE_URL}/api/v1/notifications?page=${this.currentPage}&per_page=${this.perPage}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
@@ -170,7 +170,7 @@ const NotificationPage = {
     // Fetch unread count from dedicated API endpoint
     async fetchUnreadCount() {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/v1/notifications/unread-count', {
+            const response = await fetch(`${API_BASE_URL}/api/v1/notifications/unread-count`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
@@ -400,7 +400,7 @@ const NotificationPage = {
     // Mark notification as read
     async markAsRead(notificationId) {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/notifications/mark-as-read/${notificationId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/v1/notifications/mark-as-read/${notificationId}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
@@ -448,7 +448,7 @@ const NotificationPage = {
     // Delete notification
     async deleteNotification(notificationId) {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/notifications/${notificationId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/v1/notifications/${notificationId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
@@ -496,7 +496,7 @@ const NotificationPage = {
     // Mark all notifications as read
     async markAllAsRead() {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/v1/notifications/mark-all-read', {
+            const response = await fetch(`${API_BASE_URL}/api/v1/notifications/mark-all-read`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,

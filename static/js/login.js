@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             try {
                 // Send login request
-                const response = await fetch('http://127.0.0.1:8000/api/v1/users/auth/login', {
+                const response = await fetch(`${API_BASE_URL}/api/v1/users/auth/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

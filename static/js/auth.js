@@ -12,7 +12,7 @@ const Auth = (() => {
     // Fetch current user information
     const fetchCurrentUser = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/v1/users/me', {
+            const response = await fetch(`${API_BASE_URL}/api/v1/users/me`, {
                 method: 'GET',
                 headers: {
                     ...getAuthHeader(),
@@ -192,7 +192,7 @@ const Auth = (() => {
                 const csrfToken = signupForm.querySelector('input[name="csrfmiddlewaretoken"]').value;
 
                 // Submit form data to API
-                const response = await fetch('http://127.0.0.1:8000/api/v1/users/auth/signup', {
+                const response = await fetch(`${API_BASE_URL}/api/v1/users/auth/signup`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

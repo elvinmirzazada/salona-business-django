@@ -4,7 +4,7 @@ const ServiceManager = (() => {
     const loadServices = async () => {
         try {
             // Use the correct endpoint for services
-            const response = await fetch('http://127.0.0.1:8000/api/v1/companies/services', {
+            const response = await fetch(`${API_BASE_URL}/api/v1/companies/services`, {
                 method: 'GET',
                 headers: Auth.getAuthHeader(),
                 credentials: 'include'
@@ -388,7 +388,7 @@ const ServiceManager = (() => {
     const loadStaffMembers = async (staffContainer) => {
         try {
             // Use the correct endpoint for company users
-            const response = await fetch('http://127.0.0.1:8000/api/v1/companies/users', {
+            const response = await fetch(`${API_BASE_URL}/api/v1/companies/users`, {
                 method: 'GET',
                 headers: Auth.getAuthHeader(),
                 credentials: 'include'

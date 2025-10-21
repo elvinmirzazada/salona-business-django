@@ -6,7 +6,7 @@ const StaffManager = (() => {
     // Fetch staff members from API and populate the specified dropdown
     const loadStaffMembers = async (selectId = 'booking-worker') => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/v1/companies/users', {
+            const response = await fetch(`${API_BASE_URL}/api/v1/companies/users`, {
                 method: 'GET',
                 headers: Auth.getAuthHeader(),
                 credentials: 'include'

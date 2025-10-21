@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-import dj_database_url
 
 # Load environment variables from .env file
 load_dotenv()
@@ -87,19 +86,12 @@ ASGI_APPLICATION = 'salona_business_django.asgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# Use Railway's DATABASE_URL if available, otherwise fall back to SQLite
-DATABASE_URL = os.getenv('DATABASE_URL')
-if DATABASE_URL:
-    DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL)
+DATABASES = {
+    'default': {
+        'ENGINE': os.getenv('DATABASE_ENGINE', 'django.db.backends.sqlite3'),
+        'NAME': BASE_DIR / os.getenv('DATABASE_NAME', 'db.sqlite3'),
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': os.getenv('DATABASE_ENGINE', 'django.db.backends.sqlite3'),
-            'NAME': BASE_DIR / os.getenv('DATABASE_NAME', 'db.sqlite3'),
-        }
-    }
+}
 
 
 # Password validation

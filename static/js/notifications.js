@@ -14,7 +14,7 @@ const NotificationManager = {
     // Fetch only unread count from dedicated API endpoint
     async fetchUnreadCount() {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/v1/notifications/unread-count', {
+            const response = await fetch(`${API_BASE_URL}/api/v1/notifications/unread-count`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
@@ -134,7 +134,7 @@ const NotificationManager = {
     // Mark notification as read via API
     async markNotificationAsRead(notificationId) {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/notifications/${notificationId}/read`, {
+            const response = await fetch(`${API_BASE_URL}/api/v1/notifications/${notificationId}/read`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
@@ -165,7 +165,7 @@ const NotificationManager = {
     // Mark all notifications as read via API
     async markAllAsRead() {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/v1/notifications/mark-all-read', {
+            const response = await fetch(`${API_BASE_URL}/api/v1/notifications/mark-all-read`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,

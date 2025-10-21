@@ -3,7 +3,7 @@ const CustomerManager = (() => {
     // Fetch customers from API and populate the dropdown
     const loadCustomers = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/v1/companies/customers', {
+            const response = await fetch(`${API_BASE_URL}/api/v1/companies/customers`, {
                 method: 'GET',
                 headers: Auth.getAuthHeader(),
                 credentials: 'include'

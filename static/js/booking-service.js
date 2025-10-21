@@ -20,7 +20,7 @@ const BookingService = (() => {
                 staffIds.forEach(id => queryParams.append('staff_id', id));
             }
 
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/bookings?${queryParams.toString()}`, {
+            const response = await fetch(`${API_BASE_URL}/api/v1/bookings?${queryParams.toString()}`, {
                 method: 'GET',
                 headers: Auth.getAuthHeader(),
                 credentials: 'include'
@@ -98,7 +98,7 @@ const BookingService = (() => {
                 availability_type: 'weekly'
             }).toString();
 
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/users/time-offs?${queryParams}`, {
+            const response = await fetch(`${API_BASE_URL}/api/v1/users/time-offs?${queryParams}`, {
                 method: 'GET',
                 headers: Auth.getAuthHeader(),
                 credentials: 'include'
@@ -232,7 +232,7 @@ const BookingService = (() => {
             console.log('Creating booking with data:', bookingData);
 
             // Send the booking data to the API
-            const response = await fetch('http://127.0.0.1:8000/api/v1/bookings/users/create_booking', {
+            const response = await fetch(`${API_BASE_URL}/api/v1/bookings/users/create_booking`, {
                 method: 'POST',
                 headers: Auth.getAuthHeader(),
                 body: JSON.stringify(bookingData),
@@ -683,7 +683,7 @@ const BookingService = (() => {
             if (messageBox) messageBox.style.display = 'none';
 
             // Use the DELETE API endpoint
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/bookings/${bookingId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/v1/bookings/${bookingId}`, {
                 method: 'DELETE',
                 headers: Auth.getAuthHeader(),
                 credentials: 'include'
@@ -803,7 +803,7 @@ const BookingService = (() => {
             };
 
             // Send the update to the API
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/bookings/${bookingId}/confirm`, {
+            const response = await fetch(`${API_BASE_URL}/api/v1/bookings/${bookingId}/confirm`, {
                 method: 'PUT',
                 headers: Auth.getAuthHeader(),
                 body: JSON.stringify(updateData),
