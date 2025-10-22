@@ -6,29 +6,13 @@
     <title>{{ page_title }}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <i class="fas fa-spa"></i>
-                <span>Salona</span>
-            </div>
-            <div class="nav-links">
-                <a href="#features" class="nav-link">Features</a>
-                <a href="#about" class="nav-link">About</a>
-                <a href="#contact" class="nav-link">Contact</a>
-                <a href="{% url 'users:login' %}" class="nav-link login-btn">Login</a>
-                <a href="{% url 'users:signup' %}" class="nav-link signup-btn">Get Started</a>
-            </div>
-            <div class="mobile-menu-btn">
-                <i class="fas fa-bars"></i>
-            </div>
-        </div>
-    </nav>
+
+    {% include 'partials/navigation.html' %}
 
     <!-- Hero Section -->
     <section class="hero">
@@ -247,7 +231,7 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <div class="footer-logo">
-                        <i class="fas fa-spa"></i>
+                        <img src="{% static 'images/salona-icon.png' %}" alt="Salona" class="footer-logo-icon">
                         <span>Salona</span>
                     </div>
                     <p class="footer-description">

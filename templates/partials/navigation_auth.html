@@ -1,0 +1,17 @@
+{% load static %}
+<!-- Navigation for Auth Pages -->
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="{% url 'home' %}" class="nav-logo">
+            <img src="{% static 'images/salona-icon.png' %}" alt="Salona" class="nav-logo-icon">
+            <span>Salona</span>
+        </a>
+        <div class="nav-links">
+            <a href="{% url 'home' %}#features" class="nav-link">Features</a>
+            <a href="{% url 'home' %}#about" class="nav-link">About</a>
+            <a href="{% url 'home' %}#contact" class="nav-link">Contact</a>
+            <a href="{% url 'users:login' %}" class="nav-link login-btn">Login</a>
+        </div>
+    </div>
+</nav>
+

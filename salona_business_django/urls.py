@@ -20,6 +20,9 @@ from django.shortcuts import redirect
 from django.views.generic import TemplateView
 from . import views
 
+def redirect_to_login(request):
+    return redirect('users:login')
+
 def redirect_to_dashboard(request):
     return redirect('users:dashboard')
 
