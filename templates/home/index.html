@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-spa"></i>
+                <span>Salona</span>
+            </div>
+            <div class="nav-links">
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="#contact" class="nav-link">Contact</a>
+                <a href="{% url 'users:login' %}" class="nav-link login-btn">Login</a>
+                <a href="{% url 'users:signup' %}" class="nav-link signup-btn">Get Started</a>
+            </div>
+            <div class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-background">
+            <div class="hero-shape hero-shape-1"></div>
+            <div class="hero-shape hero-shape-2"></div>
+            <div class="hero-shape hero-shape-3"></div>
+        </div>
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1 class="hero-title">
+                        Transform Your <span class="gradient-text">Beauty Business</span> with Salona
+                    </h1>
+                    <p class="hero-subtitle">
+                        The complete salon management platform that streamlines bookings, manages clients,
+                        and grows your beauty business with professional excellence.
+                    </p>
+                    <div class="hero-buttons">
+                        <a href="{% url 'users:signup' %}" class="btn btn-primary">
+                            <i class="fas fa-rocket"></i>
+                            Start Free Trial
+                        </a>
+                        <a href="#features" class="btn btn-secondary">
+                            <i class="fas fa-play-circle"></i>
+                            Watch Demo
+                        </a>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="stat">
+                            <span class="stat-number">500+</span>
+                            <span class="stat-label">Salons Trust Us</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">50k+</span>
+                            <span class="stat-label">Appointments Managed</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">99.9%</span>
+                            <span class="stat-label">Uptime</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <div class="hero-card salon-dashboard">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fas fa-calendar-alt"></i>
+                                Today's Schedule
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="appointment-item">
+                                <div class="appointment-time">09:30</div>
+                                <div class="appointment-details">
+                                    <div class="client-name">Sarah Johnson</div>
+                                    <div class="service">Hair Cut & Style</div>
+                                </div>
+                                <div class="appointment-status confirmed">Confirmed</div>
+                            </div>
+                            <div class="appointment-item">
+                                <div class="appointment-time">11:00</div>
+                                <div class="appointment-details">
+                                    <div class="client-name">Maria Garcia</div>
+                                    <div class="service">Facial Treatment</div>
+                                </div>
+                                <div class="appointment-status pending">Pending</div>
+                            </div>
+                            <div class="appointment-item">
+                                <div class="appointment-time">14:15</div>
+                                <div class="appointment-details">
+                                    <div class="client-name">Emma Wilson</div>
+                                    <div class="service">Manicure & Pedicure</div>
+                                </div>
+                                <div class="appointment-status confirmed">Confirmed</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hero-card floating-notification">
+                        <i class="fas fa-bell"></i>
+                        <span>New booking from Lisa Chen</span>
+                    </div>
+                    <div class="hero-card stats-card">
+                        <div class="stats-item">
+                            <i class="fas fa-chart-line"></i>
+                            <div>
+                                <div class="stats-number">+23%</div>
+                                <div class="stats-label">Revenue Growth</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Everything You Need to Run Your Salon</h2>
+                <p class="section-subtitle">Powerful features designed specifically for beauty professionals</p>
+            </div>
+            <div class="features-grid">
+                {% for feature in features %}
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="{{ feature.icon }}"></i>
+                    </div>
+                    <h3 class="feature-title">{{ feature.title }}</h3>
+                    <p class="feature-description">{{ feature.description }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2 class="about-title">Built for Beauty Professionals</h2>
+                    <p class="about-description">
+                        Salona understands the unique challenges of running a beauty business. From managing
+                        complex appointment schedules to tracking client preferences and building lasting
+                        relationships, our platform is designed with your success in mind.
+                    </p>
+                    <div class="about-features">
+                        <div class="about-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Automated appointment reminders</span>
+                        </div>
+                        <div class="about-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Integrated payment processing</span>
+                        </div>
+                        <div class="about-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Staff performance tracking</span>
+                        </div>
+                        <div class="about-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Customer loyalty programs</span>
+                        </div>
+                    </div>
+                    <a href="{% url 'users:signup' %}" class="btn btn-primary">
+                        Start Your Journey
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                <div class="about-image">
+                    <div class="salon-mockup">
+                        <div class="mockup-header">
+                            <div class="mockup-dots">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                        <div class="mockup-content">
+                            <div class="client-profile">
+                                <div class="client-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="client-info">
+                                    <h4>Jessica Martinez</h4>
+                                    <p>VIP Client • Last visit: Oct 15, 2025</p>
+                                </div>
+                            </div>
+                            <div class="service-history">
+                                <h5>Recent Services</h5>
+                                <div class="service-item">
+                                    <span>Balayage Highlights</span>
+                                    <span>$185</span>
+                                </div>
+                                <div class="service-item">
+                                    <span>Deep Conditioning</span>
+                                    <span>$45</span>
+                                </div>
+                                <div class="service-item">
+                                    <span>Eyebrow Shaping</span>
+                                    <span>$35</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2 class="cta-title">Ready to Elevate Your Beauty Business?</h2>
+                <p class="cta-subtitle">Join thousands of salon owners who have transformed their operations with Salona</p>
+                <div class="cta-buttons">
+                    <a href="{% url 'users:signup' %}" class="btn btn-primary btn-large">
+                        <i class="fas fa-crown"></i>
+                        Start Free Trial
+                    </a>
+                    <div class="cta-note">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>No credit card required • 30-day free trial</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact" class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-spa"></i>
+                        <span>Salona</span>
+                    </div>
+                    <p class="footer-description">
+                        Empowering beauty professionals with cutting-edge salon management technology.
+                    </p>
+                    <div class="social-links">
+                        <a href="#" class="social-link">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="social-link">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="social-link">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="social-link">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-title">Product</h4>
+                    <ul class="footer-links">
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#">Pricing</a></li>
+                        <li><a href="#">Integrations</a></li>
+                        <li><a href="#">API</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-title">Support</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">System Status</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-title">Company</h4>
+                    <ul class="footer-links">
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Salona. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Get API_BASE_URL from Django template context (environment variable)
+        window.API_BASE_URL = "{{ API_BASE_URL }}";
+    </script>
+    <script src="{% static 'js/home.js' %}"></script>
+</body>
+</html>
