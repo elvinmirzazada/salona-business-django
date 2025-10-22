@@ -525,7 +525,10 @@
 
 {#    </style>#}
 
-    <script src="{% static 'js/config.js' %}"></script>
+    <script>
+        // Get API_BASE_URL from Django template context (environment variable)
+        window.API_BASE_URL = "{{ API_BASE_URL }}";
+    </script>
     <script src="{% static 'js/utils.js' %}"></script>
     <script src="{% static 'js/script.js' %}"></script>
     <script src="{% static 'js/calendar.js' %}"></script>
