@@ -1,9 +1,8 @@
 from django.shortcuts import render, redirect
 from django.views import View
-from django.contrib import messages
-from django.urls import reverse
 from django.http import JsonResponse
 import requests
+from django.conf import settings
 
 class LoginView(View):
     def get(self, request):
@@ -18,6 +17,45 @@ class SignupView(View):
         if 'accessToken' in request.session:
             return redirect('dashboard')
         return render(request, 'users/signup.html')
+
+class LogoutView(View):
+    def get(self, request):
+        # Get token from session or localStorage (will be handled by JS)
+        return render(request, 'users/logout_redirect.html')
+
+    def post(self, request):
+        # Handle API logout
+        try:
+            # Get token from request body or session
+            token = request.session.get('accessToken') or request.POST.get('token')
+
+            if token:
+                # Make API call to logout endpoint
+                api_url = getattr(settings, 'API_BASE_URL', 'https://api.salona.app') + '/api/v1/users/auth/logout'
+                headers = {
+                    'Authorization': f'Bearer {token}',
+                    'Content-Type': 'application/json'
+                }
+
+                response = requests.put(api_url, headers=headers)
+
+                # Clear session regardless of API response
+                request.session.flush()
+
+                if response.status_code == 200:
+                    return JsonResponse({'success': True, 'message': 'Logged out successfully'})
+                else:
+                    # Even if API call fails, we still logged out locally
+                    return JsonResponse({'success': True, 'message': 'Logged out locally'})
+            else:
+                # No token found, just clear session
+                request.session.flush()
+                return JsonResponse({'success': True, 'message': 'Logged out'})
+
+        except Exception as e:
+            # Clear session even if API call fails
+            request.session.flush()
+            return JsonResponse({'success': True, 'message': 'Logged out locally'})
 
 class DashboardView(View):
     def get(self, request):

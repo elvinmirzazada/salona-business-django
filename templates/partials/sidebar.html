@@ -1,7 +1,11 @@
+{% load static %}
 <!-- Sidebar with redesigned styling -->
 <div class="sidebar">
     <div class="sidebar-header">
-        <div class="logo">Salona</div>
+        <a href="{% url 'home' %}" class="nav-logo">
+            <img src="{% static 'images/salona-icon-without-bg.png' %}" alt="Salona" class="nav-logo-icon">
+            <span>Salona</span>
+        </a>
     </div>
     <nav class="sidebar-nav">
         <a href="{% url 'users:dashboard' %}" class="nav-item" id="dashboard-nav">
@@ -43,7 +47,7 @@
             </svg>
             <span>Settings</span>
         </a>
-        <a href="#" class="nav-item logout" id="logout-nav">
+        <a href="#" class="nav-item logout" id="logout-nav" onclick="handleLogout(event)">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
             </svg>
@@ -71,4 +75,15 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('notifications-nav').classList.add('active');
     }
 });
+
+// Handle logout functionality
+function handleLogout(event) {
+    event.preventDefault();
+
+    // Show confirmation dialog
+    if (confirm('Are you sure you want to logout?')) {
+        // Redirect to logout page which will handle the API call and cleanup
+        window.location.href = "{% url 'users:logout' %}";
+    }
+}
 </script>

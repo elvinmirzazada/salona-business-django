@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logging out...</title>
+</head>
+<body>
+    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: Arial, sans-serif;">
+        <div style="text-align: center;">
+            <h2>Logging you out...</h2>
+            <p>Please wait while we log you out securely.</p>
+        </div>
+    </div>
+
+    <script>
+        // Handle logout process
+        async function performLogout() {
+            try {
+                const token = localStorage.getItem('token');
+
+                if (token) {
+                    // Make PUT request to API logout endpoint
+                    const response = await fetch("{{ API_BASE_URL }}" + '/api/v1/users/auth/logout', {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    console.log('API Logout response status:', response.status);
+
+                    // Also call the Django logout endpoint to clear session
+                    const djangoResponse = await fetch('/users/logout/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({
+                            token: token
+                        })
+                    });
+
+                    const data = await djangoResponse.json();
+                    console.log('Django logout response:', data);
+                }
+
+                // Clear all local storage and session storage
+                localStorage.clear();
+                sessionStorage.clear();
+
+                // Redirect to login page
+                window.location.href = '/users/login/';
+
+            } catch (error) {
+                console.error('Logout error:', error);
+
+                // Clear local storage even if API call fails
+                localStorage.clear();
+                sessionStorage.clear();
+
+                // Redirect to login page anyway
+                window.location.href = '/users/login/';
+            }
+        }
+
+        // Function to get CSRF cookie
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Start logout process when page loads
+        document.addEventListener('DOMContentLoaded', performLogout);
+    </script>
+</body>
+</html>
