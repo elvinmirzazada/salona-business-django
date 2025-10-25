@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.views import View
 from django.http import JsonResponse
 import requests
@@ -6,16 +6,14 @@ from django.conf import settings
 
 class LoginView(View):
     def get(self, request):
-        # If user is already authenticated, redirect to dashboard
-        if 'accessToken' in request.session:
-            return redirect('dashboard')
+        # Since token is stored in localStorage, we can't check it server-side
+        # The client-side JavaScript will handle the redirect if already authenticated
         return render(request, 'users/login.html')
 
 class SignupView(View):
     def get(self, request):
-        # If user is already authenticated, redirect to dashboard
-        if 'accessToken' in request.session:
-            return redirect('dashboard')
+        # Since token is stored in localStorage, we can't check it server-side
+        # The client-side JavaScript will handle the redirect if already authenticated
         return render(request, 'users/signup.html')
 
 class LogoutView(View):
@@ -26,8 +24,16 @@ class LogoutView(View):
     def post(self, request):
         # Handle API logout
         try:
-            # Get token from request body or session
-            token = request.session.get('accessToken') or request.POST.get('token')
+            # Get token from request headers (sent by JavaScript)
+            auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+            token = None
+
+            if auth_header.startswith('Bearer '):
+                token = auth_header.split(' ')[1]
+
+            # Also try to get from POST data as fallback
+            if not token:
+                token = request.POST.get('token')
 
             if token:
                 # Make API call to logout endpoint
@@ -39,23 +45,21 @@ class LogoutView(View):
 
                 response = requests.put(api_url, headers=headers)
 
-                # Clear session regardless of API response
-                request.session.flush()
-
                 if response.status_code == 200:
                     return JsonResponse({'success': True, 'message': 'Logged out successfully'})
                 else:
                     # Even if API call fails, we still logged out locally
                     return JsonResponse({'success': True, 'message': 'Logged out locally'})
             else:
-                # No token found, just clear session
-                request.session.flush()
+                # No token found
                 return JsonResponse({'success': True, 'message': 'Logged out'})
 
         except Exception as e:
-            # Clear session even if API call fails
-            request.session.flush()
             return JsonResponse({'success': True, 'message': 'Logged out locally'})
+
+    def put(self, request):
+        # Handle PUT request for logout
+        return self.post(request)
 
 class DashboardView(View):
     def get(self, request):

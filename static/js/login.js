@@ -1,5 +1,8 @@
-// Login page functionality
+// Login page functionality - Updated for HTTP-only cookies
 document.addEventListener('DOMContentLoaded', function() {
+    // Check if user is already authenticated via API call instead of localStorage
+    // checkAuthStatus();
+
     const loginForm = document.getElementById('login-form');
     const errorMessage = document.getElementById('error-message');
     const loginSpinner = document.getElementById('login-spinner');
@@ -38,22 +41,18 @@ document.addEventListener('DOMContentLoaded', function() {
             };
 
             try {
-                // Send login request
+                // Send login request with credentials to include cookies
                 const response = await fetch(`${API_BASE_URL}/api/v1/users/auth/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     },
+                    credentials: 'include', // Important: Include cookies in request
                     body: JSON.stringify(loginData)
                 });
-
-                console.log('Login response status:', response.status);
                 
                 const data = await response.json();
-                console.log('Login response data:', data);
-
-                // Hide spinners after response received
                 hideSpinners();
 
                 if (!response.ok) {
@@ -63,31 +62,35 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
 
-                // Check if we have the access token
-                if (data.data && data.data.access_token) {
-                    // Store token in localStorage
-                    localStorage.setItem('accessToken', data.data.access_token);
-                    
-                    // Store additional token info if available
-                    if (data.data.token_type) {
-                        localStorage.setItem('tokenType', data.data.token_type);
-                    }
-                    if (data.data.expires_in) {
-                        localStorage.setItem('tokenExpiresIn', data.data.expires_in);
-                    }
-                    
-                    // Redirect to dashboard
-                    window.location.href = '/users/dashboard/';
-                } else {
-                    showError('Login successful, but no token received. Please try again.');
-                }
+                // No need to store tokens in localStorage - they're in HTTP-only cookies
+                // Just redirect to dashboard
+                console.log(data);
+                window.location.href = '/users/dashboard/';
+
             } catch (error) {
                 // Hide spinners in case of error
                 hideSpinners();
-                console.error('Login error:', error);
                 showError('Network error. Please try again later.');
             }
         });
+    }
+
+    // Check if user is already authenticated by calling a protected endpoint
+    async function checkAuthStatus() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/v1/users/me`, {
+                method: 'GET',
+                credentials: 'include' // Include HTTP-only cookies
+            });
+
+            if (response.ok) {
+                // User is authenticated, redirect to dashboard
+                window.location.href = '/users/dashboard/';
+            }
+        } catch (error) {
+            // User not authenticated, stay on login page
+            console.log('User not authenticated');
+        }
     }
 
     // Helper function to show error messages

@@ -1,10 +1,9 @@
 // Authentication and user related functions
 const Auth = (() => {
-    // Authentication header creator for API requests
+    // Authentication header creator for API requests - Updated for HTTP-only cookies
     const getAuthHeader = () => {
-        const accessToken = localStorage.getItem('accessToken');
+        // No longer need to get token from localStorage since it's in HTTP-only cookie
         return {
-            'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json'
         };
     };
@@ -15,16 +14,15 @@ const Auth = (() => {
             const response = await fetch(`${API_BASE_URL}/api/v1/users/me`, {
                 method: 'GET',
                 headers: {
-                    ...getAuthHeader(),
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
                 },
-                mode: 'cors' // Explicitly set CORS mode
+                credentials: 'include', // Include session cookies
             });
 
             if (!response.ok) {
                 if (response.status === 401) {
                     // If unauthorized, redirect to login
-                    localStorage.removeItem('accessToken');
                     window.location.href = '/users/login/';
                     return null;
                 }
@@ -50,18 +48,52 @@ const Auth = (() => {
         }
     };
 
-    // Logout functionality
+    // Logout functionality - Updated for HTTP-only cookies
     const setupLogout = () => {
         const logoutBtn = document.getElementById('logout-btn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                localStorage.removeItem('accessToken');
-                localStorage.removeItem('tokenType');
-                localStorage.removeItem('tokenExpiresIn');
-                window.location.href = '/users/login/';
+                performLogout();
             });
         }
+    };
+
+    // Enhanced logout function
+    const performLogout = async () => {
+        try {
+            const response = await fetch('/users/logout/', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                credentials: 'include'
+            });
+
+            console.log('Logout API response:', response.status);
+        } catch (error) {
+            console.error('Logout API call failed:', error);
+        } finally {
+            // Always redirect to login regardless of API response
+            window.location.href = '/users/login/';
+        }
+    };
+
+    // Helper function to get CSRF token
+    const getCookie = (name) => {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
     };
 
     // Initialize user data
@@ -76,16 +108,13 @@ const Auth = (() => {
             setupLoginForm();
             setupSignupForm();
         } else {
-            // On authenticated pages like dashboard, fetch user data
-            const accessToken = localStorage.getItem('accessToken');
-            if (accessToken) {
-                const userData = await fetchCurrentUser();
+            // On authenticated pages like dashboard, check authentication via API call
+            const userData = await fetchCurrentUser();
+            if (userData) {
                 updateUserInfo(userData);
                 setupLogout();
-            } else {
-                // No token, redirect to login
-                window.location.href = '/users/login/';
             }
+            // If userData is null, fetchCurrentUser already handled the redirect
         }
     };
 
@@ -97,18 +126,17 @@ const Auth = (() => {
         // Login form setup logic here if needed
     };
 
-    // Function to fetch data from API with authorization
+    // Function to fetch data from API with authorization - Updated for HTTP-only cookies
     const fetchData = async (url) => {
         try {
             const response = await fetch(url, {
                 method: 'GET',
-                headers: getAuthHeader(),
+                credentials: 'include', // Include HTTP-only cookies
             });
 
             if (!response.ok) {
                 // If unauthorized, redirect to login
                 if (response.status === 401) {
-                    localStorage.removeItem('accessToken');
                     window.location.href = '/users/login/';
                     return null;
                 }
@@ -191,13 +219,14 @@ const Auth = (() => {
                 // Get CSRF token from the form
                 const csrfToken = signupForm.querySelector('input[name="csrfmiddlewaretoken"]').value;
 
-                // Submit form data to API
+                // Submit form data to API with credentials for HTTP-only cookies
                 const response = await fetch(`${API_BASE_URL}/api/v1/users/auth/signup`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': csrfToken
                     },
+                    credentials: 'include', // Include HTTP-only cookies
                     body: JSON.stringify({
                         first_name: firstName,
                         last_name: lastName,
@@ -224,16 +253,9 @@ const Auth = (() => {
                     return;
                 }
 
-                // Registration successful, store token if returned
-                if (data.data && data.data.access_token) {
-                    localStorage.setItem('accessToken', data.data.access_token);
-                    localStorage.setItem('tokenType', data.data.token_type || 'Bearer');
-                    if (data.data.expires_in) {
-                        localStorage.setItem('tokenExpiresIn', data.data.expires_in);
-                    }
-                }
-
-                // Redirect to dashboard or show success message
+                // Registration successful - tokens are now in HTTP-only cookies
+                // No need to store in localStorage
+                // Redirect to dashboard
                 window.location.href = '/users/dashboard/';
 
             } catch (error) {

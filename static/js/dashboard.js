@@ -3,19 +3,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Show loading spinner immediately
     const pageLoader = document.getElementById('page-loader');
 
-    // Check if user is authenticated before proceeding
-    const accessToken = localStorage.getItem('accessToken');
-
-    if (!accessToken) {
-        // Redirect to login if not authenticated
-        window.location.href = '/users/login/';
-        return;
-    }
+    // Authentication check is now handled by Auth.init() which uses API calls
+    // instead of localStorage checks
 
     // Initialize all modules
     const initDashboard = async () => {
         try {
-            // Initialize authentication
+            // Initialize authentication - this will redirect to login if not authenticated
             await Auth.init();
 
             // Initialize UI components
@@ -101,9 +95,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Fetch user data from API
     const fetchUserData = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/v1/companies/users', {
+            const response = await fetch(`${API_BASE_URL}/api/v1/companies/users`, {
                 method: 'GET',
                 headers: Auth.getAuthHeader(),
+                credentials: 'include'
             });
 
             if (!response.ok) {
@@ -204,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Setup live notifications WebSocket connection
     const setupLiveNotifications = () => {
-        const wsPath = 'ws://127.0.0.1:8000/live-ws';
+        const wsPath = 'ws://localhost:8000/live-ws';
         let ws = new WebSocket(wsPath);
         let reconnectAttempts = 0;
         const maxReconnectAttempts = 5;

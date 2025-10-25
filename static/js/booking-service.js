@@ -28,8 +28,7 @@ const BookingService = (() => {
 
             if (!response.ok) {
                 if (response.status === 401) {
-                    // If unauthorized, redirect to login
-                    localStorage.removeItem('accessToken');
+                    // If unauthorized, redirect to login (no localStorage cleanup needed)
                     window.location.href = '/users/login/';
                     return [];
                 }
@@ -107,7 +106,6 @@ const BookingService = (() => {
             if (!response.ok) {
                 if (response.status === 401) {
                     // If unauthorized, redirect to login
-                    localStorage.removeItem('accessToken');
                     window.location.href = '/users/login/';
                     return [];
                 }
@@ -352,7 +350,7 @@ const BookingService = (() => {
             console.log('Updating booking with data:', bookingData);
 
             // Send the booking update data to the API
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/bookings/${bookingId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/v1/bookings/${bookingId}`, {
                 method: 'PUT',
                 headers: Auth.getAuthHeader(),
                 body: JSON.stringify(bookingData),
@@ -407,7 +405,7 @@ const BookingService = (() => {
             if (messageBox) messageBox.style.display = 'none';
             
             // Fetch booking details from API
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/bookings/${bookingId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/v1/bookings/${bookingId}`, {
                 method: 'GET',
                 headers: Auth.getAuthHeader(),
                 credentials: 'include'
@@ -756,7 +754,7 @@ const BookingService = (() => {
             console.log('Creating time off with data:', formattedData);
 
             // Send the time off data to the correct API endpoint
-            const response = await fetch('http://127.0.0.1:8000/api/v1/users/time-offs', {
+            const response = await fetch(`${API_BASE_URL}/api/v1/users/time-offs`, {
                 method: 'POST',
                 headers: Auth.getAuthHeader(),
                 body: JSON.stringify(formattedData),

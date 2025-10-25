@@ -19,6 +19,7 @@ from django.urls import path, include
 from django.shortcuts import redirect
 from django.views.generic import TemplateView
 from . import views
+from users.views import NotificationsView
 
 def redirect_to_login(request):
     return redirect('users:login')
@@ -30,7 +31,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
     path('dashboard/', redirect_to_dashboard, name='dashboard'),  # Specific redirect for dashboard
-    path('notifications/', TemplateView.as_view(template_name='notifications/notifications.html'), name='notifications'),
+    path('notifications/', NotificationsView.as_view(), name='notifications'),
     path('', views.home, name='home'),  # Home page
     path('customer/', include('customers.urls'))
 ]
