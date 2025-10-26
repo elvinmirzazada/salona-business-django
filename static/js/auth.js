@@ -4,49 +4,11 @@ const Auth = (() => {
     const getAuthHeader = () => {
         // No longer need to get token from localStorage since it's in HTTP-only cookie
         return {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
         };
     };
 
-    // Fetch current user information
-    const fetchCurrentUser = async () => {
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/v1/users/me`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include', // Include session cookies
-            });
-
-            if (!response.ok) {
-                if (response.status === 401) {
-                    // If unauthorized, redirect to login
-                    window.location.href = '/users/login/';
-                    return null;
-                }
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            return data.data; // Return the user data from the response
-        } catch (error) {
-            console.error('Error fetching user data:', error);
-            return null;
-        }
-    };
-
-    // Update the UI with user information
-    const updateUserInfo = (userData) => {
-        if (!userData) return;
-
-        // Update the welcome message with user's name
-        const userNameElement = document.querySelector('.user-name');
-        if (userNameElement) {
-            userNameElement.textContent = `Welcome, ${userData.first_name} ${userData.last_name}!`;
-        }
-    };
 
     // Logout functionality - Updated for HTTP-only cookies
     const setupLogout = () => {
@@ -108,13 +70,10 @@ const Auth = (() => {
             setupLoginForm();
             setupSignupForm();
         } else {
-            // On authenticated pages like dashboard, check authentication via API call
-            const userData = await fetchCurrentUser();
-            if (userData) {
-                updateUserInfo(userData);
-                setupLogout();
-            }
-            // If userData is null, fetchCurrentUser already handled the redirect
+            // On authenticated pages like dashboard, we rely on server-side authentication
+            // The Django view already checked authentication and redirected if needed
+            // No additional client-side authentication check required here
+            console.log('Dashboard page loaded, authentication handled by Django');
         }
     };
 
@@ -279,7 +238,6 @@ const Auth = (() => {
     // Expose public methods
     return {
         init,
-        fetchCurrentUser,
         getAuthHeader,  // <-- Expose getAuthHeader method
         fetchData
     };

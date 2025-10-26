@@ -2,7 +2,9 @@
 <div class="notification-wrapper">
     <div id="notification-icon" class="notification-icon" title="Notifications">
         <i class="fas fa-bell"></i>
-        <span id="notification-badge" class="notification-badge">0</span>
+        <span id="notification-badge" class="notification-badge">{{ unread_notifications_count }}</span>
     </div>
 </div>
-
+<script>
+  localStorage.setItem("unreadNotificationCount", "{{ unread_notifications_count }}");
+</script>

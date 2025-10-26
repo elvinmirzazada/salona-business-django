@@ -7,38 +7,7 @@ const NotificationManager = {
     async init() {
         this.loadUnreadCount();
         this.setupEventListeners();
-        await this.fetchUnreadCount(); // Only fetch unread count, not all notifications
         this.updateNotificationIcon();
-    },
-
-    // Fetch only unread count from dedicated API endpoint
-    async fetchUnreadCount() {
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/v1/notifications/unread-count`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include'
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-
-            if (result.success && typeof result.data.unread_count === 'number') {
-                this.unreadCount = result.data.unread_count;
-                this.saveUnreadCount();
-                this.updateNotificationIcon();
-                console.log(`Unread count updated: ${this.unreadCount}`);
-            }
-        } catch (error) {
-            console.error('Error fetching unread count:', error);
-            // Keep existing local count if API fails
-        }
     },
 
     // Convert API notification format to our internal format

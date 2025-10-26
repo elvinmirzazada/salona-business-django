@@ -9,8 +9,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize all modules
     const initDashboard = async () => {
         try {
-            // Initialize authentication - this will redirect to login if not authenticated
-            await Auth.init();
+            // No need to initialize Auth.init() here as it's already called globally
+            // and we rely on server-side authentication
 
             // Initialize UI components
             UI.setupBookingFormNavigation();
@@ -18,10 +18,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // Initialize live notifications WebSocket
             setupLiveNotifications();
 
-            // Check if user has company data
-            const userData = await fetchUserData();
+            // Check if user has company data from the user data passed from Django
+            // The userData is already available from the template context
+            const hasUserData = window.userData && typeof window.userData === 'object';
 
-            if (!userData) {
+            if (!hasUserData) {
                 // If user data is null, hide calendar elements and show company creation button
                 toggleDashboardView(false);
 
@@ -31,8 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // User has data, proceed with normal dashboard initialization
                 toggleDashboardView(true);
 
-                // Load staff members and populate staff filter dropdown
-                await StaffManager.loadStaffMembers();
+                // populate staff filter dropdown
                 StaffManager.setupStaffFilter();
 
                 // Set up customer dropdown change event
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 setupBookingFormSubmission();
 
                 // Initialize time off functionality
-                TimeOffManager.initTimeOffForm();
+                // TimeOffManager.initTimeOffForm();
 
                 // Initialize the calendar
                 await Calendar.init();
@@ -92,26 +92,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // Fetch user data from API
-    const fetchUserData = async () => {
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/v1/companies/users`, {
-                method: 'GET',
-                headers: Auth.getAuthHeader(),
-                credentials: 'include'
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            return data.data; // Return the user data from the response
-        } catch (error) {
-            console.error('Error fetching user data:', error);
-            return null;
-        }
-    };
 
     // Toggle between calendar view and company creation view
     const toggleDashboardView = (hasCompany) => {

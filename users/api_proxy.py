@@ -18,7 +18,7 @@ class APIProxyView(View):
     
     def get_api_url(self, path):
         """Construct the full API URL"""
-        api_base = getattr(settings, 'API_BASE_URL', 'https://api.salona.app')
+        api_base = getattr(settings, 'API_BASE_URL', 'https://api.salona.me')
         # Remove leading slash from path if present
         if path.startswith('/'):
             path = path[1:]
@@ -34,16 +34,12 @@ class APIProxyView(View):
             'Accept': 'application/json',
         }
         
-        # Get cookies from session (stored by previous requests)
+        # Get cookies from the incoming request
         cookies = {}
-        if hasattr(request, 'session'):
-            access_token = request.session.get('access_token')
-            refresh_token = request.session.get('refresh_token')
-            
-            if access_token:
-                cookies['access_token'] = access_token
-            if refresh_token:
-                cookies['refresh_token'] = refresh_token
+        if 'access_token' in request.COOKIES:
+            cookies['access_token'] = request.COOKIES['access_token']
+        if 'refresh_token' in request.COOKIES:
+            cookies['refresh_token'] = request.COOKIES['refresh_token']
         
         # Prepare request data
         data = None
@@ -67,18 +63,39 @@ class APIProxyView(View):
                 timeout=30
             )
             
-            # Handle cookies from the API response
-            if response.cookies:
-                for cookie_name, cookie_value in response.cookies.items():
-                    if cookie_name in ['access_token', 'refresh_token']:
-                        request.session[cookie_name] = cookie_value
-            
-            # Return the API response
+            # Create Django response
             django_response = JsonResponse(
                 response.json() if response.content else {},
                 status=response.status_code,
                 safe=False
             )
+            
+            # If this is a login request and successful, extract tokens from response
+            if path == 'api/v1/users/auth/login' and response.status_code == 200:
+                try:
+                    response_data = response.json()
+                    if response_data.get('data') and response_data['data'].get('access_token'):
+                        # Set the tokens as HTTP-only cookies for our domain
+                        django_response.set_cookie(
+                            'access_token',
+                            response_data['data']['access_token'],
+                            httponly=True,
+                            secure=not settings.DEBUG,
+                            samesite='Strict',
+                            max_age=3600 * 24 * 7  # 7 days
+                        )
+                        if response_data['data'].get('refresh_token'):
+                            django_response.set_cookie(
+                                'refresh_token',
+                                response_data['data']['refresh_token'],
+                                httponly=True,
+                                secure=not settings.DEBUG,
+                                samesite='Strict',
+                                max_age=3600 * 24 * 30  # 30 days
+                            )
+                        print("DEBUG: Tokens set as HTTP-only cookies from login response")
+                except:
+                    pass  # If parsing fails, continue without cookies
             
             return django_response
             
@@ -105,16 +122,25 @@ class APIProxyView(View):
 
 
 @csrf_exempt
-@require_http_methods(["POST", "PUT"])
+@require_http_methods(["GET", "POST", "PUT"])
 def logout_proxy(request):
     """Handle logout by clearing session and calling API logout"""
+
+    # Handle GET requests (redirect to login or return logout page)
+    if request.method == 'GET':
+        # For GET requests, we can either redirect to login or show a logout confirmation
+        # Let's redirect to login page
+        from django.shortcuts import redirect
+        return redirect('users:login')
+
+    # Handle POST/PUT requests (actual logout)
     try:
-        # Get tokens from session
-        access_token = request.session.get('access_token')
-        
+        # Get tokens from HTTP-only cookies first, then fallback to session
+        access_token = request.COOKIES.get('access_token') or request.session.get('access_token')
+
         # Call external API logout if token exists
         if access_token:
-            api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.app')}/api/v1/users/auth/logout"
+            api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/users/auth/logout"
             headers = {'Content-Type': 'application/json'}
             cookies = {'access_token': access_token}
             
@@ -126,9 +152,82 @@ def logout_proxy(request):
         # Clear session
         request.session.flush()
         
-        return JsonResponse({'success': True, 'message': 'Logged out successfully'})
-        
+        # Create response and delete HTTP-only cookies
+        response = JsonResponse({'success': True, 'message': 'Logged out successfully'})
+
+        # Delete HTTP-only cookies by setting them to expire immediately
+        # Try multiple domain/path combinations to ensure deletion
+        response.set_cookie(
+            'access_token',
+            '',
+            max_age=0,
+            expires='Thu, 01 Jan 1970 00:00:00 GMT',
+            httponly=True,
+            secure=True,
+            samesite='none',
+            domain=None  # Current domain
+        )
+        response.set_cookie(
+            'refresh_token',
+            '',
+            max_age=0,
+            expires='Thu, 01 Jan 1970 00:00:00 GMT',
+            httponly=True,
+            secure=True,
+            samesite='none',
+            domain=None  # Current domain
+        )
+
+        # Also try to delete cookies for the API domain
+        api_domain = getattr(settings, 'API_BASE_URL', 'https://api.salona.me')
+        if 'api.salona.me' in api_domain:
+            response.set_cookie(
+                'access_token',
+                '',
+                max_age=0,
+                expires='Thu, 01 Jan 1970 00:00:00 GMT',
+                httponly=True,
+                secure=True,
+                samesite='none',
+                domain='.salona.me'  # Try parent domain
+            )
+            response.set_cookie(
+                'refresh_token',
+                '',
+                max_age=0,
+                expires='Thu, 01 Jan 1970 00:00:00 GMT',
+                httponly=True,
+                secure=True,
+                samesite='none',
+                domain='.salona.me'  # Try parent domain
+            )
+        return response
+
     except Exception as e:
         # Clear session anyway
         request.session.flush()
-        return JsonResponse({'success': True, 'message': 'Logged out locally'})
+
+        # Create response and delete cookies even on error
+        response = JsonResponse({'success': True, 'message': 'Logged out locally'})
+
+        # Delete HTTP-only cookies
+        response.set_cookie(
+            'access_token',
+            '',
+            max_age=0,
+            expires='Thu, 01 Jan 1970 00:00:00 GMT',
+            httponly=True,
+            secure=True,
+            samesite='none'
+        )
+        response.set_cookie(
+            'refresh_token',
+            '',
+            max_age=0,
+            expires='Thu, 01 Jan 1970 00:00:00 GMT',
+            httponly=True,
+            secure=True,
+            samesite='none'
+        )
+
+        return response

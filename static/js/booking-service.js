@@ -10,33 +10,21 @@ const BookingService = (() => {
             console.log(`Fetching bookings from ${formattedStartDate} to ${formattedEndDate}`);
 
             // Build query parameters
-            const queryParams = new URLSearchParams({
+            const params = {
                 start_date: formattedStartDate,
                 end_date: formattedEndDate
-            });
+            };
 
             // Add staff filter if provided
             if (staffIds && staffIds.length) {
-                staffIds.forEach(id => queryParams.append('staff_id', id));
+                staffIds.forEach(id => {
+                    if (!params.staff_id) params.staff_id = [];
+                    params.staff_id.push(id);
+                });
             }
 
-            const response = await fetch(`${API_BASE_URL}/api/v1/bookings?${queryParams.toString()}`, {
-                method: 'GET',
-                headers: Auth.getAuthHeader(),
-                credentials: 'include'
-            });
-
-            if (!response.ok) {
-                if (response.status === 401) {
-                    // If unauthorized, redirect to login (no localStorage cleanup needed)
-                    window.location.href = '/users/login/';
-                    return [];
-                }
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            return data.success ? data.data : [];
+            const response = await api.getBookings(params);
+            return response?.success ? response.data : [];
         } catch (error) {
             console.error('Error fetching bookings:', error);
             return [];
@@ -79,45 +67,10 @@ const BookingService = (() => {
         });
     };
 
-    // Fetch time offs from API with date range parameters
-    const fetchTimeOffs = async (startDate, endDate) => {
-        try {
-            // Format dates for API request - get start date as 3 days before the first day in calendar
-            const calendarStartDate = new Date(startDate);
-            const timeOffStartDate = new Date(calendarStartDate);
-
-            const formattedStartDate = Utils.formatDate(timeOffStartDate);
-            const formattedEndDate = Utils.formatDate(endDate);
-
-            console.log(`Fetching time offs from ${formattedStartDate} to ${formattedEndDate}`);
-
-            // Build query parameters
-            const queryParams = new URLSearchParams({
-                start_date: formattedStartDate,
-                availability_type: 'weekly'
-            }).toString();
-
-            const response = await fetch(`${API_BASE_URL}/api/v1/users/time-offs?${queryParams}`, {
-                method: 'GET',
-                headers: Auth.getAuthHeader(),
-                credentials: 'include'
-            });
-
-            if (!response.ok) {
-                if (response.status === 401) {
-                    // If unauthorized, redirect to login
-                    window.location.href = '/users/login/';
-                    return [];
-                }
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            return data.success ? data.data : [];
-        } catch (error) {
-            console.error('Error fetching time offs:', error);
-            return [];
-        }
+    // Get time offs from Django context instead of fetching from API
+    const getTimeOffs = () => {
+        // Use the time-offs data passed from Django template
+        return window.userTimeOffs || [];
     };
 
     // Convert API time-offs to calendar events
@@ -229,17 +182,11 @@ const BookingService = (() => {
 
             console.log('Creating booking with data:', bookingData);
 
-            // Send the booking data to the API
-            const response = await fetch(`${API_BASE_URL}/api/v1/bookings/users/create_booking`, {
-                method: 'POST',
-                headers: Auth.getAuthHeader(),
-                body: JSON.stringify(bookingData),
-                credentials: 'include'
-            });
+            // Use API client instead of direct fetch
+            const response = await api.createBooking(bookingData);
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `Failed to create booking: ${response.status}`);
+            if (!response?.success) {
+                throw new Error(response?.message || 'Failed to create booking');
             }
 
             // Show success message
@@ -349,17 +296,11 @@ const BookingService = (() => {
 
             console.log('Updating booking with data:', bookingData);
 
-            // Send the booking update data to the API
-            const response = await fetch(`${API_BASE_URL}/api/v1/bookings/${bookingId}`, {
-                method: 'PUT',
-                headers: Auth.getAuthHeader(),
-                body: JSON.stringify(bookingData),
-                credentials: 'include'
-            });
+            // Use API client instead of direct fetch
+            const response = await api.updateBooking(bookingId, bookingData);
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `Failed to update booking: ${response.status}`);
+            if (!response?.success) {
+                throw new Error(response?.message || 'Failed to update booking');
             }
 
             // Show success message
@@ -404,21 +345,15 @@ const BookingService = (() => {
             const messageBox = document.getElementById('booking-message');
             if (messageBox) messageBox.style.display = 'none';
             
-            // Fetch booking details from API
-            const response = await fetch(`${API_BASE_URL}/api/v1/bookings/${bookingId}`, {
-                method: 'GET',
-                headers: Auth.getAuthHeader(),
-                credentials: 'include'
-            });
+            // Use API client instead of direct fetch
+            const response = await api.getBookingById(bookingId);
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ message: `Failed to fetch booking details: ${response.status}` }));
-                throw new Error(errorData.message || `Failed to fetch booking details: ${response.status}`);
+            if (!response?.success) {
+                throw new Error(response?.message || 'Failed to fetch booking details');
             }
 
-            const data = await response.json();
-            const booking = data.data;
-            
+            const booking = response.data;
+
             console.log('Fetched booking details:', booking);
             
             // Switch form to edit mode
@@ -680,16 +615,11 @@ const BookingService = (() => {
             const messageBox = document.getElementById('booking-message');
             if (messageBox) messageBox.style.display = 'none';
 
-            // Use the DELETE API endpoint
-            const response = await fetch(`${API_BASE_URL}/api/v1/bookings/${bookingId}`, {
-                method: 'DELETE',
-                headers: Auth.getAuthHeader(),
-                credentials: 'include'
-            });
+            // Use API client instead of direct fetch
+            const response = await api.deleteBooking(bookingId);
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ message: `Failed to delete booking: ${response.status}` }));
-                throw new Error(errorData.message || `Failed to delete booking: ${response.status}`);
+            if (!response?.success) {
+                throw new Error(response?.message || 'Failed to delete booking');
             }
 
             // Show success message
@@ -753,17 +683,11 @@ const BookingService = (() => {
 
             console.log('Creating time off with data:', formattedData);
 
-            // Send the time off data to the correct API endpoint
-            const response = await fetch(`${API_BASE_URL}/api/v1/users/time-offs`, {
-                method: 'POST',
-                headers: Auth.getAuthHeader(),
-                body: JSON.stringify(formattedData),
-                credentials: 'include'
-            });
+            // Use API client instead of direct fetch
+            const response = await api.createTimeOff(formattedData);
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `Failed to create time off: ${response.status}`);
+            if (!response?.success) {
+                throw new Error(response?.message || 'Failed to create time off');
             }
 
             // Show success message
@@ -795,22 +719,11 @@ const BookingService = (() => {
             const messageBox = document.getElementById('booking-message');
             if (messageBox) messageBox.style.display = 'none';
 
-            // Prepare the update data - only changing the status
-            const updateData = {
-                status: 'confirmed'
-            };
+            // Use API client instead of direct fetch
+            const response = await api.confirmBooking(bookingId);
 
-            // Send the update to the API
-            const response = await fetch(`${API_BASE_URL}/api/v1/bookings/${bookingId}/confirm`, {
-                method: 'PUT',
-                headers: Auth.getAuthHeader(),
-                body: JSON.stringify(updateData),
-                credentials: 'include'
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ message: `Failed to confirm booking: ${response.status}` }));
-                throw new Error(errorData.message || `Failed to confirm booking: ${response.status}`);
+            if (!response?.success) {
+                throw new Error(response?.message || 'Failed to confirm booking');
             }
 
             // Show success message
@@ -839,7 +752,7 @@ const BookingService = (() => {
         submitBooking,
         updateBooking,
         submitTimeOff,
-        fetchTimeOffs,
+        getTimeOffs,
         convertTimeOffsToEvents,
         confirmBooking
     };

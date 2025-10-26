@@ -1,15 +1,16 @@
-// Logout functionality - Updated for HTTP-only cookies
+// Logout functionality - Updated for Django proxy
 document.addEventListener('DOMContentLoaded', function() {
-    // Enhanced logout function that calls the API
+    // Enhanced logout function that calls the Django proxy
     const performLogout = async () => {
         try {
-            // Call the logout API endpoint with HTTP-only cookies
-            const response = await fetch(`${API_BASE_URL}/api/v1/users/auth/logout`, {
+            // Call the Django logout proxy endpoint
+            const response = await fetch('/users/logout/', {
                 method: 'PUT',
-                credentials: 'include', // Include HTTP-only cookies
                 headers: {
-                    'Content-Type': 'application/json'
-                }
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                credentials: 'include'
             });
 
             const data = await response.json();
@@ -18,11 +19,26 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Logout API call failed:', error);
             // Continue with logout even if API fails
         } finally {
-            // Backend will clear HTTP-only cookies automatically
-            // Just redirect to login page
+            // Redirect to login page
             window.location.href = '/users/login/';
         }
     };
+
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
 
     // Set up logout button click handler
     const logoutBtn = document.getElementById('logout-btn');
@@ -41,4 +57,15 @@ document.addEventListener('DOMContentLoaded', function() {
             performLogout();
         });
     });
+
+    // Handle logout from sidebar navigation
+    window.handleLogout = function(event) {
+        event.preventDefault();
+        if (confirm('Are you sure you want to logout?')) {
+            performLogout();
+        }
+    };
+
+    // Expose performLogout globally for other scripts to use
+    window.performLogout = performLogout;
 });

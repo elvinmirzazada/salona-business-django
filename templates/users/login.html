@@ -31,9 +31,15 @@
                 <p class="auth-subtitle">Sign in to your Salona account</p>
             </div>
 
-            <div id="error-message" class="alert alert-danger" style="display: none;"></div>
+            <!-- Display error message if exists -->
+            {% if error %}
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i>
+                {{ error }}
+            </div>
+            {% endif %}
 
-            <form id="login-form" class="auth-form">
+            <form method="post" class="auth-form">
                 {% csrf_token %}
                 <div class="form-group">
                     <label for="email">
@@ -58,12 +64,6 @@
                         Remember me
                     </label>
                     <a href="#" class="forgot-password">Forgot password?</a>
-                </div>
-
-                <!-- Loading spinner -->
-                <div class="auth-spinner" id="login-form-spinner" style="display: none;">
-                    <div class="spinner-circle"></div>
-                    <span>Signing you in...</span>
                 </div>
 
                 <button type="submit" class="auth-btn">
