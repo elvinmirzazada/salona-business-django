@@ -157,9 +157,9 @@ class APIClient {
         });
     }
 
-    async getServices(params = {}) {
+    async getCompanyServices(params = {}) {
         const queryString = new URLSearchParams(params).toString();
-        const url = `/users/api/api/v1/services${queryString ? '?' + queryString : ''}`;
+        const url = `/users/api/api/v1/companies/services${queryString ? '?' + queryString : ''}`;
         return this.request(url);
     }
 

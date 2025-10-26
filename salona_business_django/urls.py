@@ -30,8 +30,6 @@ def redirect_to_dashboard(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
-    path('dashboard/', redirect_to_dashboard, name='dashboard'),  # Specific redirect for dashboard
-    path('notifications/', NotificationsView.as_view(), name='notifications'),
     path('', views.home, name='home'),  # Home page
     path('customer/', include('customers.urls'))
 ]

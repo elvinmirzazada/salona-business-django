@@ -1,7 +1,5 @@
 // Main dashboard initialization and coordination
 document.addEventListener('DOMContentLoaded', function() {
-    // Show loading spinner immediately
-    const pageLoader = document.getElementById('page-loader');
 
     // Authentication check is now handled by Auth.init() which uses API calls
     // instead of localStorage checks
@@ -25,9 +23,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!hasUserData) {
                 // If user data is null, hide calendar elements and show company creation button
                 toggleDashboardView(false);
-
-                // Hide loading spinner after creating company UI
-                hidePageLoader();
             } else {
                 // User has data, proceed with normal dashboard initialization
                 toggleDashboardView(true);
@@ -47,8 +42,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Initialize the calendar
                 await Calendar.init();
 
-                // Hide loading spinner after all content is loaded
-                hidePageLoader();
             }
 
             // Ensure NotificationManager updates icon after everything is loaded
@@ -61,23 +54,9 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('Error initializing dashboard:', error);
 
-            // Hide loading spinner even if there's an error
-            hidePageLoader();
-
             // Show error message to user
             showErrorMessage('There was a problem loading the dashboard. Please try refreshing the page.');
         }
-    };
-
-    // Hide the page loader with transition effect
-    const hidePageLoader = () => {
-        // Add hidden class (which sets opacity: 0) for smooth transition
-        pageLoader.classList.add('hidden');
-
-        // Remove from DOM after transition completes
-        setTimeout(() => {
-            pageLoader.style.display = 'none';
-        }, 500);
     };
 
     // Show error message to user

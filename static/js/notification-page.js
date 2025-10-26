@@ -5,18 +5,12 @@ const NotificationPage = {
     perPage: 20,
     totalPages: 1,
     isLoading: false,
+    notifications: [],
+    unreadCount: 0,
+    totalNotifications: 0,
 
     // Initialize the notifications page
     async init() {
-        console.log('Initializing notifications page...');
-
-        // Check authentication
-        const accessToken = localStorage.getItem('accessToken');
-        if (!accessToken) {
-            window.location.href = '/users/login/';
-            return;
-        }
-
         this.setupEventListeners();
         await this.loadNotifications();
         this.hidePageLoader();
@@ -112,25 +106,17 @@ const NotificationPage = {
         this.showLoadingState();
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/v1/notifications?page=${this.currentPage}&per_page=${this.perPage}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-                    'Content-Type': 'application/json',
-                },
+            // Use API client instead of direct fetch with localStorage
+            const response = await api.getNotifications({
+                page: this.currentPage,
+                per_page: this.perPage
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-
-            if (result.success && result.data) {
-                this.processNotifications(result.data, result.pagination);
+            if (response?.success && response.data) {
+                this.processNotifications(response.data, response.pagination);
                 this.renderNotifications();
                 this.updateStats();
-                this.updatePagination(result.pagination);
+                this.updatePagination(response.pagination);
             } else {
                 this.showEmptyState();
             }
@@ -170,23 +156,11 @@ const NotificationPage = {
     // Fetch unread count from dedicated API endpoint
     async fetchUnreadCount() {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/v1/notifications/unread-count`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include'
-            });
+            // Use API client instead of direct fetch
+            const response = await api.getUnreadNotificationsCount();
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-
-            if (result.success && typeof result.data.unread_count === 'number') {
-                this.unreadCount = result.data.unread_count;
+            if (response?.success && typeof response.data?.unread_count === 'number') {
+                this.unreadCount = response.data.unread_count;
                 this.updateStats();
                 console.log(`Unread count updated: ${this.unreadCount}`);
             } else {
@@ -400,16 +374,10 @@ const NotificationPage = {
     // Mark notification as read
     async markAsRead(notificationId) {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/v1/notifications/mark-as-read/${notificationId}`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include'
-            });
+            // Use API client instead of direct fetch with localStorage
+            const response = await api.markNotificationAsRead(notificationId);
 
-            if (response.ok) {
+            if (response?.success) {
                 // Update local notification
                 const notification = this.notifications.find(n => n.id === notificationId);
                 if (notification) {
@@ -448,15 +416,12 @@ const NotificationPage = {
     // Delete notification
     async deleteNotification(notificationId) {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/v1/notifications/${notificationId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-                    'Content-Type': 'application/json',
-                },
+            // Use API client instead of direct fetch with localStorage
+            const response = await api.request(`/users/api/api/v1/notifications/${notificationId}`, {
+                method: 'DELETE'
             });
 
-            if (response.ok) {
+            if (response?.success) {
                 // Remove from local notifications
                 this.notifications = this.notifications.filter(n => n.id !== notificationId);
 
@@ -496,15 +461,12 @@ const NotificationPage = {
     // Mark all notifications as read
     async markAllAsRead() {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/v1/notifications/mark-all-read`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-                    'Content-Type': 'application/json',
-                },
+            // Use API client instead of direct fetch with localStorage
+            const response = await api.request('/users/api/api/v1/notifications/mark-all-read', {
+                method: 'POST'
             });
 
-            if (response.ok) {
+            if (response?.success) {
                 // Update local notifications
                 this.notifications.forEach(notification => {
                     notification.read = true;

@@ -1,5 +1,25 @@
 /* Settings Page Styles */
+/* Header Styles */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
 
+.back-button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.back-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(-2px);
+}
 /* Tab Navigation Styles */
 .settings-tabs {
 margin-top: 20px;

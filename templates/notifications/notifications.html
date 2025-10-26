@@ -12,15 +12,6 @@
     <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Immediate authentication check -->
-    <script>
-        (function() {
-            const accessToken = localStorage.getItem('accessToken');
-            if (!accessToken) {
-                window.location.href = '/users/login/';
-            }
-        })();
-    </script>
 </head>
 <body>
     <!-- Full Page Loading Spinner -->
@@ -52,7 +43,7 @@
                 <div class="header-actions">
                     {% include 'partials/notification_icon.html' %}
                     <div class="user-info welcome-message">
-                        <span class="user-name">Welcome!</span>
+                        <span class="user-name">Welcome, {{ user_data.first_name }}!</span>
                     </div>
                 </div>
             </header>
@@ -182,9 +173,11 @@
     <script>
         // Get API_BASE_URL from Django template context (environment variable)
         window.API_BASE_URL = "{{ API_BASE_URL }}";
+        window.userData = {{ user_data_json|safe }};
     </script>
     <script src="{% static 'js/utils.js' %}"></script>
     <script src="{% static 'js/auth.js' %}"></script>
+    <script src="{% static 'js/api-client.js' %}"></script>
     <script src="{% static 'js/notifications.js' %}"></script>
     <script src="{% static 'js/notification-page.js' %}"></script>
 </body>
