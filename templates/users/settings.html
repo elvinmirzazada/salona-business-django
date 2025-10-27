@@ -7,9 +7,9 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
     <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
     <link rel="stylesheet" href="{% static 'css/settings.css' %}">
-    <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -53,7 +53,8 @@
                     <div class="tab-content">
                         <!-- Company Information Tab -->
                         <div class="tab-pane active" id="company-tab">
-                            <!-- Create Company Section -->
+                            <!-- Create Company Section - Only show if no company exists -->
+                            {% if not company_id or company_id == '' %}
                             <div class="card mb-4">
                                 <div class="card-header">
                                     <h2>Create Company</h2>
@@ -97,37 +98,43 @@
                                     <div id="company-message" class="alert" style="display: none; margin-top: 20px; padding: 10px 15px; border-radius: 4px;"></div>
                                 </div>
                             </div>
+                            {% endif %}
 
                             <!-- Section 1: Company Details -->
                             <div class="card mb-4">
-                                <div class="card-header">
-                                    <h2>Company Details</h2>
+                                <div class="card-header collapsible-header" data-target="company-details-content">
+                                    <div class="header-left">
+                                        <h2>Company Details</h2>
+                                    </div>
+                                    <button type="button" class="collapse-toggle" aria-expanded="false">
+                                        <i class="fas fa-chevron-up"></i>
+                                    </button>
                                 </div>
-                                <div class="card-body">
+                                <div class="card-body collapsible-content collapsed" id="company-details-content">
                                     <form id="company-details-form">
                                         <div class="form-group">
-                                            <label for="company-name">Company Name</label>
-                                            <input type="text" id="company-name" name="company-name" required>
+                                            <label for="details-company-name">Company Name</label>
+                                            <input type="text" id="details-company-name" name="company-name" required>
                                         </div>
                                         <div class="form-group">
-                                            <label for="company-logo-url">Company Logo URL</label>
-                                            <input type="url" id="company-logo-url" name="company-logo-url" placeholder="https://example.com/logo.png">
+                                            <label for="details-company-logo-url">Company Logo URL</label>
+                                            <input type="url" id="details-company-logo-url" name="company-logo-url" placeholder="https://example.com/logo.png">
                                         </div>
                                         <div class="form-group">
-                                            <label for="company-website">Website</label>
-                                            <input type="url" id="company-website" name="company-website">
+                                            <label for="details-company-website">Website</label>
+                                            <input type="url" id="details-company-website" name="company-website">
                                         </div>
                                         <div class="form-group">
-                                            <label for="company-description">Description</label>
-                                            <textarea id="company-description" name="company-description" rows="3"></textarea>
+                                            <label for="details-company-description">Description</label>
+                                            <textarea id="details-company-description" name="company-description" rows="3"></textarea>
                                         </div>
                                         <div class="form-group">
-                                            <label for="company-team-size">Team Size</label>
-                                            <input type="number" id="company-team-size" name="company-team-size" min="1">
+                                            <label for="details-company-team-size">Team Size</label>
+                                            <input type="number" id="details-company-team-size" name="company-team-size" min="1">
                                         </div>
                                         <div class="form-group">
-                                            <label for="company-type">Business Type</label>
-                                            <input type="text" id="company-type" name="company-type">
+                                            <label for="details-company-type">Business Type</label>
+                                            <input type="text" id="details-company-type" name="company-type">
                                         </div>
                                         <div class="form-actions">
                                             <button type="submit" class="btn-primary">Save Details</button>
@@ -138,13 +145,20 @@
 
                             <!-- Section 2: Company Emails -->
                             <div class="card mb-4">
-                                <div class="card-header">
-                                    <h2>Company Emails</h2>
-                                    <button id="add-email-btn" class="btn-primary">
-                                        <i class="fas fa-plus"></i> Add Email
-                                    </button>
+                                <div class="card-header collapsible-header" data-target="company-emails-content">
+                                    <div class="header-left">
+                                        <h2>Company Emails</h2>
+                                    </div>
+                                    <div class="header-actions">
+                                        <button id="add-email-btn" class="btn-primary">
+                                            <i class="fas fa-plus"></i> Add Email
+                                        </button>
+                                        <button type="button" class="collapse-toggle" aria-expanded="false">
+                                            <i class="fas fa-chevron-up"></i>
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="card-body">
+                                <div class="card-body collapsible-content collapsed" id="company-emails-content">
                                     <form id="company-emails-form">
                                         <div id="emails-container">
                                             <!-- Initial email field -->
@@ -182,13 +196,20 @@
 
                             <!-- Section 3: Company Phone Numbers -->
                             <div class="card mb-4">
-                                <div class="card-header">
-                                    <h2>Company Phone Numbers</h2>
-                                    <button id="add-phone-btn" class="btn-primary">
-                                        <i class="fas fa-plus"></i> Add Phone
-                                    </button>
+                                <div class="card-header collapsible-header" data-target="company-phones-content">
+                                    <div class="header-left">
+                                        <h2>Company Phone Numbers</h2>
+                                    </div>
+                                    <div class="header-actions">
+                                        <button id="add-phone-btn" class="btn-primary">
+                                            <i class="fas fa-plus"></i> Add Phone
+                                        </button>
+                                        <button type="button" class="collapse-toggle" aria-expanded="false">
+                                            <i class="fas fa-chevron-up"></i>
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="card-body">
+                                <div class="card-body collapsible-content collapsed" id="company-phones-content">
                                     <form id="company-phones-form">
                                         <div id="phones-container">
                                             <!-- Initial phone field -->
@@ -227,10 +248,15 @@
 
                             <!-- Section 4: Company Address -->
                             <div class="card">
-                                <div class="card-header">
-                                    <h2>Company Address</h2>
+                                <div class="card-header collapsible-header" data-target="company-address-content">
+                                    <div class="header-left">
+                                        <h2>Company Address</h2>
+                                    </div>
+                                    <button type="button" class="collapse-toggle" aria-expanded="false">
+                                        <i class="fas fa-chevron-up"></i>
+                                    </button>
                                 </div>
-                                <div class="card-body">
+                                <div class="card-body collapsible-content collapsed" id="company-address-content">
                                     <form id="company-address-form">
                                         <div class="form-group">
                                             <label for="company-address">Street Address</label>
@@ -308,11 +334,15 @@
         // Get API_BASE_URL from Django template context (environment variable)
         window.API_BASE_URL = "{{ API_BASE_URL }}";
         window.userData = {{ user_data_json|safe }};
+        window.companyInfo = {{ company_info_json|safe }};
+        window.companyEmails = {{ company_emails_json|safe }};
+        window.companyPhones = {{ company_phones_json|safe }};
     </script>
     <script src="{% static 'js/utils.js' %}"></script>
     <script src="{% static 'js/auth.js' %}"></script>
     <script src="{% static 'js/ui.js' %}"></script>
     <script src="{% static 'js/api-client.js' %}"></script>
     <script src="{% static 'js/settings.js' %}"></script>
+    <script src="{% static 'js/notifications.js' %}"></script>
 </body>
 </html>

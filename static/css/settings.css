@@ -705,3 +705,104 @@ height: auto;
     margin: 0;
     color: #666;
 }
+
+/* Collapsible Section Styles */
+.collapsible-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.3s ease;
+}
+
+.collapsible-header:hover {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.collapsible-header .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.collapsible-header .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.collapse-toggle {
+    background: transparent;
+    border: none;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #6B7280;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+}
+
+.collapse-toggle:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #374151;
+}
+
+.collapse-toggle i {
+    font-size: 14px;
+    transition: transform 0.3s ease;
+}
+
+.collapse-toggle[aria-expanded="false"] i {
+    transform: rotate(180deg);
+}
+
+.collapsible-content {
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.collapsible-content.collapsed {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    opacity: 0;
+}
+
+.collapsible-content:not(.collapsed) {
+    max-height: none;
+    opacity: 1;
+}
+
+/* Ensure card headers work properly with collapsible */
+.card-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #1F2937;
+}
+
+/* Responsive adjustments for collapsible headers */
+@media (max-width: 768px) {
+    .collapsible-header {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+
+    .collapsible-header .header-actions {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .collapse-toggle {
+        align-self: flex-end;
+        position: absolute;
+        top: 16px;
+        right: 16px;
+    }
+}

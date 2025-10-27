@@ -76,20 +76,24 @@ const Settings = (() => {
     const init = async () => {
         console.log('Initializing settings page');
 
-        // Setup tabs
-        setupTabs();
-
-        // Setup service-related functionality
-        setupServiceActions();
-
         // Setup company information functionality
         setupCompanyForm();
 
         // Setup company creation functionality
         setupCreateCompanyForm();
 
+        // Setup collapsible sections
+        setupCollapsibleSections();
+
+        // Load company data immediately
+        await loadCompanyDetails();
+
+        // Load company emails and phones
+        await loadCompanyEmails();
+        await loadCompanyPhones();
+
         // Load services and categories data
-        await Promise.all([loadServices(), loadCategories()]);
+        await Promise.all([]);
     };
 
     // Setup company creation form submission
@@ -208,625 +212,61 @@ const Settings = (() => {
         }
     };
 
-    // Setup tab navigation
-    const setupTabs = () => {
-        const tabButtons = document.querySelectorAll('.tab-btn');
-        const tabPanes = document.querySelectorAll('.tab-pane');
-
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const targetTab = button.dataset.tab;
-                console.log('Tab clicked:', targetTab);
-
-                // Update active tab button
-                tabButtons.forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active');
-
-                // Update active tab content
-                tabPanes.forEach(pane => {
-                    pane.classList.remove('active');
-                    if (pane.id === `${targetTab}-tab`) {
-                        pane.classList.add('active');
+    // Setup collapsible sections functionality
+    const setupCollapsibleSections = () => {
+        // Find all collapsible headers
+        const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
+        
+        collapsibleHeaders.forEach(header => {
+            // Find the toggle button and content for this header
+            const toggleButton = header.querySelector('.collapse-toggle');
+            const targetId = header.getAttribute('data-target');
+            const content = document.getElementById(targetId);
+            
+            if (toggleButton && content) {
+                // Add click event to the entire header
+                header.addEventListener('click', (e) => {
+                    // Don't toggle if clicking on other buttons (like Add Email/Phone)
+                    if (e.target.closest('.btn-primary') && !e.target.closest('.collapse-toggle')) {
+                        return;
                     }
+                    
+                    toggleSection(toggleButton, content);
                 });
-
-                // Load tab-specific data
-                if (targetTab === 'company') {
-                    console.log('Loading company info...');
-                    loadCompanyInfo();
-                } else if (targetTab === 'services' && document.getElementById('service-list').children.length === 0) {
-                    // Reload services if the tab is selected and no services are loaded yet
-                    console.log('Loading services...');
-                    loadServices();
-                }
-            });
-        });
-    };
-
-    // ========== SERVICES TAB FUNCTIONALITY ==========
-
-    // Setup actions for the services tab
-    const setupServiceActions = () => {
-        // Add service button click handler
-        document.getElementById('add-service-btn').addEventListener('click', () => {
-            showServiceModal();
-        });
-
-        // Service form submit handler
-        document.getElementById('service-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            saveService();
-        });
-
-        // Cancel button in service modal
-        document.getElementById('cancel-service-btn').addEventListener('click', () => {
-            closeServiceModal();
-        });
-
-        // Close modal by clicking X or outside
-        document.querySelectorAll('.close-modal').forEach(element => {
-            element.addEventListener('click', () => {
-                document.getElementById('service-modal').style.display = 'none';
-                document.getElementById('delete-modal').style.display = 'none';
-            });
-        });
-
-        // Cancel delete button
-        document.getElementById('cancel-delete-btn').addEventListener('click', () => {
-            document.getElementById('delete-modal').style.display = 'none';
-        });
-
-        // Confirm delete button
-        document.getElementById('confirm-delete-btn').addEventListener('click', () => {
-            deleteService(currentServiceId);
-        });
-
-        // Add category button click handler
-        document.getElementById('add-category-btn').addEventListener('click', () => {
-            document.getElementById('category-modal').style.display = 'block';
-        });
-        // Cancel button in category modal
-        document.getElementById('cancel-category-btn').addEventListener('click', () => {
-            document.getElementById('category-modal').style.display = 'none';
-        });
-        // Close modal by clicking X or outside
-        document.querySelectorAll('#category-modal .close-modal').forEach(element => {
-            element.addEventListener('click', () => {
-                document.getElementById('category-modal').style.display = 'none';
-            });
-        });
-        window.addEventListener('click', (e) => {
-            const categoryModal = document.getElementById('category-modal');
-            if (e.target === categoryModal) {
-                categoryModal.style.display = 'none';
-            }
-        });
-        // Handle category form submit
-        document.getElementById('category-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await saveCategory();
-        });
-
-        // Category delete modal buttons
-        document.getElementById('cancel-delete-category-btn').addEventListener('click', () => {
-            document.getElementById('delete-category-modal').style.display = 'none';
-        });
-        
-        document.getElementById('confirm-delete-category-btn').addEventListener('click', () => {
-            const categoryId = document.getElementById('delete-category-modal').dataset.categoryId;
-            if (categoryId) {
-                deleteCategory(categoryId);
-            }
-        });
-        
-        // Close category delete modal when clicking on X or outside
-        document.querySelectorAll('#delete-category-modal .close-modal').forEach(element => {
-            element.addEventListener('click', () => {
-                document.getElementById('delete-category-modal').style.display = 'none';
-            });
-        });
-        
-        window.addEventListener('click', (e) => {
-            const deleteCategoryModal = document.getElementById('delete-category-modal');
-            if (e.target === deleteCategoryModal) {
-                deleteCategoryModal.style.display = 'none';
-            }
-        });
-    };
-
-    // Load all services from the API
-    const loadServices = async () => {
-        const categoriesContainer = document.getElementById('service-categories-container');
-        const loadingElement = document.getElementById('service-loading');
-        const emptyElement = document.getElementById('service-empty');
-        console.log('sdfsdfsdf');
-        try {
-            categoriesContainer.innerHTML = '';
-            loadingElement.style.display = 'flex';
-            emptyElement.style.display = 'none';
-
-            // Get token from localStorage
-            const token = localStorage.getItem('accessToken');
-            if (!token) {
-                throw new Error('No access token found');
-            }
-
-            // Fetch services from the API - JWT token contains company info
-            const response = await fetch('http://127.0.0.1:8000/api/v1/companies/services', {
-                method: 'GET',
-                headers: Auth.getAuthHeader(),
-                credentials: 'include'
-            });
-
-            if (!response.ok) {
-                throw new Error(`Error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            console.log(result);
-            const serviceCategories = result.data || [];
-            let hasServices = false;
-
-            loadingElement.style.display = 'none';
-
-            serviceCategories.forEach(category => {
-                if (!category.id) return; // Skip categories without ID
-
-                hasServices = true;
-                // Create category block
-                const catBlock = document.createElement('div');
-                catBlock.className = 'category-block';
-                catBlock.dataset.categoryId = category.id;
-
-                // Category header styled like screenshot
-                const catHeader = document.createElement('div');
-                catHeader.className = 'category-header';
-
-                // Create a wrapper for the category name and icon
-                const catNameWrapper = document.createElement('div');
-                catNameWrapper.className = 'category-name-wrapper';
-                catNameWrapper.innerHTML = `<i class="fas fa-folder"></i> <span>${category.name || 'Unnamed Category'}</span>`;
-
-                // Create delete button
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'category-delete-btn';
-                deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
-                deleteBtn.title = 'Delete Category';
-                deleteBtn.dataset.categoryId = category.id;
-                deleteBtn.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Prevent event bubbling
-                    confirmDeleteCategory(category.id, category.name);
+                
+                // Specifically handle toggle button clicks
+                toggleButton.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent double toggle from header click
+                    toggleSection(toggleButton, content);
                 });
-
-                // Add elements to the header
-                catHeader.appendChild(catNameWrapper);
-                catHeader.appendChild(deleteBtn);
-                catBlock.appendChild(catHeader);
-
-                // Create and add service table
-                const serviceTable = document.createElement('table');
-                serviceTable.className = 'service-table';
-                if (!category.services || !Array.isArray(category.services) || category.services.length === 0) {
-                    // Show empty message if no services
-                    const emptyRow = document.createElement('tr');
-                    const emptyCell = document.createElement('td');
-                    emptyCell.colSpan = 6;
-                    emptyCell.textContent = 'No services in this category';
-                    emptyCell.style.textAlign = 'center';
-                    emptyCell.style.padding = '1rem';
-                    emptyRow.appendChild(emptyCell);
-
-                    const tbody = document.createElement('tbody');
-                    tbody.appendChild(emptyRow);
-                    serviceTable.appendChild(tbody);
-                } else {
-                    // Create regular table with services
-                    const thead = document.createElement('thead');
-                    thead.innerHTML = `
-                        <tr>
-                            <th>Name</th>
-                            <th>Duration</th>
-                            <th>Price</th>
-                            <th>Discount Price</th>
-                            <th>Staff</th>
-                            <th>Actions</th>
-                        </tr>`;
-                    serviceTable.appendChild(thead);
-
-                    const tbody = document.createElement('tbody');
-                    category.services.forEach(service => {
-                        service.category = category.name;
-                        service.category_id = category.id;
-                        const row = createServiceRow(service);
-                        tbody.appendChild(row);
-                    });
-                    serviceTable.appendChild(tbody);
-                }
-
-                catBlock.appendChild(serviceTable);
-                categoriesContainer.appendChild(catBlock);
-            });
-
-            if (!hasServices) {
-                emptyElement.style.display = 'block';
-                return;
             }
-        } catch (error) {
-            console.error('Error loading services:', error);
-            loadingElement.style.display = 'none';
-            showToast('Failed to load services. Please try again.', 'error');
-        }
+        });
     };
 
-    // Create a table row for a service
-    const createServiceRow = (service) => {
-        const row = document.createElement('tr');
-
-        // Service name
-        const nameCell = document.createElement('td');
-        nameCell.textContent = service.name;
-        row.appendChild(nameCell);
-
-        // Duration
-        const durationCell = document.createElement('td');
-        durationCell.textContent = `${service.duration} min`;
-        row.appendChild(durationCell);
-
-        // Price
-        const priceCell = document.createElement('td');
-        priceCell.textContent = formatCurrency(service.price);
-        row.appendChild(priceCell);
-
-        // Discount Price
-        const discountPriceCell = document.createElement('td');
-        discountPriceCell.textContent = service.discount_price ? formatCurrency(service.discount_price) : '—';
-        row.appendChild(discountPriceCell);
-
-        // Staff
-        const staffCell = document.createElement('td');
-        if (service.staff && service.staff.length > 0) {
-            const staffNames = service.staff.map(staff => staff.name).join(', ');
-            staffCell.textContent = staffNames;
+    // Toggle a collapsible section
+    const toggleSection = (toggleButton, content) => {
+        const isExpanded = toggleButton.getAttribute('aria-expanded') === 'true';
+        
+        if (isExpanded) {
+            // Collapse the section
+            toggleButton.setAttribute('aria-expanded', 'false');
+            content.classList.add('collapsed');
+            
+            // Animate the chevron
+            const icon = toggleButton.querySelector('i');
+            if (icon) {
+                icon.style.transform = 'rotate(180deg)';
+            }
         } else {
-            staffCell.textContent = 'Not assigned';
-        }
-        row.appendChild(staffCell);
-
-        // Actions
-        const actionsCell = document.createElement('td');
-        actionsCell.className = 'service-actions';
-
-        // Edit button
-        const editBtn = document.createElement('button');
-        editBtn.className = 'action-btn edit';
-        editBtn.innerHTML = '<i class="fas fa-edit"></i>';
-        editBtn.addEventListener('click', () => {
-            showServiceModal(service);
-        });
-        actionsCell.appendChild(editBtn);
-
-        // Delete button
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'action-btn delete';
-        deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
-        deleteBtn.addEventListener('click', () => {
-            currentServiceId = service.id;
-            document.getElementById('delete-modal').style.display = 'block';
-        });
-        actionsCell.appendChild(deleteBtn);
-
-        row.appendChild(actionsCell);
-
-        return row;
-    };
-
-    // Show the service modal for add/edit
-    const showServiceModal = (service = null) => {
-        const modal = document.getElementById('service-modal');
-        const modalTitle = document.getElementById('service-modal-title');
-        const form = document.getElementById('service-form');
-        const serviceIdField = document.getElementById('service-id');
-        const nameField = document.getElementById('service-name');
-        const durationField = document.getElementById('service-duration');
-        const priceField = document.getElementById('service-price');
-        const discountPriceField = document.getElementById('service-discount-price');
-        const descriptionField = document.getElementById('service-description');
-        const categoryField = document.getElementById('service-category');
-
-        // Reset form
-        form.reset();
-
-        // Update form for edit or add
-        if (service) {
-            modalTitle.textContent = 'Edit Service';
-            serviceIdField.value = service.id;
-            nameField.value = service.name;
-            durationField.value = service.duration;
-            priceField.value = service.price;
-            discountPriceField.value = service.discount_price || '';
-            descriptionField.value = service.description || '';
-            categoryField.value = service.category_id || '';
-
-            // Set current service ID for tracking
-            currentServiceId = service.id;
-        } else {
-            modalTitle.textContent = 'Add Service';
-            serviceIdField.value = '';
-            currentServiceId = null;
-        }
-
-        // Populate staff checkboxes
-        updateStaffCheckboxes(service);
-
-        // Show modal
-        modal.style.display = 'block';
-    };
-
-    // Close the service modal
-    const closeServiceModal = () => {
-        document.getElementById('service-modal').style.display = 'none';
-    };
-
-    // Update staff checkboxes in the service modal
-    const updateStaffCheckboxes = async (service = null) => {
-        const staffContainer = document.getElementById('staff-selection');
-
-        // Clear existing content
-        staffContainer.innerHTML = '';
-
-        // Show loading indicator
-        const loadingMsg = document.createElement('div');
-        loadingMsg.textContent = 'Loading staff members...';
-        loadingMsg.className = 'loading-message';
-        staffContainer.appendChild(loadingMsg);
-
-        try {
-            // Use ServiceManager to load staff members
-            await ServiceManager.loadStaffMembers(staffContainer);
-
-            // If we're editing a service with existing staff assignments
-            if (service && service.staff && Array.isArray(service.staff)) {
-                // Check the checkboxes for staff members assigned to this service
-                service.staff.forEach(staffMember => {
-                    const checkbox = document.querySelector(`#staff-${staffMember.id}`);
-                    if (checkbox) {
-                        checkbox.checked = true;
-                    }
-                });
+            // Expand the section
+            toggleButton.setAttribute('aria-expanded', 'true');
+            content.classList.remove('collapsed');
+            
+            // Animate the chevron
+            const icon = toggleButton.querySelector('i');
+            if (icon) {
+                icon.style.transform = 'rotate(0deg)';
             }
-        } catch (error) {
-            console.error('Error loading staff members:', error);
-            staffContainer.innerHTML = '<div class="error">Failed to load staff members. Please try again.</div>';
-        }
-    };
-
-    // Fetch categories from the API
-    const loadCategories = async () => {
-        try {
-            const token = localStorage.getItem('accessToken');
-            if (!token) throw new Error('No access token found');
-
-            const response = await fetch('http://127.0.0.1:8000/api/v1/services/companies/categories', {
-                method: 'GET',
-                headers: Auth.getAuthHeader(),
-                credentials: 'include'
-            });
-
-            if (!response.ok) throw new Error(`Error: ${response.status}`);
-
-            const result = await response.json();
-            categoryList = result.data || [];
-
-            // Populate category dropdown in the service modal if categories are loaded
-            if (categoryList.length > 0) {
-                populateCategoryDropdown();
-            }
-
-            return categoryList;
-        } catch (error) {
-            console.error('Error loading categories:', error);
-            showToast('Failed to load categories. Please try again.', 'error');
-            return [];
-        }
-    };
-
-    // Populate category dropdown
-    const populateCategoryDropdown = (selectedCategoryId = null) => {
-        const categoryDropdown = document.getElementById('service-category');
-        categoryDropdown.innerHTML = '<option value="">Select a category</option>';
-
-        if (categoryList.length === 0) {
-            categoryDropdown.innerHTML += '<option value="" disabled>No categories available</option>';
-            return;
-        }
-
-        categoryList.forEach(category => {
-            const option = document.createElement('option');
-            option.value = category.id;
-            option.textContent = category.name;
-
-            if (selectedCategoryId && category.id === selectedCategoryId) {
-                option.selected = true;
-            }
-
-            categoryDropdown.appendChild(option);
-        });
-    };
-
-    // Save a service (create or update)
-    const saveService = async () => {
-        const serviceId = document.getElementById('service-id').value;
-        const name = document.getElementById('service-name').value;
-        const duration = document.getElementById('service-duration').value;
-        const price = document.getElementById('service-price').value;
-        const discountPrice = document.getElementById('service-discount-price').value;
-        const description = document.getElementById('service-description').value;
-        const categoryId = document.getElementById('service-category').value;
-
-        // Get selected staff IDs
-        const selectedStaffIds = [];
-        const staffCheckboxes = document.querySelectorAll('#staff-selection input[type="checkbox"]:checked');
-        staffCheckboxes.forEach(checkbox => {
-            selectedStaffIds.push(checkbox.value);
-        });
-
-        // Create service data object
-        const serviceData = {
-            name,
-            duration: parseInt(duration),
-            price: parseFloat(price),
-            discount_price: discountPrice ? parseFloat(discountPrice) : null,
-            additional_info: description,
-            staff_ids: selectedStaffIds,
-            category_id: categoryId
-        };
-
-        try {
-            // Show loading state
-            document.getElementById('save-service-btn').disabled = true;
-            document.getElementById('save-service-btn').textContent = 'Saving...';
-
-            let response;
-
-            // If we have a service ID, update existing service using the correct endpoint (singular 'service')
-            if (serviceId) {
-                response = await fetch(`http://127.0.0.1:8000/api/v1/services/service/${serviceId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...Auth.getAuthHeader()
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify(serviceData)
-                });
-            } else {
-                // Otherwise create a new service using the plural 'services' endpoint
-                response = await fetch('http://127.0.0.1:8000/api/v1/services/services', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...Auth.getAuthHeader()
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify(serviceData)
-                });
-            }
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `Error: ${response.status}`);
-            }
-
-            // Success - reload services and close modal
-            closeServiceModal();
-            await loadServices();
-
-            // Show success message
-            const action = serviceId ? 'updated' : 'created';
-            showToast(`Service ${action} successfully!`, 'success');
-        } catch (error) {
-            console.error('Error saving service:', error);
-            showToast(`Failed to save service: ${error.message}`, 'error');
-        } finally {
-            // Reset button state
-            document.getElementById('save-service-btn').disabled = false;
-            document.getElementById('save-service-btn').textContent = 'Save Service';
-        }
-    };
-
-    // Delete a service
-    const deleteService = async (serviceId) => {
-        if (!serviceId) return;
-
-        try {
-            // Show loading state
-            document.getElementById('confirm-delete-btn').disabled = true;
-            document.getElementById('confirm-delete-btn').textContent = 'Deleting...';
-
-            // Send delete request to the correct endpoint
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/services/service/${serviceId}`, {
-                method: 'DELETE',
-                headers: Auth.getAuthHeader(),
-                credentials: 'include'
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || `Error: ${response.status}`);
-            }
-
-            // Success - reload services and close modal
-            document.getElementById('delete-modal').style.display = 'none';
-            await loadServices();
-
-            // Show success message
-            showToast('Service deleted successfully!', 'success');
-        } catch (error) {
-            console.error('Error deleting service:', error);
-            showToast(`Failed to delete service: ${error.message}`, 'error');
-        } finally {
-            // Reset button state
-            document.getElementById('confirm-delete-btn').disabled = false;
-            document.getElementById('confirm-delete-btn').textContent = 'Delete';
-        }
-    };
-
-    // Save a new category
-    const saveCategory = async () => {
-        const name = document.getElementById('category-name').value;
-        const description = document.getElementById('category-description').value;
-        const saveBtn = document.getElementById('save-category-btn');
-        try {
-            saveBtn.disabled = true;
-            saveBtn.textContent = 'Saving...';
-            const token = localStorage.getItem('accessToken');
-            if (!token) throw new Error('No access token found');
-            const response = await fetch('http://127.0.0.1:8000/api/v1/services/categories', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ name, description })
-            });
-            if (!response.ok) throw new Error(`Error: ${response.status}`);
-            document.getElementById('category-modal').style.display = 'none';
-            document.getElementById('category-form').reset();
-            await loadServices();
-            showToast('Category added successfully!', 'success');
-        } catch (error) {
-            console.error('Error saving category:', error);
-            showToast('Failed to add category. Please try again.', 'error');
-        } finally {
-            saveBtn.disabled = false;
-            saveBtn.textContent = 'Save Category';
-        }
-    };
-
-    // Load the staff list
-    const loadStaffList = async () => {
-        try {
-            // Get token from localStorage
-            const token = localStorage.getItem('accessToken');
-            if (!token) {
-                throw new Error('No access token found');
-            }
-
-            // Fetch staff from API - JWT token contains company info
-            const response = await fetch('/api/staff/', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`Error: ${response.status}`);
-            }
-
-            staffList = await response.json();
-        } catch (error) {
-            console.error('Error loading staff:', error);
-            staffList = [];
         }
     };
 
@@ -915,59 +355,73 @@ const Settings = (() => {
     // Load company details from the API
     const loadCompanyDetails = async () => {
         try {
-            // Get token from localStorage
-            const token = localStorage.getItem('accessToken');
-            if (!token) {
-                throw new Error('No access token found');
+            let companyData = null;
+
+            // First, try to use the company info passed from Django template
+            if (window.companyInfo && Object.keys(window.companyInfo).length > 0) {
+                console.log("Using company info from Django template:", window.companyInfo);
+                companyData = window.companyInfo;
+            } else {
+                // Fallback to API call if no data from template
+                console.log("Fetching company details from API...");
+
+                const response = await fetch(`${window.API_BASE_URL}/api/v1/companies`, {
+                    method: 'GET',
+                    headers: Auth.getAuthHeader(),
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log("Company details from API:", result);
+                companyData = result.data || {};
             }
 
-            // Fetch company details from the API
-            const response = await fetch('http://127.0.0.1:8000/api/v1/companies', {
-                method: 'GET',
-                headers: Auth.getAuthHeader(),
-                credentials: 'include'
-            });
+            // Save company data to module variable
+            window.Settings = window.Settings || {};
+            window.Settings.companyData = companyData;
 
-            if (!response.ok) {
-                throw new Error(`Error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            console.log("Company details:", result);
-
-            // Save company data
-            companyData = result.data || {};
-
-            // Update form fields with company details
-            const nameField = document.getElementById('company-name');
+            // Update form fields with company details using the correct unique IDs
+            const nameField = document.getElementById('details-company-name');
             if (nameField && companyData.name) {
                 nameField.value = companyData.name;
+                console.log("Updated company name field:", companyData.name);
             }
 
-            const logoUrlField = document.getElementById('company-logo-url');
+            const logoUrlField = document.getElementById('details-company-logo-url');
             if (logoUrlField && companyData.logo_url) {
                 logoUrlField.value = companyData.logo_url;
+                console.log("Updated logo URL field:", companyData.logo_url);
             }
 
-            const websiteField = document.getElementById('company-website');
+            const websiteField = document.getElementById('details-company-website');
             if (websiteField && companyData.website) {
                 websiteField.value = companyData.website;
+                console.log("Updated website field:", companyData.website);
             }
 
-            const descriptionField = document.getElementById('company-description');
+            const descriptionField = document.getElementById('details-company-description');
             if (descriptionField && companyData.description) {
                 descriptionField.value = companyData.description;
+                console.log("Updated description field:", companyData.description);
             }
 
-            const teamSizeField = document.getElementById('company-team-size');
+            const teamSizeField = document.getElementById('details-company-team-size');
             if (teamSizeField && companyData.team_size) {
                 teamSizeField.value = companyData.team_size;
+                console.log("Updated team size field:", companyData.team_size);
             }
 
-            const typeField = document.getElementById('company-type');
+            const typeField = document.getElementById('details-company-type');
             if (typeField && companyData.type) {
                 typeField.value = companyData.type;
+                console.log("Updated type field:", companyData.type);
             }
+
+            console.log("Company details form populated successfully");
 
         } catch (error) {
             console.error('Error loading company details:', error);
@@ -978,24 +432,8 @@ const Settings = (() => {
     // Load company emails from the API
     const loadCompanyEmails = async () => {
         try {
-            // Get token from localStorage
-            const token = localStorage.getItem('accessToken');
-            if (!token) {
-                throw new Error('No access token found');
-            }
-
             // Fetch company emails from the API
-            const response = await fetch('http://127.0.0.1:8000/api/v1/companies/emails', {
-                method: 'GET',
-                headers: Auth.getAuthHeader(),
-                credentials: 'include'
-            });
-
-            if (!response.ok) {
-                throw new Error(`Error: ${response.status}`);
-            }
-
-            const result = await response.json();
+            const result = await api.request('/users/api/api/v1/companies/emails');
             console.log("Company emails:", result);
 
             // Save the emails in the module state
@@ -1059,6 +497,71 @@ const Settings = (() => {
         }
     };
 
+    // Load company phones from the API
+    const loadCompanyPhones = async () => {
+        try {
+            // Fetch company phones from the API
+            const result = await api.request(`/users/api/api/v1/companies/phones`);
+            console.log("Company phones:", result);
+
+            // Save the phones in the module state
+            companyPhones = result.data || [];
+
+            // Clear existing phone fields
+            const phonesContainer = document.getElementById('phones-container');
+            if (phonesContainer) {
+                // Update the phone fields based on the returned data
+                if (companyPhones.length > 0) {
+                    // Clear the container completely if we have phones
+                    phonesContainer.innerHTML = '';
+
+                    // Add phone fields based on the API response
+                    companyPhones.forEach((phone, index) => {
+                        const phoneEntry = document.createElement('div');
+                        phoneEntry.className = 'phone-entry';
+                        phoneEntry.innerHTML = `
+                            <div class="form-row">
+                                <div class="form-group flex-grow-1">
+                                    <label for="company-phone-${index}">Phone Number</label>
+                                    <input type="tel" id="company-phone-${index}" name="company-phone-${index}" class="company-phone" value="${phone.number}" required data-phone-id="${phone.id}">
+                                </div>
+                                <div class="form-group phone-type-group">
+                                    <label for="company-phone-type-${index}">Type</label>
+                                    <select id="company-phone-type-${index}" name="company-phone-type-${index}" class="phone-type">
+                                        <option value="primary" ${phone.type === 'primary' ? 'selected' : ''}>Primary</option>
+                                        <option value="business" ${phone.type === 'business' ? 'selected' : ''}>Business</option>
+                                        <option value="mobile" ${phone.type === 'mobile' ? 'selected' : ''}>Mobile</option>
+                                        <option value="fax" ${phone.type === 'fax' ? 'selected' : ''}>Fax</option>
+                                        <option value="other" ${phone.type === 'other' ? 'selected' : ''}>Other</option>
+                                    </select>
+                                </div>
+                                <div class="form-group delete-btn-container">
+                                    <label>&nbsp;</label>
+                                    <button type="button" class="btn-danger delete-phone-btn" data-index="${index}" ${index === 0 && companyPhones.length === 1 ? 'disabled' : ''}>
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        phonesContainer.appendChild(phoneEntry);
+                    });
+                } else {
+                    // If no phones, ensure there's at least one empty field
+                    const firstPhoneInput = document.getElementById('company-phone-0');
+                    if (firstPhoneInput) {
+                        firstPhoneInput.value = '';
+                    }
+                }
+
+                // Re-setup the delete handlers
+                setupDeletePhoneButtons();
+            }
+        } catch (error) {
+            console.error('Error loading company phones:', error);
+            showToast('Failed to load company phones. Please try again.', 'error');
+        }
+    };
+
     // Add a new email field
     const addEmailField = () => {
         const emailsContainer = document.getElementById('emails-container');
@@ -1097,6 +600,44 @@ const Settings = (() => {
 
     };
 
+    // Add a new phone field
+    const addPhoneField = () => {
+        const phonesContainer = document.getElementById('phones-container');
+        const index = document.querySelectorAll('.phone-entry').length;
+
+        const phoneEntry = document.createElement('div');
+        phoneEntry.className = 'phone-entry';
+        phoneEntry.innerHTML = `
+            <div class="form-row">
+                <div class="form-group flex-grow-1">
+                    <label for="company-phone-${index}">Phone Number</label>
+                    <input type="tel" id="company-phone-${index}" name="company-phone-${index}" class="company-phone" required>
+                </div>
+                <div class="form-group phone-type-group">
+                    <label for="company-phone-type-${index}">Type</label>
+                    <select id="company-phone-type-${index}" name="company-phone-type-${index}" class="phone-type">
+                        <option value="primary">Primary</option>
+                        <option value="business">Business</option>
+                        <option value="mobile">Mobile</option>
+                        <option value="fax">Fax</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group delete-btn-container">
+                    <label>&nbsp;</label>
+                    <button type="button" class="btn-danger delete-phone-btn" data-index="${index}">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        phonesContainer.appendChild(phoneEntry);
+
+        // Setup delete handler for the new phone entry
+        setupDeletePhoneButtons();
+    };
+
     // Setup email delete button handlers
     const setupEmailDeleteHandlers = () => {
         document.querySelectorAll('.delete-email-btn').forEach(button => {
@@ -1114,7 +655,6 @@ const Settings = (() => {
                 } else {
                     // For emails that haven't been saved yet, just remove from the DOM
                     emailEntry.remove();
-                    updateEmailDeleteButtons();
                 }
             });
         });
@@ -1236,33 +776,24 @@ const Settings = (() => {
                     }))
                 };
 
-                const response = await fetch('http://127.0.0.1:8000/api/v1/companies/emails', {
-                    method: 'POST',
-                    headers: {
-                        ...Auth.getAuthHeader(),
-                        'Content-Type': 'application/json'
-                    },
+                await api.request('/users/api/api/v1/companies/emails', {
                     body: JSON.stringify(requestData),
-                    credentials: 'include'
+                    method: 'POST'
                 });
-
-                if (!response.ok) {
-                    throw new Error(`Error saving emails: ${response.status}`);
-                }
             }
 
             // Delete emails
-            for (const emailId of emailsToDelete) {
-                const response = await fetch(`http://127.0.0.1:8000/api/v1/companies/emails/${emailId}`, {
-                    method: 'DELETE',
-                    headers: Auth.getAuthHeader(),
-                    credentials: 'include'
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Error deleting email: ${response.status}`);
-                }
-            }
+            // for (const emailId of emailsToDelete) {
+            //     const response = await fetch(`http://127.0.0.1:8000/api/v1/companies/emails/${emailId}`, {
+            //         method: 'DELETE',
+            //         headers: Auth.getAuthHeader(),
+            //         credentials: 'include'
+            //     });
+            //
+            //     if (!response.ok) {
+            //         throw new Error(`Error deleting email: ${response.status}`);
+            //     }
+            // }
 
             // Reload company emails
             await loadCompanyEmails();
@@ -1277,22 +808,22 @@ const Settings = (() => {
     // Save company details
     const saveCompanyDetails = async () => {
         try {
-            // Validate required fields
-            const nameInput = document.getElementById('company-name');
+            // Validate required fields using the correct unique IDs
+            const nameInput = document.getElementById('details-company-name');
             if (!nameInput.value.trim()) {
                 showToast('Company name is required', 'error');
                 nameInput.focus();
                 return;
             }
 
-            // Prepare company data with proper type conversion
+            // Prepare company data with proper type conversion using the correct field IDs
             const detailsData = {
                 name: nameInput.value.trim(),
-                type: document.getElementById('company-type')?.value?.trim() || '',
-                logo_url: document.getElementById('company-logo-url')?.value?.trim() || '',
-                website: document.getElementById('company-website')?.value?.trim() || '',
-                description: document.getElementById('company-description')?.value?.trim() || '',
-                team_size: parseInt(document.getElementById('company-team-size')?.value) || 0
+                type: document.getElementById('details-company-type')?.value?.trim() || '',
+                logo_url: document.getElementById('details-company-logo-url')?.value?.trim() || '',
+                website: document.getElementById('details-company-website')?.value?.trim() || '',
+                description: document.getElementById('details-company-description')?.value?.trim() || '',
+                team_size: parseInt(document.getElementById('details-company-team-size')?.value) || 0
             };
 
             // Disable submit button and show loading state
@@ -1357,8 +888,7 @@ const Settings = (() => {
         phoneInputs.forEach((input, index) => {
             if (input.value) {
                 phones.push({
-                    number: input.value,
-                    type: phoneTypeInputs[index]?.value || 'other'
+                    phone: input.value,
                 });
             }
         });
@@ -1367,42 +897,25 @@ const Settings = (() => {
         const primaryPhone = phones.length > 0 ? phones[0].number : '';
 
         const phoneData = {
-            phone: primaryPhone,
-            phones: phones
+            company_phones: phones
         };
 
         try {
+
             // Disable submit button and show loading state
             const submitBtn = document.querySelector('#company-phones-form button[type="submit"]');
             submitBtn.disabled = true;
             submitBtn.textContent = 'Saving...';
 
-            // Get token from localStorage
-            const token = localStorage.getItem('accessToken');
-            if (!token) {
-                throw new Error('No access token found');
-            }
-
             // Send request to update company phones
-            const response = await fetch('http://127.0.0.1:8000/api/v1/companies/phones', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+            const result = await api.request('/users/api/api/v1/companies/phones', {
+                method: 'POST',
                 body: JSON.stringify(phoneData)
             });
 
-            if (!response.ok) {
-                throw new Error(`Error: ${response.status}`);
-            }
-
-            // Update local data
-            const result = await response.json();
-            companyData = { ...companyData, ...result.data };
-
             // Show success message
             showToast('Company phones saved successfully!', 'success');
+
         } catch (error) {
             console.error('Error saving company phones:', error);
             showToast('Failed to save company phones. Please try again.', 'error');

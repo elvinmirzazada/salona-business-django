@@ -81,7 +81,6 @@ class GeneralView(View):
             return None
 
 
-
 class LogoutView(View):
     def get(self, request):
         # Create redirect response to login page
@@ -187,9 +186,11 @@ class LoginView(View):
                 'error': 'An unexpected error occurred. Please try again.'
             })
 
+
 class SignupView(View):
     def get(self, request):
         return render(request, 'users/signup.html')
+
 
 class DashboardView(GeneralView):
         
@@ -288,7 +289,72 @@ class DashboardView(GeneralView):
             'company_id': user_data.get('company_id', '')
         })
 
+
 class SettingsView(GeneralView):
+
+    def get_company_info(self, request):
+        """Get company info from external API"""
+        access_token = request.COOKIES.get('access_token')
+
+        if not access_token:
+            return None
+
+        try:
+            api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/companies"
+            cookies = {'access_token': access_token}
+
+            response = requests.get(api_url, headers=self.get_header(), cookies=cookies, timeout=10)
+
+            if response.status_code == 200:
+                data = response.json()
+                return data.get('data')
+            return None
+
+        except requests.exceptions.RequestException:
+            return None
+
+    def get_company_emails(self, request):
+        """Get company emails from external API"""
+        access_token = request.COOKIES.get('access_token')
+
+        if not access_token:
+            return None
+
+        try:
+            api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/companies/emails"
+            cookies = {'access_token': access_token}
+
+            response = requests.get(api_url, headers=self.get_header(), cookies=cookies, timeout=10)
+
+            if response.status_code == 200:
+                data = response.json()
+                return data.get('data')
+            return None
+
+        except requests.exceptions.RequestException:
+            return None
+
+    def get_company_phones(self, request):
+        """Get company phones from external API"""
+        access_token = request.COOKIES.get('access_token')
+
+        if not access_token:
+            return None
+
+        try:
+            api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/companies/phones"
+            cookies = {'access_token': access_token}
+
+            response = requests.get(api_url, headers=self.get_header(), cookies=cookies, timeout=10)
+
+            if response.status_code == 200:
+                data = response.json()
+                return data.get('data')
+            return None
+
+        except requests.exceptions.RequestException:
+            return None
+
     def get(self, request):
         # Get current user data
         user_data = self.get_current_user(request)
@@ -307,12 +373,18 @@ class SettingsView(GeneralView):
             return redirect_response
 
         unread_notifications_count = self.get_unread_notifications_count(request)
+        company_info = self.get_company_info(request)
+        company_emails = self.get_company_emails(request)
+        company_phones = self.get_company_phones(request)
         # Check if this is an AJAX request
         if request.headers.get('Accept') == 'application/json':
             return JsonResponse({
                 'user_data': user_data,
                 'unread_notifications_count': unread_notifications_count,
-                'company_id': user_data.get('company_id', '')
+                'company_id': user_data.get('company_id', ''),
+                'company_info': company_info,
+                'company_emails': company_emails,
+                'company_phones': company_phones,
             })
 
         # Token and user data are valid, serve dashboard with user context
@@ -321,8 +393,16 @@ class SettingsView(GeneralView):
             'user_data': user_data,
             'user_data_json': json.dumps(user_data),  # Add JSON serialized version
             'unread_notifications_count': unread_notifications_count,
-            'company_id': user_data.get('company_id', '')
+            'company_id': user_data.get('company_id', ''),
+            'company_info': company_info,
+            'company_info_json': json.dumps(company_info) if company_info else json.dumps({}),
+            'company_emails': company_emails,
+            'company_emails_json': json.dumps(company_emails) if company_emails else json.dumps([]),
+            'company_phones': company_phones,
+            'company_phones_json': json.dumps(company_phones) if company_phones else json.dumps([]),
+            'API_BASE_URL': getattr(settings, 'API_BASE_URL', 'https://api.salona.me')
         })
+
 
 class NotificationsView(GeneralView):
     def get(self, request):
@@ -397,6 +477,7 @@ class ServicesView(GeneralView):
             'company_id': user_data.get('company_id', ''),
             'API_BASE_URL': getattr(settings, 'API_BASE_URL', 'https://api.salona.me')
         })
+
 
 class StaffView(GeneralView):
 
@@ -577,3 +658,66 @@ class StaffView(GeneralView):
             return JsonResponse({'error': 'Network error. Please try again.'}, status=500)
         except Exception as e:
             return JsonResponse({'error': 'An unexpected error occurred.'}, status=500)
+
+
+class CompanyCustomers(GeneralView):
+
+    def get_company_customers(self, request):
+        """Get company customers from external API"""
+        access_token = request.COOKIES.get('access_token')
+
+        if not access_token:
+            return None
+
+        try:
+            api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/companies/customers"
+            cookies = {'access_token': access_token}
+
+            response = requests.get(api_url, headers=self.get_header(), cookies=cookies, timeout=10)
+
+            if response.status_code == 200:
+                data = response.json()
+                return data.get('data')
+            return None
+
+        except requests.exceptions.RequestException:
+            return None
+
+    def get(self, request):
+        # Get current user data
+        user_data = self.get_current_user(request)
+
+        if not user_data:
+            # No valid token or user data
+            if request.headers.get('Accept') == 'application/json':
+                # Return JSON response for AJAX requests
+                return JsonResponse({'error': 'Authentication required'}, status=401)
+
+            # Redirect to login for regular requests
+            from django.shortcuts import redirect
+            redirect_response = redirect('users:login')
+            redirect_response.delete_cookie('access_token')
+            redirect_response.delete_cookie('refresh_token')
+            return redirect_response
+
+        unread_notifications_count = self.get_unread_notifications_count(request)
+        customers_data = self.get_company_customers(request)
+        # Check if this is an AJAX request
+        if request.headers.get('Accept') == 'application/json':
+            return JsonResponse({
+                'user_data': user_data,
+                'unread_notifications_count': unread_notifications_count,
+                'customers_data': customers_data,
+                'company_id': user_data.get('company_id', '')
+            })
+
+        # Token and user data are valid, serve dashboard with user context
+        return render(request, 'users/company_customers.html', {
+            'is_authenticated': True,
+            'user_data': user_data,
+            'user_data_json': json.dumps(user_data),  # Add JSON serialized version
+            'customers_data': customers_data,
+            'customers_data_json': json.dumps(customers_data if customers_data else []),
+            'unread_notifications_count': unread_notifications_count,
+            'company_id': user_data.get('company_id', '')
+        })
