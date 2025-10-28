@@ -65,10 +65,12 @@
                                             <p class="services-subtitle">Create, edit, and organize your business services</p>
                                         </div>
                                         <div class="header-actions">
-                                            <button id="add-service-btn" class="btn-primary add-service-btn">
-                                                <i class="fas fa-plus-circle"></i>
-                                                <span>Add New Service</span>
-                                            </button>
+                                            {% if user_data.role == 'owner' or user_data.role == 'admin' %}
+                                                <button id="add-service-btn" class="btn-primary add-service-btn">
+                                                    <i class="fas fa-plus-circle"></i>
+                                                    <span>Add New Service</span>
+                                                </button>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
@@ -95,7 +97,11 @@
                                         <div class="spinner"></div>
                                     </div>
                                     <div id="services-empty" class="empty-state" style="display:none;">
-                                        <p>No services found. Click "Add Service" to create your first service.</p>
+                                        {% if user_data.role == 'owner' or user_data.role == 'admin' %}
+                                            <p>No services found. Click "Add Service" to create your first service.</p>
+                                        {% else %}
+                                            <p>Insufficient privileges. Please contact your administrator.</p>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
@@ -114,10 +120,12 @@
                                             <p class="categories-subtitle">Organize and structure your service categories</p>
                                         </div>
                                         <div class="header-actions">
-                                            <button id="add-category-btn" class="btn-primary add-category-btn">
-                                                <i class="fas fa-plus-circle"></i>
-                                                <span>Add New Category</span>
-                                            </button>
+                                            {% if user_data.role == 'owner' or user_data.role == 'admin' %}
+                                                <button id="add-category-btn" class="btn-primary add-category-btn">
+                                                    <i class="fas fa-plus-circle"></i>
+                                                    <span>Add New Category</span>
+                                                </button>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
@@ -142,7 +150,11 @@
                                         <div class="spinner"></div>
                                     </div>
                                     <div id="categories-empty" class="empty-state" style="display:none;">
-                                        <p>No categories found. Click "Add Category" to create your first category.</p>
+                                        {% if user_data.role == 'owner' or user_data.role == 'admin' %}
+                                            <p>No categories found. Click "Add Category" to create your first category.</p>
+                                        {% else %}
+                                            <p>Insufficient privileges. Please contact your administrator.</p>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>

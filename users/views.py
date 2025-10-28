@@ -53,7 +53,9 @@ class GeneralView(View):
 
             if response.status_code == 200:
                 data = response.json()
-                return data.get('data')
+                result = data.get('data').get('user', {})
+                result['role'] = data.get('data').get('role', '')
+                return result
             return None
 
         except requests.exceptions.RequestException:

@@ -53,10 +53,12 @@
                                 <p class="staff-subtitle">Create, edit, and organize your staff members</p>
                             </div>
                             <div class="header-actions">
-                                <button class="add-staff-btn" onclick="openAddModal()">
-                                    <i class="fas fa-plus-circle"></i>
-                                    <span>Add New Staff</span>
-                                </button>
+                                {% if user_data.role == 'owner' or user_data.role == 'admin' %}
+                                    <button class="add-staff-btn" onclick="openAddModal()">
+                                        <i class="fas fa-plus-circle"></i>
+                                        <span>Add New Staff</span>
+                                    </button>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -92,7 +94,11 @@
                         <div id="staff-empty" class="empty-state" style="display:none;">
                             <div class="no-staff">
                                 <i class="fas fa-users"></i>
-                                <p>No staff members found. Click "Add New Staff" to create your first staff member.</p>
+                                {% if user_data.role == 'owner' or user_data.role == 'admin' %}
+                                    <p>No staff members found. Click "Add New Staff" to create your first staff member.</p>
+                                {% else %}
+                                    <p>Insufficient privileges, Please contact your administrator.</p>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

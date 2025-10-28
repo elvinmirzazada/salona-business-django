@@ -176,15 +176,19 @@ class ServicesManager {
             <td class="service-duration">${service.duration} min</td>
             <td>${priceDisplay}</td>
             <td style="font-size: 14px; color: #6B7280;">${staffNames}</td>
-            <td class="service-actions">
-                <button class="btn-icon" onclick="servicesManager.editService(${service.id})" title="Edit service">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn-icon btn-danger" onclick="servicesManager.deleteService(${service.id})" title="Delete service">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            </td>
         `;
+        if (["admin", "owner"].includes(window.userData.role)) {
+            tr.innerHTML += `
+                <td class="service-actions">
+                    <button class="btn-icon" onclick="servicesManager.editService(${service.id})" title="Edit service">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-icon btn-danger" onclick="servicesManager.deleteService(${service.id})" title="Delete service">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+        }
         return tr;
     }
 
@@ -223,12 +227,16 @@ class ServicesManager {
             </td>
             <td style="color: #6B7280;">${category.description ? escapeHtml(category.description) : '-'}</td>
             <td style="font-weight: 500;">${servicesCount} service${servicesCount !== 1 ? 's' : ''}</td>
-            <td class="service-actions">
-                <button class="btn-icon btn-danger" onclick="servicesManager.deleteCategory(${category.id})" title="Delete category">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            </td>
         `;
+        if (["admin", "owner"].includes(window.userData.role)) {
+            tr.innerHTML += `
+                <td class="service-actions">
+                    <button class="btn-icon btn-danger" onclick="servicesManager.deleteCategory(${category.id})" title="Delete category">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+        }
         return tr;
     }
 
