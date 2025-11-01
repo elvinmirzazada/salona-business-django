@@ -13,6 +13,8 @@ urlpatterns = [
     path('services/', views.ServicesView.as_view(), name='services'),
     path('staff/', views.StaffView.as_view(), name='staff'),
     path('customers/', views.CompanyCustomers.as_view(), name='customers'),
+    path('membership-plans/', views.MembershipPlansView.as_view(), name='membership_plans'),
+    path('close-tab/', views.CloseTabView.as_view(), name='close_tab'),
     # Keep API proxy only for authenticated API calls (like /users/me)
     path('api/<path:path>', views.APIProxyView.as_view(), name='api_proxy'),
 ]

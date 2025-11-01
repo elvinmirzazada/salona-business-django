@@ -203,6 +203,10 @@ class APIClient {
         });
     }
 
+    async getMembershipPlans() {
+        return this.request('/users/api/api/v1/memberships/plan');
+    }
+
     // Helper methods for common operations
     async refreshData() {
         try {

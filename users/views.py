@@ -723,3 +723,141 @@ class CompanyCustomers(GeneralView):
             'unread_notifications_count': unread_notifications_count,
             'company_id': user_data.get('company_id', '')
         })
+
+
+class MembershipPlansView(GeneralView):
+    """View for displaying membership plans"""
+
+    def get_membership_plans(self, request):
+        """Get membership plans from external API"""
+        access_token = request.COOKIES.get('access_token')
+
+        if not access_token:
+            return None
+
+        try:
+            api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/memberships/plans"
+            cookies = {'access_token': access_token}
+
+            response = requests.get(api_url, headers=self.get_header(), cookies=cookies, timeout=10)
+
+            if response.status_code == 200:
+                data = response.json()
+                return data.get('data')
+            return None
+
+        except requests.exceptions.RequestException:
+            return None
+
+    def get_active_plan(self, request):
+        """Get active membership plan from external API"""
+        access_token = request.COOKIES.get('access_token')
+
+        if not access_token:
+            return None
+
+        try:
+            api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/memberships/active-plan"
+            cookies = {'access_token': access_token}
+
+            response = requests.get(api_url, headers=self.get_header(), cookies=cookies, timeout=10)
+
+            if response.status_code == 200:
+                data = response.json()
+                return data.get('data')
+            return None
+
+        except requests.exceptions.RequestException:
+            return None
+
+    def get(self, request):
+        # Get current user data
+        user_data = self.get_current_user(request)
+
+        if not user_data:
+            # Redirect to login for regular requests
+            redirect_response = redirect('users:login')
+            redirect_response.delete_cookie('access_token')
+            redirect_response.delete_cookie('refresh_token')
+            return redirect_response
+
+        unread_notifications_count = self.get_unread_notifications_count(request)
+
+        # Check for active plan first
+        active_plan = self.get_active_plan(request)
+
+        # Get all available plans
+        membership_plans = self.get_membership_plans(request)
+
+        # Token and user data are valid, serve membership plans page
+        return render(request, 'users/membership_plans.html', {
+            'is_authenticated': True,
+            'user_data': user_data,
+            'user_data_json': json.dumps(user_data),
+            'active_plan': active_plan,
+            'active_plan_json': json.dumps(active_plan if active_plan else None),
+            'membership_plans': membership_plans,
+            'membership_plans_json': json.dumps(membership_plans if membership_plans else []),
+            'unread_notifications_count': unread_notifications_count,
+            'company_id': user_data.get('company_id', '')
+        })
+
+    def post(self, request):
+        """Handle checkout session creation"""
+        user_data = self.get_current_user(request)
+        if not user_data:
+            return JsonResponse({'error': 'Authentication required'}, status=401)
+
+        access_token = request.COOKIES.get('access_token')
+
+        try:
+            # Extract plan ID from URL path
+            # URL format: /users/membership-plans/
+            # But we'll get the plan_id from the request body
+            body = json.loads(request.body) if request.body else {}
+            plan_id = body.get('plan_id')
+
+            if not plan_id:
+                return JsonResponse({'error': 'Plan ID is required'}, status=400)
+
+            # Call external API to create checkout session
+            api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/memberships/create-checkout-session/{plan_id}"
+            cookies = {'access_token': access_token}
+
+            response = requests.post(
+                api_url,
+                headers=self.get_header(),
+                cookies=cookies,
+                timeout=30
+            )
+
+            if response.status_code == 200:
+                data = response.json()
+                return JsonResponse(data)
+            else:
+                error_data = response.json() if response.content else {}
+                return JsonResponse({
+                    'error': error_data.get('message', 'Failed to create checkout session')
+                }, status=response.status_code)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON in request body'}, status=400)
+        except requests.exceptions.RequestException as e:
+            return JsonResponse({'error': 'Network error. Please try again.'}, status=500)
+        except Exception as e:
+            return JsonResponse({'error': 'An unexpected error occurred.'}, status=500)
+
+
+class CloseTabView(View):
+    """View that automatically closes the browser tab when accessed"""
+
+    def get(self, request):
+        """Render a page that automatically closes the tab"""
+        # Get optional message and status from query parameters
+        message = request.GET.get('message', 'Operation completed successfully')
+        status = request.GET.get('status', 'success')  # success, error, cancel
+
+        return render(request, 'users/close_tab.html', {
+            'message': message,
+            'status': status
+        })
