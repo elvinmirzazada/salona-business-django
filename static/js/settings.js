@@ -85,15 +85,31 @@ const Settings = (() => {
         // Setup collapsible sections
         setupCollapsibleSections();
 
-        // Load company data immediately
-        await loadCompanyDetails();
+        // Check if user has a company before loading company data
+        // Get company_id from the Django template context
+        const hasCompany = window.userCompanyId && window.userCompanyId !== 'None' && window.userCompanyId !== '';
 
-        // Load company emails and phones
-        await loadCompanyEmails();
-        await loadCompanyPhones();
+        console.log('User has company:', hasCompany, 'Company ID:', window.userCompanyId);
 
-        // Load services and categories data
-        await Promise.all([]);
+        // Only load company data if user belongs to a company
+        if (hasCompany) {
+            // Load company data immediately
+            await loadCompanyDetails();
+
+            // Load company emails and phones
+            await loadCompanyEmails();
+            await loadCompanyPhones();
+
+            // Load services and categories data
+            await Promise.all([]);
+        } else {
+            console.log('User does not have a company. Skipping company data loading.');
+            // Optionally show the create company form by default
+            const createCompanyForm = document.getElementById('create-company-form');
+            if (createCompanyForm) {
+                createCompanyForm.style.display = 'block';
+            }
+        }
     };
 
     // Setup company creation form submission
@@ -181,12 +197,16 @@ const Settings = (() => {
     // Create a new company
     const createCompany = async (companyData) => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/v1/companies', {
+            // Get CSRF token for Django
+            const csrfToken = getCookie('csrftoken');
+
+            const response = await fetch('/users/settings/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    ...Auth.getAuthHeader()
+                    'X-CSRFToken': csrfToken
                 },
+                credentials: 'include',
                 body: JSON.stringify(companyData)
             });
 
@@ -195,12 +215,13 @@ const Settings = (() => {
             if (!response.ok) {
                 return {
                     success: false,
-                    message: data.message || 'Failed to create company'
+                    message: data.message || data.error || 'Failed to create company'
                 };
             }
 
             return {
-                success: true,
+                success: data.success || true,
+                message: data.message || 'Company created successfully',
                 data: data.data
             };
         } catch (error) {
@@ -210,6 +231,22 @@ const Settings = (() => {
                 message: 'Network error occurred'
             };
         }
+    };
+
+    // Helper function to get CSRF token
+    const getCookie = (name) => {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
     };
 
     // Setup collapsible sections functionality
@@ -371,9 +408,9 @@ const Settings = (() => {
                     credentials: 'include'
                 });
 
-                if (!response.ok) {
-                    throw new Error(`Error: ${response.status}`);
-                }
+                // if (!response.ok) {
+                //     throw new Error(`Error: ${response.status}`);
+                // }
 
                 const result = await response.json();
                 console.log("Company details from API:", result);

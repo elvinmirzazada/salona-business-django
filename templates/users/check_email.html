@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Your Email - Salona</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .check-email-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .check-email-card {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 550px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .email-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            font-size: 3rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 15px rgba(102, 126, 234, 0);
+            }
+        }
+
+        .check-email-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #1a1a1a;
+        }
+
+        .check-email-message {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.1rem;
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+        }
+
+        .email-address {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .info-box {
+            background: #f8f9ff;
+            border-left: 4px solid #667eea;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .info-box h3 {
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.75rem;
+        }
+
+        .info-box ul {
+            margin: 0;
+            padding-left: 1.5rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .info-box li {
+            margin-bottom: 0.5rem;
+        }
+
+        .check-email-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.875rem 2rem;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .resend-link {
+            margin-top: 1.5rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            color: #666;
+        }
+
+        .resend-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .resend-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    {% include 'partials/navigation.html' %}
+
+    <!-- Background Shapes -->
+    <div class="auth-background">
+        <div class="auth-shape auth-shape-1"></div>
+        <div class="auth-shape auth-shape-2"></div>
+        <div class="auth-shape auth-shape-3"></div>
+    </div>
+
+    <!-- Check Email Content -->
+    <div class="check-email-container">
+        <div class="check-email-card">
+            <div class="email-icon">
+                <i class="fas fa-envelope"></i>
+            </div>
+
+            <h1 class="check-email-title">Check Your Email</h1>
+
+            <p class="check-email-message">
+                We've sent a verification link to<br>
+                <span class="email-address">{{ email }}</span>
+            </p>
+
+            <div class="info-box">
+                <h3><i class="fas fa-info-circle"></i> Next Steps:</h3>
+                <ul>
+                    <li>Check your email inbox for a message from Salona</li>
+                    <li>Click the verification link in the email</li>
+                    <li>Once verified, you can log in to your account</li>
+                    <li>If you don't see the email, check your spam folder</li>
+                </ul>
+            </div>
+
+            <div class="check-email-actions">
+                <a href="{% url 'users:login' %}" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Go to Login
+                </a>
+            </div>
+
+            <div class="resend-link">
+                Didn't receive the email?
+                <a href="javascript:void(0)" id="resend-link">Resend verification email</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('resend-link').addEventListener('click', function() {
+            alert('Resend functionality coming soon! Please check your spam folder or contact support.');
+        });
+    </script>
+</body>
+</html>
+

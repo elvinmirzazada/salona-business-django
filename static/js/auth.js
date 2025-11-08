@@ -212,10 +212,9 @@ const Auth = (() => {
                     return;
                 }
 
-                // Registration successful - tokens are now in HTTP-only cookies
-                // No need to store in localStorage
-                // Redirect to dashboard
-                window.location.href = '/users/dashboard/';
+                // Registration successful - redirect to check email page
+                // Get the email that was used for registration
+                window.location.href = `/users/check-email/?email=${encodeURIComponent(email)}`;
 
             } catch (error) {
                 // Hide spinner in case of error

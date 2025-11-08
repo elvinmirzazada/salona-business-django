@@ -337,6 +337,7 @@
         window.companyInfo = {{ company_info_json|safe }};
         window.companyEmails = {{ company_emails_json|safe }};
         window.companyPhones = {{ company_phones_json|safe }};
+        window.userCompanyId = "{{ company_id }}";
     </script>
     <script src="{% static 'js/utils.js' %}"></script>
     <script src="{% static 'js/auth.js' %}"></script>

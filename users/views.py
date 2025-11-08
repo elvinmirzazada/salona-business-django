@@ -5,6 +5,7 @@ from django.views import View
 from django.http import JsonResponse
 import requests
 from django.conf import settings
+from django.shortcuts import redirect
 from .api_proxy import APIProxyView
 
 
@@ -54,12 +55,19 @@ class GeneralView(View):
             if response.status_code == 200:
                 data = response.json()
                 result = data.get('data').get('user', {})
-                result['role'] = data.get('data').get('role', '')
+                result['role'] = data.get('data').get('role', 'owner')
+                result['company_id'] = data.get('data').get('company_id', None)
                 return result
             return None
 
         except requests.exceptions.RequestException:
             return None
+
+    def user_has_company(self, user_data):
+        """Check if user has a company"""
+        if not user_data:
+            return False
+        return user_data.get('company_id') is not None
 
     def get_staff(self, request):
         """Get current user data from external API"""
@@ -95,13 +103,19 @@ class LogoutView(View):
         return redirect_response
 
 
-class LoginView(View):
+class LoginView(GeneralView):
     def get(self, request):
         # Check if user is already authenticated
         access_token = request.COOKIES.get('access_token')
         if access_token:
-            # User is already logged in, redirect to dashboard
-            return redirect('users:dashboard')
+            # Check if user has company using get_current_user
+            user_data = self.get_current_user(request)
+            if user_data:
+                if not user_data.get('company_id'):
+                    # User has no company, redirect to settings
+                    return redirect('users:settings')
+                # User has company, redirect to dashboard
+                return redirect('users:dashboard')
 
         return render(request, 'users/login.html')
 
@@ -143,23 +157,36 @@ class LoginView(View):
 
                 # Check if we have the access token
                 if data.get('success') and response.cookies.get('access_token'):
-                    # Create redirect response to dashboard
-                    redirect_response = redirect('users:dashboard')
+                    # First, create a temporary response to set cookies
+                    access_token = response.cookies.get('access_token')
+                    refresh_token = response.cookies.get('refresh_token')
+
+                    # Temporarily set cookies in the request to use get_current_user
+                    request.COOKIES['access_token'] = access_token
+
+                    # Now check if user has company using get_current_user
+                    user_data = self.get_current_user(request)
+
+                    # Determine redirect based on company_id
+                    if user_data and user_data.get('company_id'):
+                        redirect_response = redirect('users:dashboard')
+                    else:
+                        redirect_response = redirect('users:settings')
 
                     # Set HTTP-only cookies for authentication
                     redirect_response.set_cookie(
                         'access_token',
-                        response.cookies.get('access_token'),
+                        access_token,
                         httponly=True,
                         secure=not settings.DEBUG,
                         samesite='Strict',
                         max_age=3600 * 6  # 6 hours
                     )
 
-                    if response.cookies.get('refresh_token'):
+                    if refresh_token:
                         redirect_response.set_cookie(
                             'refresh_token',
-                            response.cookies.get('refresh_token'),
+                            refresh_token,
                             httponly=True,
                             secure=not settings.DEBUG,
                             samesite='Strict',
@@ -192,6 +219,15 @@ class LoginView(View):
 class SignupView(View):
     def get(self, request):
         return render(request, 'users/signup.html')
+
+
+class CheckEmailView(View):
+    """Display check email page after successful signup"""
+    def get(self, request):
+        email = request.GET.get('email', '')
+        return render(request, 'users/check_email.html', {
+            'email': email
+        })
 
 
 class DashboardView(GeneralView):
@@ -374,6 +410,24 @@ class SettingsView(GeneralView):
             redirect_response.delete_cookie('refresh_token')
             return redirect_response
 
+        if user_data and not user_data.get('company_id'):
+            # User has no company - provide minimal context
+            unread_notifications_count = self.get_unread_notifications_count(request)
+            return render(request, 'users/settings.html', {
+                'is_authenticated': True,
+                'user_data': user_data,
+                'user_data_json': json.dumps(user_data),
+                'unread_notifications_count': unread_notifications_count,
+                'company_id': '',
+                'company_info': None,
+                'company_info_json': json.dumps({}),
+                'company_emails': None,
+                'company_emails_json': json.dumps([]),
+                'company_phones': None,
+                'company_phones_json': json.dumps([]),
+                'API_BASE_URL': getattr(settings, 'API_BASE_URL', 'https://api.salona.me')
+            })
+
         unread_notifications_count = self.get_unread_notifications_count(request)
         company_info = self.get_company_info(request)
         company_emails = self.get_company_emails(request)
@@ -404,6 +458,69 @@ class SettingsView(GeneralView):
             'company_phones_json': json.dumps(company_phones) if company_phones else json.dumps([]),
             'API_BASE_URL': getattr(settings, 'API_BASE_URL', 'https://api.salona.me')
         })
+
+    def post(self, request):
+        """Handle company creation"""
+        user_data = self.get_current_user(request)
+        if not user_data:
+            return JsonResponse({'error': 'Authentication required'}, status=401)
+
+        # Check if user already has a company
+        if user_data.get('company_id'):
+            return JsonResponse({'error': 'User already belongs to a company'}, status=400)
+
+        access_token = request.COOKIES.get('access_token')
+
+        try:
+            # Parse JSON body
+            body = json.loads(request.body) if request.body else {}
+
+            # Prepare company data
+            company_data = {
+                'name': body.get('name', '').strip(),
+                'type': body.get('type', '').strip(),
+                'logo_url': body.get('logo_url', '').strip(),
+                'website': body.get('website', '').strip(),
+                'description': body.get('description', '').strip(),
+                'team_size': int(body.get('team_size', 1))
+            }
+
+            # Validate required fields
+            if not company_data['name']:
+                return JsonResponse({'error': 'Company name is required'}, status=400)
+
+            # Call external API to create company
+            api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/companies"
+            cookies = {'access_token': access_token}
+
+            response = requests.post(
+                api_url,
+                headers=self.get_header(),
+                cookies=cookies,
+                json=company_data,
+                timeout=30
+            )
+
+            if response.status_code in [200, 201]:
+                data = response.json()
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Company created successfully',
+                    'data': data.get('data')
+                })
+            else:
+                error_data = response.json() if response.content else {}
+                return JsonResponse({
+                    'success': False,
+                    'message': error_data.get('message', 'Failed to create company')
+                }, status=response.status_code)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON in request body'}, status=400)
+        except requests.exceptions.RequestException as e:
+            return JsonResponse({'error': 'Network error. Please try again.'}, status=500)
+        except Exception as e:
+            return JsonResponse({'error': 'An unexpected error occurred.'}, status=500)
 
 
 class NotificationsView(GeneralView):
