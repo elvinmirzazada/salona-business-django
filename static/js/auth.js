@@ -179,7 +179,7 @@ const Auth = (() => {
                 const csrfToken = signupForm.querySelector('input[name="csrfmiddlewaretoken"]').value;
 
                 // Submit form data to API with credentials for HTTP-only cookies
-                const response = await fetch(`${API_BASE_URL}/v1/users/auth/signup`, {
+                const response = await fetch(`${API_BASE_URL}/api/v1/users/auth/signup`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
