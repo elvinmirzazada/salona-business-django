@@ -624,11 +624,11 @@ height: auto;
     position: relative;
 }
 
-.delete-btn-container {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-}
+/*.delete-btn-container {*/
+/*    position: absolute;*/
+/*    top: 1rem;*/
+/*    right: 1rem;*/
+/*}*/
 
 .btn-primary {
     background: #00d084;

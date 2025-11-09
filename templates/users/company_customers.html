@@ -96,21 +96,14 @@
     {% load static %}
     <script src="{% static 'js/config.js' %}"></script>
     <script src="{% static 'js/api-client.js' %}"></script>
+    <script src="{% static 'js/customer-manager.js' %}"></script>
     <script src="{% static 'js/notifications.js' %}"></script>
 
     <script>
-        // Global variables
-        let customersData = {{ customers_data_json|safe }};
-        let currentEditingId = null;
-        let currentDeletingId = null;
-
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             showLoadingState();
-            setTimeout(() => {
-                hideLoadingState();
-                renderCustomersTable();
-            }, 500);
+            loadCustomersTable();
         });
 
         function showLoadingState() {
@@ -123,49 +116,40 @@
             document.getElementById('customers-loading').style.display = 'none';
         }
 
-        function renderCustomersTable() {
-            const tbody = document.getElementById('customers-tbody');
-            const tableContainer = document.getElementById('customers-table-container');
-            const emptyState = document.getElementById('customers-empty');
-            const table = document.getElementById('customers-table');
-
-            if (!customersData || customersData.length === 0) {
-                tableContainer.style.display = 'none';
-                table.style.display = 'none';
-                emptyState.style.display = 'block';
-                return;
+        async function loadCustomersTable() {
+            try {
+                await CustomerManager.renderCustomersTable('customers-tbody', {
+                    onLoaded: (customers) => {
+                        // Show table when data is loaded
+                        document.getElementById('customers-table-container').style.display = 'block';
+                        document.getElementById('customers-table').style.display = 'table';
+                        document.getElementById('customers-empty').style.display = 'none';
+                        hideLoadingState();
+                    },
+                    onEmpty: () => {
+                        // Show empty state when no customers
+                        document.getElementById('customers-table-container').style.display = 'none';
+                        document.getElementById('customers-table').style.display = 'none';
+                        document.getElementById('customers-empty').style.display = 'block';
+                        hideLoadingState();
+                    },
+                    onActionClick: (customer, action) => {
+                        if (action === 'view') {
+                            viewCustomer(customer);
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading customers:', error);
+                showAlert('Failed to load customers', 'error');
+                hideLoadingState();
             }
-
-            tableContainer.style.display = 'block';
-            table.style.display = 'table';
-            emptyState.style.display = 'none';
-
-            tbody.innerHTML = customersData.map(customer => `
-                <tr>
-                    <td>${customer.first_name} ${customer.last_name}</td>
-                    <td>${customer.email}</td>
-                    <td>${customer.phone || '-'}</td>
-                    <td>
-                        <span class="status-badge status-${customer.status ? 'active' : 'disabled'}">
-                            ${customer.status ? 'Active' : 'Disabled'}
-                        </span>
-                    </td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="action-btn view-btn" onclick="viewCustomer(${customer.id})" title="View Details">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
         }
 
-        function viewCustomer(customerId) {
-            const customer = customersData.find(c => c.id === customerId);
+        function viewCustomer(customer) {
             if (customer) {
-                // Show customer details or redirect to customer detail page
-                alert(`Customer Details:\nName: ${customer.first_name} ${customer.last_name}\nEmail: ${customer.email}\nPhone: ${customer.phone || 'N/A'}`);
+                // Show customer details
+                alert(`Customer Details:\nName: ${customer.first_name} ${customer.last_name}\nEmail: ${customer.email}\nPhone: ${customer.phone || 'N/A'}\nStatus: ${customer.status === false || customer.status === 'disabled' ? 'Disabled' : 'Active'}`);
             }
         }
 
@@ -182,23 +166,6 @@
                 alertDiv.remove();
             }, 5000);
         }
-
-        // Helper function to get CSRF token
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-
     </script>
 </body>
 </html>

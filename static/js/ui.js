@@ -1,5 +1,83 @@
 // UI related functionality
 const UI = (() => {
+    // Initialize resizable panel functionality
+    const initResizablePanel = () => {
+        const panel = document.getElementById('booking-form-panel');
+        if (!panel) return;
+
+        let isResizing = false;
+        let startX = 0;
+        let startWidth = 0;
+
+        // Create a resize handle element for better UX
+        const resizeHandle = document.createElement('div');
+        resizeHandle.className = 'resize-handle';
+        resizeHandle.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 10px;
+            height: 100%;
+            cursor: ew-resize;
+            z-index: 10;
+        `;
+        panel.appendChild(resizeHandle);
+
+        const startResize = (e) => {
+            isResizing = true;
+            startX = e.clientX;
+            startWidth = panel.offsetWidth;
+            panel.classList.add('resizing');
+            document.body.style.cursor = 'ew-resize';
+            document.body.style.userSelect = 'none';
+            e.preventDefault();
+        };
+
+        const resize = (e) => {
+            if (!isResizing) return;
+
+            // Calculate new width (moving left increases width, moving right decreases)
+            const deltaX = startX - e.clientX;
+            const newWidth = startWidth + deltaX;
+
+            // Constrain width between min and max
+            const minWidth = 320;
+            const maxWidth = window.innerWidth * 0.9;
+            const constrainedWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
+
+            panel.style.width = `${constrainedWidth}px`;
+        };
+
+        const stopResize = () => {
+            if (!isResizing) return;
+            isResizing = false;
+            panel.classList.remove('resizing');
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+        };
+
+        // Add event listeners
+        resizeHandle.addEventListener('mousedown', startResize);
+        document.addEventListener('mousemove', resize);
+        document.addEventListener('mouseup', stopResize);
+
+        // Also support touch events for mobile
+        resizeHandle.addEventListener('touchstart', (e) => {
+            startResize({
+                clientX: e.touches[0].clientX,
+                preventDefault: () => e.preventDefault()
+            });
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (isResizing) {
+                resize({ clientX: e.touches[0].clientX });
+            }
+        });
+
+        document.addEventListener('touchend', stopResize);
+    };
+
     // Navigate to a specific step in the booking form
     const goToStep = (stepNumber) => {
         // Update step tabs
@@ -41,7 +119,16 @@ const UI = (() => {
         // Store the date in the popup data for later use
         popup.dataset.date = date.toISOString();
         
-        // Position popup near the click location
+        // Account for scroll offset when positioning
+        const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+        const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+
+        // Position popup near the click location, accounting for scroll
+        const popupX = x + scrollX;
+        const popupY = y + scrollY;
+
+        // Make popup position fixed so it stays in viewport
+        popup.style.position = 'fixed';
         popup.style.left = `${x}px`;
         popup.style.top = `${y}px`;
         
@@ -98,92 +185,134 @@ const UI = (() => {
         }, 10);
     };
 
-    // Show event popup with details - checks if this is a regular booking or a time off event
-    const showEventPopup = (event, x, y) => {
-        // Check if this is a time off event
-        if (event.isTimeOff) {
-            showTimeOffPopup(event, x, y);
+    /**
+     * Format date and time for display
+     * @param {Date} startDate - Start date
+     * @param {Date} endDate - End date
+     * @returns {string} Formatted date-time string
+     */
+    const formatEventDateTime = (startDate, endDate) => {
+        const startDateStr = startDate.toLocaleDateString();
+        const endDateStr = endDate.toLocaleDateString();
+        const startTime = Utils.formatTime(startDate.getHours(), startDate.getMinutes());
+        const endTime = Utils.formatTime(endDate.getHours(), endDate.getMinutes());
+
+        if (startDateStr === endDateStr) {
+            // Same day event
+            return `${startDateStr}, ${startTime} - ${endTime}`;
+        } else {
+            // Multi-day event
+            return `From ${startDateStr} ${startTime} to ${endDateStr} ${endTime}`;
+        }
+    };
+
+    /**
+     * Populate customer information in the popup
+     * @param {Object} customer - Customer data object
+     */
+    const populateCustomerInfo = (customer) => {
+        const elements = {
+            name: document.querySelector('#event-popup-customer-name'),
+            email: document.querySelector('#event-popup-customer-email'),
+            phone: document.querySelector('#event-popup-customer-phone')
+        };
+
+        if (customer) {
+            const fullName = `${customer.first_name || ''} ${customer.last_name || ''}`.trim();
+            elements.name.textContent = fullName || 'Unknown';
+            elements.email.textContent = customer.email || 'No email provided';
+            elements.phone.textContent = customer.phone || 'No phone provided';
+        } else {
+            elements.name.textContent = 'No customer information';
+            elements.email.textContent = '';
+            elements.phone.textContent = '';
+        }
+    };
+
+    /**
+     * Find staff member by ID from window.staff_data
+     * @param {string} staffId - Staff user ID
+     * @returns {Object|null} Staff member object or null
+     */
+    const findStaffById = (staffId) => {
+        if (!window.staff_data || !Array.isArray(window.staff_data)) {
+            return null;
+        }
+
+        const staffMember = window.staff_data.find(staff =>
+            staff.user && staff.user.id === staffId
+        );
+
+        return staffMember ? staffMember.user : null;
+    };
+
+    /**
+     * Populate booked services with assigned staff information
+     * @param {Array} bookingServices - Array of booking service objects
+     */
+    const populateServicesInfo = (bookingServices) => {
+        const servicesList = document.getElementById('event-popup-services-list');
+
+        if (!servicesList) return;
+
+        // Clear existing content
+        servicesList.innerHTML = '';
+
+        if (!bookingServices || bookingServices.length === 0) {
+            servicesList.innerHTML = '<div class="no-services-message">No services booked</div>';
             return;
         }
 
-        const popup = document.getElementById('event-popup');
+        // Create service items
+        bookingServices.forEach(service => {
+            const serviceItem = document.createElement('div');
+            serviceItem.className = 'service-item-detail';
 
-        // Store the current event data for editing
-        popup.dataset.eventId = event.id || '';
-        popup.dataset.bookingData = JSON.stringify(event);
+            // Service name/ID (we'll need to fetch actual service names from API or context)
+            const serviceName = document.createElement('div');
+            serviceName.className = 'service-item-name';
+            serviceName.innerHTML = `<i class="fas fa-cut"></i> Service: ` + service.category_service.name + `, (` + service.category_service.duration + ` mins)`;
+            serviceItem.appendChild(serviceName);
 
-        // Format the date and time display
-        const startDate = event.start.toLocaleDateString();
-        const endDate = event.end.toLocaleDateString();
-        const startTime = Utils.formatTime(event.start.getHours(), event.start.getMinutes());
-        const endTime = Utils.formatTime(event.end.getHours(), event.end.getMinutes());
+            // Find staff member information
+            const staffMember = findStaffById(service.user_id);
 
-        // Create a better formatted date-time display
-        let timeDisplay;
-        if (startDate === endDate) {
-            // Same day event - just show the date once with time range
-            timeDisplay = `${startDate}, ${startTime} - ${endTime}`;
-        } else {
-            // Multi-day event - show full range
-            timeDisplay = `From ${startDate} ${startTime} to ${endDate} ${endTime}`;
-        }
+            // Staff member assigned to this service
+            const staffInfo = document.createElement('div');
+            staffInfo.className = 'service-item-staff';
 
-        // Set popup content
-        document.querySelector('#event-popup-time-value').textContent = timeDisplay;
+            if (staffMember) {
+                const staffFullName = `${staffMember.first_name || ''} ${staffMember.last_name || ''}`.trim();
+                staffInfo.innerHTML = `<i class="fas fa-user-tie"></i> Assigned to: <strong>${staffFullName}</strong>`;
+            } else {
+                staffInfo.innerHTML = `<i class="fas fa-user-tie"></i> Staff: <em>Not assigned</em>`;
+            }
 
-        // Set status with appropriate styling
-        const statusElement = document.querySelector('#event-popup-status-value');
-        statusElement.textContent = event.status.charAt(0).toUpperCase() + event.status.slice(1);
-        statusElement.className = `status-${event.status}`;
+            serviceItem.appendChild(staffInfo);
+            servicesList.appendChild(serviceItem);
+        });
+    };
 
-        // Set price
-        document.querySelector('#event-popup-price-value').textContent =
-            event.totalPrice ? `$${event.totalPrice}` : 'Not specified';
-
-        // Set customer information
-        if (event.customer) {
-            // Set customer name
-            document.querySelector('#event-popup-customer-name').textContent =
-                `${event.customer.first_name || ''} ${event.customer.last_name || ''}`.trim() || 'Unknown';
-
-            // Set customer email
-            document.querySelector('#event-popup-customer-email').textContent =
-                event.customer.email || 'No email provided';
-
-            // Set customer phone
-            document.querySelector('#event-popup-customer-phone').textContent =
-                event.customer.phone || 'No phone provided';
-        } else {
-            // If no customer info is available
-            document.querySelector('#event-popup-customer-name').textContent = 'No customer information';
-            document.querySelector('#event-popup-customer-email').textContent = '';
-            document.querySelector('#event-popup-customer-phone').textContent = '';
-        }
-
-        // Set notes
-        document.querySelector('#event-popup-notes-value').textContent =
-            event.description || 'No notes';
-
-        // Show or hide confirm button based on booking status
+    /**
+     * Setup action buttons for the booking popup
+     * @param {Object} event - Event data
+     * @param {HTMLElement} popup - Popup element
+     */
+    const setupBookingPopupActions = (event, popup) => {
+        // Setup confirm button
         const confirmButton = document.getElementById('event-popup-confirm');
         if (confirmButton) {
-            // Only show the confirm button for bookings with "scheduled" status
             if (event.status === 'scheduled') {
                 confirmButton.style.display = 'block';
-
-                // Remove any existing event listeners to avoid duplicates
                 const newConfirmButton = confirmButton.cloneNode(true);
                 confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
 
-                // Add click handler to confirm button
                 newConfirmButton.addEventListener('click', () => {
-                    // Show confirmation popup for confirming the booking
                     showConfirmationPopup(
-                        `Are you sure you want to mark this booking as confirmed?`,
+                        'Are you sure you want to mark this booking as confirmed?',
                         () => {
-                            // Call the API to update the booking status to confirmed
                             BookingService.confirmBooking(event.id);
-                            popup.style.display = 'none'; // Hide popup after confirming
+                            popup.style.display = 'none';
                         }
                     );
                 });
@@ -192,49 +321,42 @@ const UI = (() => {
             }
         }
 
-        // Position popup near the click but ensure it stays in viewport
-        positionPopup(popup, x, y);
-
-        // Show popup
-        popup.style.display = 'block';
-
-        // Add click handler to edit button
+        // Setup edit button
         const editButton = document.getElementById('event-popup-edit');
         if (editButton) {
-            // Remove any existing event listeners to avoid duplicates
             const newEditButton = editButton.cloneNode(true);
             editButton.parentNode.replaceChild(newEditButton, editButton);
 
             newEditButton.addEventListener('click', () => {
                 BookingService.handleEditBooking(event.id);
-                popup.style.display = 'none'; // Hide popup after clicking edit
+                popup.style.display = 'none';
             });
         }
 
-        // Add click handler to delete button
+        // Setup delete button
         const deleteButton = document.getElementById('event-popup-delete');
         if (deleteButton) {
-            // Remove any existing event listeners to avoid duplicates
             const newDeleteButton = deleteButton.cloneNode(true);
             deleteButton.parentNode.replaceChild(newDeleteButton, deleteButton);
 
             newDeleteButton.addEventListener('click', () => {
-                // Show the custom confirmation popup instead of the browser confirm
+                const customerName = event.customer
+                    ? `${event.customer.first_name || 'unknown'} ${event.customer.last_name || 'customer'}`
+                    : 'unknown customer';
+
                 showConfirmationPopup(
-                    `Are you sure you want to delete this booking for ${event.customer?.first_name || 'unknown'} ${event.customer?.last_name || 'customer'}?`,
+                    `Are you sure you want to delete this booking for ${customerName}?`,
                     () => {
-                        // Confirmed action - delete the booking
                         BookingService.deleteBooking(event.id);
-                        popup.style.display = 'none'; // Hide popup after confirming delete
+                        popup.style.display = 'none';
                     }
                 );
             });
         }
 
-        // Add click handler to close button
+        // Setup close button
         const closeButton = popup.querySelector('.event-popup-close');
         if (closeButton) {
-            // Remove any existing event listeners to avoid duplicates
             const newCloseButton = closeButton.cloneNode(true);
             closeButton.parentNode.replaceChild(newCloseButton, closeButton);
 
@@ -242,73 +364,123 @@ const UI = (() => {
                 popup.style.display = 'none';
             });
         }
+    };
+
+    /**
+     * Show booking details popup - Main refactored function
+     * @param {Object} event - Event data object
+     * @param {number} x - X coordinate for positioning
+     * @param {number} y - Y coordinate for positioning
+     */
+    const showBookingDetails = (event, x, y) => {
+        const popup = document.getElementById('event-popup');
+        if (!popup) return;
+
+        // Store event data
+        popup.dataset.eventId = event.id || '';
+        popup.dataset.bookingData = JSON.stringify(event);
+
+        // Format and display time
+        const timeDisplay = formatEventDateTime(event.start, event.end);
+        document.querySelector('#event-popup-time-value').textContent = timeDisplay;
+
+        // Display status
+        const statusElement = document.querySelector('#event-popup-status-value');
+        const statusText = event.status.charAt(0).toUpperCase() + event.status.slice(1);
+        statusElement.textContent = statusText;
+        statusElement.className = `status-${event.status}`;
+
+        // Display price
+        const priceText = event.totalPrice ? `$${event.totalPrice}` : 'Not specified';
+        document.querySelector('#event-popup-price-value').textContent = priceText;
+
+        // Populate customer information
+        populateCustomerInfo(event.customer);
+
+        // Display notes
+        const notesText = event.description || 'No notes';
+        document.querySelector('#event-popup-notes-value').textContent = notesText;
+
+        // Populate and display booked services with assigned staff
+        populateServicesInfo(event.bookingServices);
+
+        // Setup action buttons
+        setupBookingPopupActions(event, popup);
+
+        // Position and show popup
+        positionPopup(popup, x, y);
+        popup.style.display = 'block';
 
         // Close popup when clicking outside
-        document.addEventListener('click', function closePopupHandler(e) {
-            if (!popup.contains(e.target) && e.target.closest('.event') === null) {
-                popup.style.display = 'none';
-                document.removeEventListener('click', closePopupHandler);
-            }
-        });
+        setTimeout(() => {
+            const closeHandler = (e) => {
+                if (!popup.contains(e.target) && !e.target.closest('.event')) {
+                    popup.style.display = 'none';
+                    document.removeEventListener('click', closeHandler);
+                }
+            };
+            document.addEventListener('click', closeHandler);
+        }, 10);
+    };
+
+    // Show event popup with details - checks if this is a regular booking or a time off event
+    const showEventPopup = (event, x, y) => {
+        // Check if this is a time off event
+        if (event.isTimeOff) {
+            showTimeOffPopup(event, x, y);
+            return;
+        }
+
+        // Show booking details
+        showBookingDetails(event, x, y);
+    };
+
+    /**
+     * Populate staff information in time off popup
+     * @param {Object} user - Staff user data
+     */
+    const populateStaffInfo = (user) => {
+        const elements = {
+            name: document.querySelector('#time-off-popup-staff-name'),
+            email: document.querySelector('#time-off-popup-staff-email'),
+            phone: document.querySelector('#time-off-popup-staff-phone')
+        };
+
+        if (user) {
+            const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+            elements.name.textContent = fullName || 'Unknown';
+            elements.email.textContent = user.email || 'No email provided';
+            elements.phone.textContent = user.phone || 'No phone provided';
+        } else {
+            elements.name.textContent = 'Unknown staff member';
+            elements.email.textContent = '';
+            elements.phone.textContent = '';
+        }
     };
 
     // Show time off popup with details
     const showTimeOffPopup = (event, x, y) => {
         const popup = document.getElementById('time-off-popup');
+        if (!popup) return;
 
-        // Format the date and time display
-        const startDate = event.start.toLocaleDateString();
-        const endDate = event.end.toLocaleDateString();
-        const startTime = Utils.formatTime(event.start.getHours(), event.start.getMinutes());
-        const endTime = Utils.formatTime(event.end.getHours(), event.end.getMinutes());
-
-        // Create a better formatted date-time display
-        let timeDisplay;
-        if (startDate === endDate) {
-            // Same day event - just show the date once with time range
-            timeDisplay = `${startDate}, ${startTime} - ${endTime}`;
-        } else {
-            // Multi-day event - show full range
-            timeDisplay = `From ${startDate} ${startTime} to ${endDate} ${endTime}`;
-        }
-
-        // Set popup content
+        // Format and display time
+        const timeDisplay = formatEventDateTime(event.start, event.end);
         document.querySelector('#time-off-popup-time-value').textContent = timeDisplay;
 
-        // Set staff information if available
-        if (event.user) {
-            // Set staff name
-            document.querySelector('#time-off-popup-staff-name').textContent =
-                `${event.user.first_name || ''} ${event.user.last_name || ''}`.trim() || 'Unknown';
+        // Populate staff information
+        populateStaffInfo(event.user);
 
-            // Set staff email
-            document.querySelector('#time-off-popup-staff-email').textContent =
-                event.user.email || 'No email provided';
+        // Display reason
+        const reasonText = event.description || 'No reason provided';
+        document.querySelector('#time-off-popup-reason-value').textContent = reasonText;
 
-            // Set staff phone
-            document.querySelector('#time-off-popup-staff-phone').textContent =
-                event.user.phone || 'No phone provided';
-        } else {
-            // If no staff info is available
-            document.querySelector('#time-off-popup-staff-name').textContent = 'Unknown staff member';
-            document.querySelector('#time-off-popup-staff-email').textContent = '';
-            document.querySelector('#time-off-popup-staff-phone').textContent = '';
-        }
-
-        // Set reason
-        document.querySelector('#time-off-popup-reason-value').textContent =
-            event.description || 'No reason provided';
-
-        // Position popup near the click but ensure it stays in viewport
+        // Position and show popup
         positionPopup(popup, x, y);
-
-        // Show popup
         popup.style.display = 'block';
 
-        // Add click handler to close button
+        // Setup close button
         const closeButton = popup.querySelector('.event-popup-close');
         if (closeButton) {
-            // Remove any existing event listeners to avoid duplicates
             const newCloseButton = closeButton.cloneNode(true);
             closeButton.parentNode.replaceChild(newCloseButton, closeButton);
 
@@ -318,12 +490,15 @@ const UI = (() => {
         }
 
         // Close popup when clicking outside
-        document.addEventListener('click', function closePopupHandler(e) {
-            if (!popup.contains(e.target) && e.target.closest('.event') === null) {
-                popup.style.display = 'none';
-                document.removeEventListener('click', closePopupHandler);
-            }
-        });
+        setTimeout(() => {
+            const closeHandler = (e) => {
+                if (!popup.contains(e.target) && !e.target.closest('.event')) {
+                    popup.style.display = 'none';
+                    document.removeEventListener('click', closeHandler);
+                }
+            };
+            document.addEventListener('click', closeHandler);
+        }, 10);
     };
 
     // Position a popup so it's visible in the viewport
@@ -428,9 +603,16 @@ const UI = (() => {
         showSlotActionPopup,
         showConfirmationPopup,
         setupBookingFormNavigation,
-        showMessage
+        showMessage,
+        initResizablePanel
     };
 })();
 
 // Export the UI module
 window.UI = UI;
+
+// Initialize UI components
+document.addEventListener('DOMContentLoaded', () => {
+    UI.initResizablePanel();
+});
+

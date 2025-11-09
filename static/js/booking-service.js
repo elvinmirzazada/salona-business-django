@@ -62,7 +62,8 @@ const BookingService = (() => {
                 color: color,
                 totalPrice: booking.total_price,
                 status: booking.status,
-                customer: customer
+                customer: customer,
+                bookingServices: booking.booking_services || [] // Preserve booking services
             };
         });
     };
@@ -111,7 +112,6 @@ const BookingService = (() => {
             const endDate = document.getElementById('booking-end-date').value;
             const startTime = document.getElementById('booking-start-time').value;
             const endTime = document.getElementById('booking-end-time').value;
-            const serviceSelect = document.getElementById('booking-service');
             const workerId = document.getElementById('booking-worker').value;
             const customerType = document.getElementById('booking-customer').value;
             const description = document.getElementById('booking-description').value;
@@ -120,17 +120,19 @@ const BookingService = (() => {
             const startAt = `${startDate}T${startTime}:00Z`;
             const endAt = `${endDate}T${endTime}:00Z`;
 
-            // Get selected services
-            const selectedServices = Array.from(serviceSelect.selectedOptions);
+            // Get selected services from checkboxes instead of select dropdown
+            const selectedServiceCheckboxes = document.querySelectorAll('input[name="booking-service"]:checked');
 
-            if (selectedServices.length === 0) {
+            if (selectedServiceCheckboxes.length === 0) {
                 alert('Please select at least one service');
                 UI.goToStep(1); // Go back to service selection
+                Utils.toggleSpinner(false);
                 return;
             }
 
             if (!workerId) {
                 alert('Please select a staff member');
+                Utils.toggleSpinner(false);
                 return;
             }
 
@@ -143,9 +145,9 @@ const BookingService = (() => {
             };
 
             // Add each selected service to the services array
-            selectedServices.forEach(option => {
+            selectedServiceCheckboxes.forEach(checkbox => {
                 bookingData.services.push({
-                    category_service_id: option.value,
+                    category_service_id: checkbox.value,
                     user_id: workerId,
                     notes: '' // Currently we don't have per-service notes
                 });
@@ -225,7 +227,6 @@ const BookingService = (() => {
             const endDate = document.getElementById('booking-end-date').value;
             const startTime = document.getElementById('booking-start-time').value;
             const endTime = document.getElementById('booking-end-time').value;
-            const serviceSelect = document.getElementById('booking-service');
             const workerId = document.getElementById('booking-worker').value;
             const customerType = document.getElementById('booking-customer').value;
             const description = document.getElementById('booking-description').value;
@@ -234,17 +235,19 @@ const BookingService = (() => {
             const startAt = `${startDate}T${startTime}:00Z`;
             const endAt = `${endDate}T${endTime}:00Z`;
 
-            // Get selected services
-            const selectedServices = Array.from(serviceSelect.selectedOptions);
+            // Get selected services from checkboxes instead of select dropdown
+            const selectedServiceCheckboxes = document.querySelectorAll('input[name="booking-service"]:checked');
 
-            if (selectedServices.length === 0) {
+            if (selectedServiceCheckboxes.length === 0) {
                 alert('Please select at least one service');
                 UI.goToStep(1); // Go back to service selection
+                Utils.toggleSpinner(false);
                 return;
             }
 
             if (!workerId) {
                 alert('Please select a staff member');
+                Utils.toggleSpinner(false);
                 return;
             }
 
@@ -257,9 +260,9 @@ const BookingService = (() => {
             };
 
             // Add each selected service to the services array
-            selectedServices.forEach(option => {
+            selectedServiceCheckboxes.forEach(checkbox => {
                 bookingData.services.push({
-                    category_service_id: option.value,
+                    category_service_id: checkbox.value,
                     user_id: workerId,
                     notes: '' // Currently we don't have per-service notes
                 });
@@ -449,26 +452,13 @@ const BookingService = (() => {
 
         // Set up services - first load all available services
         ServiceManager.loadServices().then(() => {
-            // After services are loaded, select the ones from the booking
+            // After services are loaded, check the selected services from the booking
             if (bookingServices.length > 0) {
-                const serviceSelect = document.getElementById('booking-service');
-                
-                // Clear any existing selections
-                Array.from(serviceSelect.options).forEach(option => {
-                    option.selected = false;
-                });
-                
-                // Select the services from booking_services
                 bookingServices.forEach(bookingService => {
-                    const option = Array.from(serviceSelect.options).find(opt =>
-                        opt.value === bookingService.category_service_id);
-
-                    if (option) {
-                        option.selected = true;
-                        
-                        // Also check the visible checkbox
-                        const checkbox = document.getElementById(`service-${bookingService.category_service_id}`);
-                        if (checkbox) checkbox.checked = true;
+                    // Check the checkbox for this service
+                    const checkbox = document.getElementById(`service-${bookingService.category_service_id}`);
+                    if (checkbox) {
+                        checkbox.checked = true;
                     }
                 });
                 
@@ -481,13 +471,9 @@ const BookingService = (() => {
         StaffManager.loadStaffMembers().then(() => {
             const workerDropdown = document.getElementById('booking-worker');
             
-            if (staffId) {
+            if (staffId && workerDropdown) {
                 // Select the worker in the dropdown
-                Array.from(workerDropdown.options).forEach(option => {
-                    if (option.value === staffId) {
-                        option.selected = true;
-                    }
-                });
+                workerDropdown.value = staffId;
             }
         });
         
@@ -496,14 +482,12 @@ const BookingService = (() => {
             const customerDropdown = document.getElementById('booking-customer');
             const newCustomerFields = document.getElementById('new-customer-fields');
             
+            if (!customerDropdown || !newCustomerFields) return;
+
             if (booking.customer && booking.customer.id) {
                 // Select the customer in the dropdown
-                Array.from(customerDropdown.options).forEach(option => {
-                    if (option.value === booking.customer.id) {
-                        option.selected = true;
-                    }
-                });
-                
+                customerDropdown.value = booking.customer.id;
+
                 // Hide the new customer fields
                 newCustomerFields.style.display = 'none';
             } else {
@@ -550,19 +534,8 @@ const BookingService = (() => {
         // Set the selected time
         document.getElementById('booking-start-time').value = Utils.formatTime(date.getHours(), date.getMinutes());
         
-        // Calculate default end time (1 hour after start)
-        const endDate = new Date(date);
-        endDate.setHours(endDate.getHours() + 1);
-        document.getElementById('booking-end-time').value = Utils.formatTime(endDate.getHours(), endDate.getMinutes());
-        
-        // Load services for the booking form
-        ServiceManager.loadServices();
-
-        // Load staff members
-        StaffManager.loadStaffMembers();
-
-        // Load customers
-        CustomerManager.loadCustomers();
+        // Set end time equal to start time initially (0 duration)
+        document.getElementById('booking-end-time').value = Utils.formatTime(date.getHours(), date.getMinutes());
 
         // Show the form panel
         formPanel.classList.add('active');
@@ -571,6 +544,19 @@ const BookingService = (() => {
         const form = document.getElementById('booking-form');
         const newForm = form.cloneNode(true);
         form.parentNode.replaceChild(newForm, form);
+
+        // Load data AFTER cloning to populate the new form
+        // Load services for the booking form
+        ServiceManager.loadServices();
+
+        // Load staff members
+        StaffManager.loadStaffMembers();
+
+        // Load customers into booking dropdown
+        CustomerManager.renderBookingDropdown();
+
+        // Add event listeners to start date and time to recalculate end time
+        setupStartTimeChangeListeners();
 
         // Re-attach the step navigation button event listeners
         const step1NextBtn = document.getElementById('step-1-next');
@@ -605,15 +591,35 @@ const BookingService = (() => {
         }
     };
     
+    // Setup event listeners for start date/time changes to recalculate end time
+    const setupStartTimeChangeListeners = () => {
+        const startDateInput = document.getElementById('booking-start-date');
+        const startTimeInput = document.getElementById('booking-start-time');
+
+        if (startDateInput) {
+            startDateInput.addEventListener('change', () => {
+                // Recalculate end time based on current service selection
+                ServiceManager.updateSelectedServicesSummary();
+            });
+        }
+
+        if (startTimeInput) {
+            startTimeInput.addEventListener('change', () => {
+                // Recalculate end time based on current service selection
+                ServiceManager.updateSelectedServicesSummary();
+            });
+        }
+    };
+
     // Delete a booking
     const deleteBooking = async (bookingId) => {
+        if (!confirm('Are you sure you want to delete this booking?')) {
+            return;
+        }
+
         try {
-            // Show spinner during deletion
+            // Show spinner
             Utils.toggleSpinner(true);
-            
-            // Clear message
-            const messageBox = document.getElementById('booking-message');
-            if (messageBox) messageBox.style.display = 'none';
 
             // Use API client instead of direct fetch
             const response = await api.deleteBooking(bookingId);
@@ -625,117 +631,13 @@ const BookingService = (() => {
             // Show success message
             Utils.showMessage('Booking deleted successfully!', 'success');
 
-            // Refresh the calendar to show the updated bookings
+            // Refresh the calendar to remove the deleted booking
             await Calendar.renderCalendar(Calendar.getCurrentDate());
 
         } catch (error) {
             // Show error message
-            Utils.showMessage(error.message, 'error', 8000);
+            Utils.showMessage(`Failed to delete booking: ${error.message}`, 'error', 8000);
             console.error('Error deleting booking:', error);
-        } finally {
-            // Hide spinner
-            Utils.toggleSpinner(false);
-        }
-    };
-    
-    // Create time off for staff member
-    const createTimeOff = (date) => {
-        const timeOffPanel = document.getElementById('time-off-panel');
-        
-        // Reset form
-        document.getElementById('time-off-form').reset();
-        
-        // Format the date string
-        const formattedDate = Utils.formatDate(date);
-
-        // Set the selected date for both start and end date
-        document.getElementById('time-off-start-date').value = formattedDate;
-        document.getElementById('time-off-end-date').value = formattedDate;
-
-        // Set the selected time
-        document.getElementById('time-off-start-time').value = Utils.formatTime(date.getHours(), date.getMinutes());
-        
-        // Calculate default end time (1 hour after start)
-        const endDate = new Date(date);
-        endDate.setHours(endDate.getHours() + 1);
-        document.getElementById('time-off-end-time').value = Utils.formatTime(endDate.getHours(), endDate.getMinutes());
-        
-        // Load staff members
-        StaffManager.loadStaffMembers('time-off-staff');
-
-        // Show the form panel
-        timeOffPanel.classList.add('active');
-    };
-
-    // Submit time off to API
-    const submitTimeOff = async (timeOffData) => {
-        try {
-            // Show spinner
-            Utils.toggleSpinner(true);
-            
-            // Format the data according to API requirements
-            const formattedData = {
-                start_date: timeOffData.start_time,
-                end_date: timeOffData.end_time,
-                user_id: timeOffData.user_id,
-                reason: timeOffData.reason
-            };
-
-            console.log('Creating time off with data:', formattedData);
-
-            // Use API client instead of direct fetch
-            const response = await api.createTimeOff(formattedData);
-
-            if (!response?.success) {
-                throw new Error(response?.message || 'Failed to create time off');
-            }
-
-            // Show success message
-            Utils.showMessage('Time off created successfully!', 'success');
-
-            // Close the form panel
-            document.getElementById('time-off-panel').classList.remove('active');
-
-            // Refresh the calendar to show the new time off period
-            await Calendar.renderCalendar(Calendar.getCurrentDate());
-
-        } catch (error) {
-            // Show error message
-            Utils.showMessage(`Failed to create time off: ${error.message}`, 'error', 8000);
-            console.error('Error creating time off:', error);
-        } finally {
-            // Hide spinner
-            Utils.toggleSpinner(false);
-        }
-    };
-
-    // Confirm a booking (change status from scheduled to confirmed)
-    const confirmBooking = async (bookingId) => {
-        try {
-            // Show spinner during confirmation
-            Utils.toggleSpinner(true);
-
-            // Clear message
-            const messageBox = document.getElementById('booking-message');
-            if (messageBox) messageBox.style.display = 'none';
-
-            // Use API client instead of direct fetch
-            const response = await api.confirmBooking(bookingId);
-
-            if (!response?.success) {
-                throw new Error(response?.message || 'Failed to confirm booking');
-            }
-
-            // Show success message
-            Utils.showMessage('Booking confirmed successfully!', 'success');
-
-            // Refresh the calendar to show the updated booking
-            await Calendar.renderCalendar(Calendar.getCurrentDate());
-
-        } catch (error) {
-            // Show error message
-            Utils.showMessage(error.message, 'error', 8000);
-            console.error('Error confirming booking:', error);
         } finally {
             // Hide spinner
             Utils.toggleSpinner(false);
@@ -745,18 +647,12 @@ const BookingService = (() => {
     return {
         fetchBookings,
         convertBookingsToEvents,
-        handleEditBooking,
-        createNewBooking,
-        createTimeOff,
-        deleteBooking,
-        submitBooking,
-        updateBooking,
-        submitTimeOff,
         getTimeOffs,
         convertTimeOffsToEvents,
-        confirmBooking
+        submitBooking,
+        updateBooking,
+        handleEditBooking,
+        createNewBooking,
+        deleteBooking
     };
 })();
-
-// Export the BookingService module
-window.BookingService = BookingService;

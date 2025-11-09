@@ -417,7 +417,7 @@ const NotificationPage = {
     async deleteNotification(notificationId) {
         try {
             // Use API client instead of direct fetch with localStorage
-            const response = await api.request(`/users/api/api/v1/notifications/${notificationId}`, {
+            const response = await api.request(`/users/api/v1/notifications/${notificationId}`, {
                 method: 'DELETE'
             });
 
@@ -462,7 +462,7 @@ const NotificationPage = {
     async markAllAsRead() {
         try {
             // Use API client instead of direct fetch with localStorage
-            const response = await api.request('/users/api/api/v1/notifications/mark-all-read', {
+            const response = await api.request('/users/api/v1/notifications/mark-all-read', {
                 method: 'POST'
             });
 

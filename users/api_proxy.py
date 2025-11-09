@@ -22,6 +22,9 @@ class APIProxyView(View):
         # Remove leading slash from path if present
         if path.startswith('/'):
             path = path[1:]
+        # Ensure path starts with 'api/' if it doesn't already
+        if not path.startswith('api/'):
+            path = f"api/{path}"
         return f"{api_base}/{path}"
     
     def forward_request(self, request, path):

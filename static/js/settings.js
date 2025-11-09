@@ -470,7 +470,7 @@ const Settings = (() => {
     const loadCompanyEmails = async () => {
         try {
             // Fetch company emails from the API
-            const result = await api.request('/users/api/api/v1/companies/emails');
+            const result = await api.request('/users/api/v1/companies/emails');
             console.log("Company emails:", result);
 
             // Save the emails in the module state
@@ -538,7 +538,7 @@ const Settings = (() => {
     const loadCompanyPhones = async () => {
         try {
             // Fetch company phones from the API
-            const result = await api.request(`/users/api/api/v1/companies/phones`);
+            const result = await api.request(`/users/api/v1/companies/phones`);
             console.log("Company phones:", result);
 
             // Save the phones in the module state
@@ -813,7 +813,7 @@ const Settings = (() => {
                     }))
                 };
 
-                await api.request('/users/api/api/v1/companies/emails', {
+                await api.request('/users/api/v1/companies/emails', {
                     body: JSON.stringify(requestData),
                     method: 'POST'
                 });
@@ -945,7 +945,7 @@ const Settings = (() => {
             submitBtn.textContent = 'Saving...';
 
             // Send request to update company phones
-            const result = await api.request('/users/api/api/v1/companies/phones', {
+            const result = await api.request('/users/api/v1/companies/phones', {
                 method: 'POST',
                 body: JSON.stringify(phoneData)
             });

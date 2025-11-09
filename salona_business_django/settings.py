@@ -35,7 +35,7 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_
 # Service URL configuration
 SERVICE_URL = os.getenv('SERVICE_URL', '127.0.0.1:8000')
 ENDPOINT_URL = os.getenv('ENDPOINT_URL', '127.0.0.1:8000')
-API_BASE_URL = os.getenv('API_BASE_URL', 'http://127.0.0.1:8000')
+API_BASE_URL = os.getenv('API_BASE_URL', 'http://127.0.0.1:8000/api')
 
 
 # Application definition

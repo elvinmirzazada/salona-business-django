@@ -1,539 +1,504 @@
-// Services Page JavaScript
-
-class ServicesManager {
-    constructor() {
-        this.currentServiceId = null;
-        this.currentCategoryId = null;
-        this.services = [];
-        this.categories = [];
-        this.staff = [];
-        this.currentTab = 'services';
-        this.init();
-    }
-
-    init() {
-        this.bindEvents();
-        this.loadInitialData();
-    }
-
-    bindEvents() {
-        // Tab switching
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab));
-        });
-
-        // Service modal events
-        const serviceModal = document.getElementById('service-modal');
-        const deleteModal = document.getElementById('delete-modal');
-        const categoryModal = document.getElementById('category-modal');
-        const deleteCategoryModal = document.getElementById('delete-category-modal');
-
-        // Add service button
-        document.getElementById('add-service-btn')?.addEventListener('click', () => this.openServiceModal());
-
-        // Add category button
-        document.getElementById('add-category-btn')?.addEventListener('click', () => this.openCategoryModal());
-
-        // Service form submission
-        document.getElementById('service-form')?.addEventListener('submit', (e) => this.handleServiceSubmit(e));
-
-        // Category form submission
-        document.getElementById('category-form')?.addEventListener('submit', (e) => this.handleCategorySubmit(e));
-
-        // Modal close events
-        document.querySelectorAll('.close-modal').forEach(btn => {
-            btn.addEventListener('click', (e) => this.closeModal(e.target.closest('.modal')));
-        });
-
-        // Cancel buttons
-        document.getElementById('cancel-service-btn')?.addEventListener('click', () => this.closeModal(serviceModal));
-        document.getElementById('cancel-delete-btn')?.addEventListener('click', () => this.closeModal(deleteModal));
-        document.getElementById('cancel-category-btn')?.addEventListener('click', () => this.closeModal(categoryModal));
-        document.getElementById('cancel-delete-category-btn')?.addEventListener('click', () => this.closeModal(deleteCategoryModal));
-
-        // Confirm delete buttons
-        document.getElementById('confirm-delete-btn')?.addEventListener('click', () => this.confirmDeleteService());
-        document.getElementById('confirm-delete-category-btn')?.addEventListener('click', () => this.confirmDeleteCategory());
-
-        // Click outside modal to close
-        window.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal')) {
-                this.closeModal(e.target);
-            }
-        });
-    }
-
-    switchTab(tabName) {
-        this.currentTab = tabName;
-
-        // Update tab buttons
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-
-        // Update tab content
-        document.querySelectorAll('.tab-pane').forEach(pane => {
-            pane.classList.remove('active');
-        });
-        document.getElementById(`${tabName}-tab`).classList.add('active');
-
-        // Load appropriate data based on tab
-        if (tabName === 'services') {
-            this.renderServicesTable();
-        } else if (tabName === 'categories') {
-            this.renderCategoriesTable();
-        }
-    }
-
-    async loadInitialData() {
-        this.showLoading('services');
-        try {
-            await Promise.all([
-                this.loadServices(),
-                this.loadCategories(),
-                this.loadStaff()
-            ]);
-            this.renderServicesTable();
-        } catch (error) {
-            console.error('Error loading initial data:', error);
-            this.showError('Failed to load data. Please refresh the page.');
-        } finally {
-            this.hideLoading('services');
-            this.hideLoading('categories');
-        }
-    }
-
-    async loadServices() {
-        try {
-            const response = await api.getCompanyServices();
-            this.services = response.data || [];
-        } catch (error) {
-            console.error('Error loading services:', error);
-            this.services = [];
-        }
-    }
-
-    async loadCategories() {
-        try {
-            const response = await api.request('/users/api/api/v1/services/companies/categories');
-            this.categories = response.data || [];
-        } catch (error) {
-            console.error('Error loading categories:', error);
-            this.categories = [];
-        }
-    }
-
-    async loadStaff() {
-        try {
-            const response = await api.getStaff();
-            this.staff = response.data || [];
-        } catch (error) {
-            console.error('Error loading staff:', error);
-            this.staff = [];
-        }
-    }
-
-    renderServicesTable() {
-        const tableContainer = document.getElementById('services-table-container');
-        const table = document.getElementById('services-table');
-        const tbody = document.getElementById('services-table-body');
-        const emptyState = document.getElementById('services-empty');
-
-        if (!this.services.length) {
-            table.style.display = 'none';
-            emptyState.style.display = 'block';
-            return;
-        }
-
-        // Clear existing rows
-        tbody.innerHTML = '';
-
-        // Add service rows
-        this.services.forEach(service => {
-            service.services.forEach(svc => {
-                const row = this.createServiceRow(svc, service.name);
-                tbody.appendChild(row);
-            });
-        });
-
-        table.style.display = 'table';
-        emptyState.style.display = 'none';
-    }
-
-    createServiceRow(service, category_name) {
-        const tr = document.createElement('tr');
-        const categoryName = category_name;
-        const staffNames = this.getServiceStaffNames([]);
-        const priceDisplay = this.formatPriceDisplay(service.price, service.discount_price);
-        
-        tr.innerHTML = `
-            <td>
-                <div class="service-name">${escapeHtml(service.name)}</div>
-                ${service.additional_info ? `<div style="font-size: 12px; color: #6B7280; margin-top: 4px;">${escapeHtml(service.additional_info)}</div>` : ''}
-            </td>
-            <td>${escapeHtml(categoryName)}</td>
-            <td class="service-duration">${service.duration} min</td>
-            <td>${priceDisplay}</td>
-            <td style="font-size: 14px; color: #6B7280;">${staffNames}</td>
-        `;
-        if (["admin", "owner"].includes(window.userData.role)) {
-            tr.innerHTML += `
-                <td class="service-actions">
-                    <button class="btn-icon" onclick="servicesManager.editService(${service.id})" title="Edit service">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-icon btn-danger" onclick="servicesManager.deleteService(${service.id})" title="Delete service">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </td>
-            `;
-        }
-        return tr;
-    }
-
-    renderCategoriesTable() {
-        const tableContainer = document.getElementById('categories-table-container');
-        const table = document.getElementById('categories-table');
-        const tbody = document.getElementById('categories-table-body');
-        const emptyState = document.getElementById('categories-empty');
-
-        if (!this.categories.length) {
-            table.style.display = 'none';
-            emptyState.style.display = 'block';
-            return;
-        }
-
-        // Clear existing rows
-        tbody.innerHTML = '';
-
-        // Add category rows
-        this.categories.forEach(category => {
-            const row = this.createCategoryRow(category);
-            tbody.appendChild(row);
-        });
-
-        table.style.display = 'table';
-        emptyState.style.display = 'none';
-    }
-
-    createCategoryRow(category) {
-        const tr = document.createElement('tr');
-        const servicesCount = this.services.filter(s => s.name === category.name)[0].services.length;
-
-        tr.innerHTML = `
-            <td>
-                <div class="service-name">${escapeHtml(category.name)}</div>
-            </td>
-            <td style="color: #6B7280;">${category.description ? escapeHtml(category.description) : '-'}</td>
-            <td style="font-weight: 500;">${servicesCount} service${servicesCount !== 1 ? 's' : ''}</td>
-        `;
-        if (["admin", "owner"].includes(window.userData.role)) {
-            tr.innerHTML += `
-                <td class="service-actions">
-                    <button class="btn-icon btn-danger" onclick="servicesManager.deleteCategory(${category.id})" title="Delete category">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </td>
-            `;
-        }
-        return tr;
-    }
-
-    getCategoryName(categoryId) {
-        const category = this.categories.find(c => c.id === categoryId);
-        return category ? category.name : 'Unknown Category';
-    }
-
-    getServiceStaffNames(staffIds) {
-        if (!staffIds.length) return 'All staff';
-        const names = staffIds.map(id => {
-            const staff = this.staff.find(s => s.user.id === id);
-            return staff ? `${staff.user.first_name} ${staff.user.last_name}` : '';
-        }).filter(name => name);
-        return names.length ? names.join(', ') : 'All staff';
-    }
-
-    formatPriceDisplay(price, discountPrice) {
-        if (discountPrice && discountPrice < price) {
-            return `
-                <span class="service-price has-discount">$${price}</span>
-                <span class="service-discount-price">$${discountPrice}</span>
-            `;
-        }
-        return `<span class="service-price">$${price}</span>`;
-    }
-
-    openServiceModal(serviceId = null) {
-        this.currentServiceId = serviceId;
-        const modal = document.getElementById('service-modal');
-        const title = document.getElementById('service-modal-title');
-        const form = document.getElementById('service-form');
-
-        title.textContent = serviceId ? 'Edit Service' : 'Add Service';
-        
-        // Populate category dropdown
-        this.populateCategoryDropdown();
-        
-        // Populate staff checkboxes
-        this.populateStaffCheckboxes();
-
-        if (serviceId) {
-            this.populateServiceForm(serviceId);
-        } else {
-            form.reset();
-            document.getElementById('service-id').value = '';
-        }
-
-        modal.style.display = 'block';
-    }
-
-    populateCategoryDropdown() {
-        const select = document.getElementById('service-category');
-        select.innerHTML = '<option value="">Select a category</option>';
-        
-        this.categories.forEach(category => {
-            const option = document.createElement('option');
-            option.value = category.id;
-            option.textContent = category.name;
-            select.appendChild(option);
-        });
-    }
-
-    populateStaffCheckboxes() {
-        const container = document.getElementById('staff-selection');
-        container.innerHTML = '';
-
-        if (!this.staff.length) {
-            container.innerHTML = '<p style="color: #6B7280; font-size: 14px;">No staff members found</p>';
-            return;
-        }
-
-        this.staff.forEach(staff => {
-            const div = document.createElement('div');
-            div.className = 'checkbox-item';
-            div.innerHTML = `
-                <input type="checkbox" id="staff-${staff.user.id}" value="${staff.user.id}" name="staff">
-                <label for="staff-${staff.user.id}">${escapeHtml(staff.user.first_name)} ${escapeHtml(staff.user.last_name)}</label>
-            `;
-            container.appendChild(div);
-        });
-    }
-
-    populateServiceForm(serviceId) {
-        const service = this.services.find(s => s.id === serviceId);
-        if (!service) return;
-
-        document.getElementById('service-id').value = service.id;
-        document.getElementById('service-name').value = service.name;
-        document.getElementById('service-category').value = service.category_id;
-        document.getElementById('service-duration').value = service.duration;
-        document.getElementById('service-price').value = service.price;
-        document.getElementById('service-discount-price').value = service.discount_price || '';
-        document.getElementById('service-description').value = service.description || '';
-
-        // Set staff checkboxes
-        const staffIds = service.staff_ids || [];
-        document.querySelectorAll('#staff-selection input[type="checkbox"]').forEach(checkbox => {
-            checkbox.checked = staffIds.includes(parseInt(checkbox.value));
-        });
-    }
-
-    async handleServiceSubmit(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(e.target);
-        const staffIds = Array.from(document.querySelectorAll('#staff-selection input[type="checkbox"]:checked'))
-            .map(cb => parseInt(cb.value));
-
-        const serviceData = {
-            name: formData.get('service-name'),
-            category_id: parseInt(formData.get('service-category')),
-            duration: parseInt(formData.get('service-duration')),
-            price: parseFloat(formData.get('service-price')),
-            discount_price: formData.get('service-discount-price') ? parseFloat(formData.get('service-discount-price')) : null,
-            description: formData.get('service-description'),
-            staff_ids: staffIds
-        };
-
-        try {
-            let response;
-            if (this.currentServiceId) {
-                response = await api.updateService(this.currentServiceId, serviceData);
-            } else {
-                response = await api.createService(serviceData);
-            }
-
-            await this.loadServices();
-            this.renderServicesTable();
-            this.closeModal(document.getElementById('service-modal'));
-            this.showSuccess(this.currentServiceId ? 'Service updated successfully' : 'Service created successfully');
-        } catch (error) {
-            console.error('Error saving service:', error);
-            this.showError('Failed to save service. Please try again.');
-        }
-    }
-
-    editService(serviceId) {
-        this.openServiceModal(serviceId);
-    }
-
-    deleteService(serviceId) {
-        this.currentServiceId = serviceId;
-        document.getElementById('delete-modal').style.display = 'block';
-    }
-
-    async confirmDeleteService() {
-        if (!this.currentServiceId) return;
-
-        try {
-            await api.deleteService(this.currentServiceId);
-            await this.loadServices();
-            this.renderServicesTable();
-            this.closeModal(document.getElementById('delete-modal'));
-            this.showSuccess('Service deleted successfully');
-        } catch (error) {
-            console.error('Error deleting service:', error);
-            this.showError('Failed to delete service. Please try again.');
-        }
-    }
-
-    openCategoryModal(categoryId = null) {
-        this.currentCategoryId = categoryId;
-        const modal = document.getElementById('category-modal');
-        const form = document.getElementById('category-form');
-
-        if (categoryId) {
-            const category = this.categories.find(c => c.id === categoryId);
-            if (category) {
-                document.getElementById('category-name').value = category.name;
-                document.getElementById('category-description').value = category.description || '';
-            }
-        } else {
-            form.reset();
-        }
-
-        modal.style.display = 'block';
-    }
-
-    async handleCategorySubmit(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(e.target);
-        const categoryData = {
-            name: formData.get('category-name'),
-            description: formData.get('category-description')
-        };
-
-        try {
-            let response;
-            if (this.currentCategoryId) {
-                response = await api.request(`/users/api/api/v1/service-categories/${this.currentCategoryId}`, {
-                    method: 'PUT',
-                    body: JSON.stringify(categoryData)
-                });
-            } else {
-                response = await api.request('/users/api/api/v1/service-categories', {
-                    method: 'POST',
-                    body: JSON.stringify(categoryData)
-                });
-            }
-
-            await this.loadCategories();
-            await this.loadServices(); // Reload services to update category relationships
-
-            // Refresh the current tab view
-            if (this.currentTab === 'categories') {
-                this.renderCategoriesTable();
-            } else {
-                this.renderServicesTable();
-            }
-
-            this.closeModal(document.getElementById('category-modal'));
-            this.showSuccess(this.currentCategoryId ? 'Category updated successfully' : 'Category created successfully');
-        } catch (error) {
-            console.error('Error saving category:', error);
-            this.showError('Failed to save category. Please try again.');
-        }
-    }
-
-    deleteCategory(categoryId) {
-        this.currentCategoryId = categoryId;
-        const category = this.categories.find(c => c.id === categoryId);
-        if (category) {
-            document.getElementById('delete-category-name').textContent = category.name;
-        }
-        document.getElementById('delete-category-modal').style.display = 'block';
-    }
-
-    async confirmDeleteCategory() {
-        if (!this.currentCategoryId) return;
-
-        try {
-            await api.request(`/users/api/api/v1/service-categories/${this.currentCategoryId}`, {
-                method: 'DELETE'
-            });
-            await this.loadCategories();
-            await this.loadServices(); // Reload services to update category relationships
-
-            // Refresh the current tab view
-            if (this.currentTab === 'categories') {
-                this.renderCategoriesTable();
-            } else {
-                this.renderServicesTable();
-            }
-
-            this.closeModal(document.getElementById('delete-category-modal'));
-            this.showSuccess('Category deleted successfully');
-        } catch (error) {
-            console.error('Error deleting category:', error);
-            this.showError('Failed to delete category. Please try again.');
-        }
-    }
-
-    closeModal(modal) {
-        if (modal) {
-            modal.style.display = 'none';
-        }
-        this.currentServiceId = null;
-        this.currentCategoryId = null;
-    }
-
-    showLoading(tab = 'services') {
-        document.getElementById(`${tab}-loading`).style.display = 'block';
-        document.getElementById(`${tab}-empty`).style.display = 'none';
-        document.getElementById(`${tab}-table-container`).style.display = 'none';
-    }
-
-    hideLoading(tab = 'services') {
-        document.getElementById(`${tab}-loading`).style.display = 'none';
-        document.getElementById(`${tab}-table-container`).style.display = 'block';
-    }
-
-    showSuccess(message) {
-        // You can implement a toast notification system here
-        console.log('Success:', message);
-        // For now, just show an alert
-        alert(message);
-    }
-
-    showError(message) {
-        // You can implement a toast notification system here
-        console.error('Error:', message);
-        // For now, just show an alert
-        alert(message);
-    }
-}
-
-// Utility function to escape HTML
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-// Initialize services manager when DOM is loaded
-let servicesManager;
-document.addEventListener('DOMContentLoaded', () => {
-    servicesManager = new ServicesManager();
-});
+// /**
+//  * Services and Categories Management
+//  *
+//  * NOTE: This file has been deprecated and unified into service-manager.js
+//  * All functionality is now handled by the ServiceManager class in service-manager.js
+//  *
+//  * This file is kept for reference only and should not be loaded in the HTML template.
+//  */
+//
+// // DEPRECATED - All functionality moved to service-manager.js
+// // Do not use this file anymore
+//
+// /*
+// class CategoryManager {
+//     constructor() {
+//         this.services = [];
+//         this.categories = [];
+//         this.currentCategory = null;
+//         this.currentService = null;
+//     }
+//
+//     /**
+//      * Initialize the service manager
+//      */
+//     async init() {
+//         try {
+//             this.showLoading();
+//             await this.loadCategories();
+//             await this.loadServices();
+//             this.setupEventListeners();
+//             this.render();
+//             this.hideLoading();
+//         } catch (error) {
+//             console.error('Failed to initialize service manager:', error);
+//             this.hideLoading();
+//             this.showError('Failed to load services and categories');
+//         }
+//     }
+//
+//     /**
+//      * Show loading state
+//      */
+//     showLoading() {
+//         const servicesLoading = document.getElementById('services-loading');
+//         const categoriesLoading = document.getElementById('categories-loading');
+//
+//         if (servicesLoading) servicesLoading.style.display = 'flex';
+//         if (categoriesLoading) categoriesLoading.style.display = 'flex';
+//     }
+//
+//     /**
+//      * Hide loading state
+//      */
+//     hideLoading() {
+//         const servicesLoading = document.getElementById('services-loading');
+//         const categoriesLoading = document.getElementById('categories-loading');
+//
+//         if (servicesLoading) servicesLoading.style.display = 'none';
+//         if (categoriesLoading) categoriesLoading.style.display = 'none';
+//     }
+//
+//     /**
+//      * Load all categories
+//      */
+//     async loadCategories() {
+//         try {
+//             const response = await window.api.getCategories();
+//             this.categories = response?.data || [];
+//             return this.categories;
+//         } catch (error) {
+//             console.error('Failed to load categories:', error);
+//             throw error;
+//         }
+//     }
+//
+//     /**
+//      * Load all services
+//      */
+//     async loadServices() {
+//         try {
+//             const response = await window.api.getCompanyServices();
+//             this.services = response?.data || [];
+//             return this.services;
+//         } catch (error) {
+//             console.error('Failed to load services:', error);
+//             throw error;
+//         }
+//     }
+//
+//     /**
+//      * Create a new category
+//      */
+//     async createCategory(categoryData) {
+//         try {
+//             const response = await window.api.createCategory(categoryData);
+//             if (response?.data) {
+//                 this.categories.push(response.data);
+//                 this.render();
+//                 this.showSuccess('Category created successfully');
+//                 return response.data;
+//             }
+//         } catch (error) {
+//             console.error('Failed to create category:', error);
+//             this.showError('Failed to create category');
+//             throw error;
+//         }
+//     }
+//
+//     /**
+//      * Update an existing category
+//      */
+//     async updateCategory(categoryId, categoryData) {
+//         try {
+//             const response = await window.api.updateCategory(categoryId, categoryData);
+//             if (response?.data) {
+//                 const index = this.categories.findIndex(c => c.id === categoryId);
+//                 if (index !== -1) {
+//                     this.categories[index] = response.data;
+//                 }
+//                 this.render();
+//                 this.showSuccess('Category updated successfully');
+//                 return response.data;
+//             }
+//         } catch (error) {
+//             console.error('Failed to update category:', error);
+//             this.showError('Failed to update category');
+//             throw error;
+//         }
+//     }
+//
+//     /**
+//      * Delete a category
+//      */
+//     async deleteCategory(categoryId) {
+//         if (!confirm('Are you sure you want to delete this category? This may affect associated services.')) {
+//             return;
+//         }
+//
+//         try {
+//             await window.api.deleteCategory(categoryId);
+//             this.categories = this.categories.filter(c => c.id !== categoryId);
+//             this.render();
+//             this.showSuccess('Category deleted successfully');
+//         } catch (error) {
+//             console.error('Failed to delete category:', error);
+//             this.showError('Failed to delete category');
+//             throw error;
+//         }
+//     }
+//
+//     /**
+//      * Create a new service
+//      */
+//     async createService(serviceData) {
+//         try {
+//             const response = await window.api.createService(serviceData);
+//             if (response?.data) {
+//                 this.services.push(response.data);
+//                 this.render();
+//                 this.showSuccess('Service created successfully');
+//                 return response.data;
+//             }
+//         } catch (error) {
+//             console.error('Failed to create service:', error);
+//             this.showError('Failed to create service');
+//             throw error;
+//         }
+//     }
+//
+//     /**
+//      * Update an existing service
+//      */
+//     async updateService(serviceId, serviceData) {
+//         try {
+//             const response = await window.api.updateService(serviceId, serviceData);
+//             if (response?.data) {
+//                 const index = this.services.findIndex(s => s.id === serviceId);
+//                 if (index !== -1) {
+//                     this.services[index] = response.data;
+//                 }
+//                 this.render();
+//                 this.showSuccess('Service updated successfully');
+//                 return response.data;
+//             }
+//         } catch (error) {
+//             console.error('Failed to update service:', error);
+//             this.showError('Failed to update service');
+//             throw error;
+//         }
+//     }
+//
+//     /**
+//      * Delete a service
+//      */
+//     async deleteService(serviceId) {
+//         if (!confirm('Are you sure you want to delete this service?')) {
+//             return;
+//         }
+//
+//         try {
+//             await window.api.deleteService(serviceId);
+//             this.services = this.services.filter(s => s.id !== serviceId);
+//             this.render();
+//             this.showSuccess('Service deleted successfully');
+//         } catch (error) {
+//             console.error('Failed to delete service:', error);
+//             this.showError('Failed to delete service');
+//             throw error;
+//         }
+//     }
+//
+//     /**
+//      * Get services by category
+//      */
+//     getServicesByCategory(categoryId) {
+//         return this.services.filter(service => service.category_id === categoryId);
+//     }
+//
+//     /**
+//      * Setup event listeners for UI interactions
+//      */
+//     setupEventListeners() {
+//         // Category form submission
+//         const categoryForm = document.getElementById('category-form');
+//         if (categoryForm) {
+//             categoryForm.addEventListener('submit', async (e) => {
+//                 e.preventDefault();
+//                 await this.handleCategorySubmit(e.target);
+//             });
+//         }
+//
+//         // Service form submission
+//         const serviceForm = document.getElementById('service-form');
+//         if (serviceForm) {
+//             serviceForm.addEventListener('submit', async (e) => {
+//                 e.preventDefault();
+//                 await this.handleServiceSubmit(e.target);
+//             });
+//         }
+//
+//         // Add category button
+//         const addCategoryBtn = document.getElementById('add-category-btn');
+//         if (addCategoryBtn) {
+//             addCategoryBtn.addEventListener('click', () => this.showCategoryModal());
+//         }
+//
+//         // Add service button
+//         const addServiceBtn = document.getElementById('add-service-btn');
+//         if (addServiceBtn) {
+//             addServiceBtn.addEventListener('click', () => this.showServiceModal());
+//         }
+//     }
+//
+//     /**
+//      * Handle category form submission
+//      */
+//     async handleCategorySubmit(form) {
+//         const formData = new FormData(form);
+//         const categoryData = {
+//             name: formData.get('name'),
+//             description: formData.get('description'),
+//             icon: formData.get('icon'),
+//             color: formData.get('color')
+//         };
+//
+//         const categoryId = formData.get('category_id');
+//         if (categoryId) {
+//             await this.updateCategory(categoryId, categoryData);
+//         } else {
+//             await this.createCategory(categoryData);
+//         }
+//
+//         this.hideCategoryModal();
+//         form.reset();
+//     }
+//
+//     /**
+//      * Handle service form submission
+//      */
+//     async handleServiceSubmit(form) {
+//         const formData = new FormData(form);
+//         const serviceData = {
+//             name: formData.get('name'),
+//             description: formData.get('description'),
+//             category_id: formData.get('category_id'),
+//             duration: parseInt(formData.get('duration')),
+//             price: parseFloat(formData.get('price')),
+//             is_active: formData.get('is_active') === 'on'
+//         };
+//
+//         const serviceId = formData.get('service_id');
+//         if (serviceId) {
+//             await this.updateService(serviceId, serviceData);
+//         } else {
+//             await this.createService(serviceData);
+//         }
+//
+//         this.hideServiceModal();
+//         form.reset();
+//     }
+//
+//     /**
+//      * Show category modal for create/edit
+//      */
+//     showCategoryModal(category = null) {
+//         this.currentCategory = category;
+//         const modal = document.getElementById('category-modal');
+//         if (modal) {
+//             if (category) {
+//                 // Populate form with category data
+//                 document.getElementById('category-name').value = category.name;
+//                 document.getElementById('category-description').value = category.description || '';
+//                 document.getElementById('category-icon').value = category.icon || '';
+//                 document.getElementById('category-color').value = category.color || '#000000';
+//                 document.getElementById('category-id').value = category.id;
+//             }
+//             modal.classList.add('active');
+//         }
+//     }
+//
+//     /**
+//      * Hide category modal
+//      */
+//     hideCategoryModal() {
+//         const modal = document.getElementById('category-modal');
+//         if (modal) {
+//             modal.classList.remove('active');
+//             this.currentCategory = null;
+//         }
+//     }
+//
+//     /**
+//      * Show service modal for create/edit
+//      */
+//     showServiceModal(service = null) {
+//         this.currentService = service;
+//         const modal = document.getElementById('service-modal');
+//         if (modal) {
+//             if (service) {
+//                 // Populate form with service data
+//                 document.getElementById('service-name').value = service.name;
+//                 document.getElementById('service-description').value = service.description || '';
+//                 document.getElementById('service-category').value = service.category_id;
+//                 document.getElementById('service-duration').value = service.duration;
+//                 document.getElementById('service-price').value = service.price;
+//                 document.getElementById('service-active').checked = service.is_active;
+//                 document.getElementById('service-id').value = service.id;
+//             }
+//             modal.classList.add('active');
+//         }
+//     }
+//
+//     /**
+//      * Hide service modal
+//      */
+//     hideServiceModal() {
+//         const modal = document.getElementById('service-modal');
+//         if (modal) {
+//             modal.classList.remove('active');
+//             this.currentService = null;
+//         }
+//     }
+//
+//     /**
+//      * Render the services and categories UI
+//      */
+//     render() {
+//         this.renderCategories();
+//         this.renderServices();
+//     }
+//
+//     /**
+//      * Render categories list
+//      */
+//     renderCategories() {
+//         const container = document.getElementById('categories-container');
+//         if (!container) return;
+//
+//         container.innerHTML = this.categories.map(category => `
+//             <div class="category-card" data-category-id="${category.id}">
+//                 <div class="category-header">
+//                     <div class="category-icon" style="background-color: ${category.color || '#ccc'}">
+//                         ${category.icon || '📁'}
+//                     </div>
+//                     <h3>${category.name}</h3>
+//                 </div>
+//                 <p class="category-description">${category.description || ''}</p>
+//                 <div class="category-actions">
+//                     <button class="btn-edit" onclick="categoryManager.showCategoryModal(${JSON.stringify(category).replace(/"/g, '&quot;')})">
+//                         Edit
+//                     </button>
+//                     <button class="btn-delete" onclick="categoryManager.deleteCategory(${category.id})">
+//                         Delete
+//                     </button>
+//                 </div>
+//                 <div class="category-services-count">
+//                     ${this.getServicesByCategory(category.id).length} services
+//                 </div>
+//             </div>
+//         `).join('');
+//
+//         // Show empty state if no categories
+//         const emptyState = document.getElementById('categories-empty-state');
+//         if (emptyState) {
+//             emptyState.style.display = this.categories.length === 0 ? 'block' : 'none';
+//         }
+//     }
+//
+//     /**
+//      * Render services list
+//      */
+//     renderServices() {
+//         const container = document.getElementById('services-container');
+//         if (!container) return;
+//
+//         const servicesByCategory = {};
+//         this.categories.forEach(category => {
+//             servicesByCategory[category.id] = this.getServicesByCategory(category.id);
+//         });
+//
+//         container.innerHTML = this.categories.map(category => {
+//             const services = servicesByCategory[category.id];
+//             if (services.length === 0) return '';
+//
+//             return `
+//                 <div class="service-category-group">
+//                     <h3 class="category-title">${category.name}</h3>
+//                     <div class="services-grid">
+//                         ${services.map(service => `
+//                             <div class="service-card" data-service-id="${service.id}">
+//                                 <div class="service-header">
+//                                     <h4>${service.name}</h4>
+//                                     <span class="service-status ${service.is_active ? 'active' : 'inactive'}">
+//                                         ${service.is_active ? 'Active' : 'Inactive'}
+//                                     </span>
+//                                 </div>
+//                                 <p class="service-description">${service.description || ''}</p>
+//                                 <div class="service-details">
+//                                     <span class="service-duration">⏱️ ${service.duration} min</span>
+//                                     <span class="service-price">💰 $${service.price}</span>
+//                                 </div>
+//                                 <div class="service-actions">
+//                                     <button class="btn-edit" onclick="categoryManager.showServiceModal(${JSON.stringify(service).replace(/"/g, '&quot;')})">
+//                                         Edit
+//                                     </button>
+//                                     <button class="btn-delete" onclick="categoryManager.deleteService(${service.id})">
+//                                         Delete
+//                                     </button>
+//                                 </div>
+//                             </div>
+//                         `).join('')}
+//                     </div>
+//                 </div>
+//             `;
+//         }).join('');
+//
+//         // Show empty state if no services
+//         const emptyState = document.getElementById('services-empty-state');
+//         if (emptyState) {
+//             emptyState.style.display = this.services.length === 0 ? 'block' : 'none';
+//         }
+//     }
+//
+//     /**
+//      * Show success message
+//      */
+//     showSuccess(message) {
+//         // Use your UI notification system
+//         console.log('Success:', message);
+//         if (window.showNotification) {
+//             window.showNotification(message, 'success');
+//         }
+//     }
+//
+//     /**
+//      * Show error message
+//      */
+//     showError(message) {
+//         // Use your UI notification system
+//         console.error('Error:', message);
+//         if (window.showNotification) {
+//             window.showNotification(message, 'error');
+//         }
+//     }
+// }
+//
+// // Create global instance
+// const categoryManager = new CategoryManager();
+//
+// // Initialize when DOM is ready
+// if (document.readyState === 'loading') {
+//     document.addEventListener('DOMContentLoaded', () => categoryManager.init());
+// } else {
+//     categoryManager.init();
+// }
+//
+// // Export for use in other modules
+// if (typeof module !== 'undefined' && module.exports) {
+//     module.exports = categoryManager;
+// }
+// */
+//
+// // DEPRECATED: CategoryManager functionality is now in ServiceManager (service-manager.js)
+// console.warn('services.js is deprecated. Use service-manager.js instead.');

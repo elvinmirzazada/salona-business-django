@@ -240,7 +240,10 @@ const Calendar = (() => {
         const height = endPosition - startPosition;
 
         const eventElement = document.createElement('div');
-        eventElement.className = `event ${event.color || ''}`;
+        // Add status class and time-off class if applicable
+        const statusClass = event.status ? `status-${event.status}` : '';
+        const timeOffClass = event.isTimeOff ? 'time-off' : '';
+        eventElement.className = `event ${statusClass} ${timeOffClass} ${event.color || ''}`.trim();
         eventElement.style.top = `${startPosition}px`;
         eventElement.style.height = `${height}px`;
         // Position events relative to the slots container, not the day column
@@ -263,6 +266,14 @@ const Calendar = (() => {
 
         eventElement.appendChild(eventTitle);
         eventElement.appendChild(eventTimeElement);
+
+        // Add status badge for bookings (not for time off)
+        if (!event.isTimeOff && event.status) {
+            const statusBadge = document.createElement('div');
+            statusBadge.className = 'event-status-badge';
+            statusBadge.textContent = event.status;
+            eventElement.appendChild(statusBadge);
+        }
 
         if (event.description) {
             const descriptions = event.description.split('\n');

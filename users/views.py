@@ -425,7 +425,7 @@ class SettingsView(GeneralView):
                 'company_emails_json': json.dumps([]),
                 'company_phones': None,
                 'company_phones_json': json.dumps([]),
-                'API_BASE_URL': getattr(settings, 'API_BASE_URL', 'https://api.salona.me')
+                'API_BASE_URL': getattr(settings, 'API_BASE_URL', 'https://api.salona.me/api')
             })
 
         unread_notifications_count = self.get_unread_notifications_count(request)

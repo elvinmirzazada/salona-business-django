@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
             UI.setupBookingFormNavigation();
 
             // Initialize live notifications WebSocket
-            setupLiveNotifications();
+            // setupLiveNotifications();
 
             // Check if user has company data from the user data passed from Django
             // The userData is already available from the template context
@@ -26,9 +26,6 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 // User has data, proceed with normal dashboard initialization
                 toggleDashboardView(true);
-
-                // populate staff filter dropdown
-                StaffManager.setupStaffFilter();
 
                 // Set up customer dropdown change event
                 CustomerManager.setupCustomerChangeEvent();

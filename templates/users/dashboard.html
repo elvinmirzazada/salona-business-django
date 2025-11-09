@@ -139,6 +139,12 @@
                 </div>
             </div>
 
+            <!-- Services section -->
+            <div class="event-popup-services">
+                <div class="event-popup-section-title">Booked Services</div>
+                <div id="event-popup-services-list"></div>
+            </div>
+
             <!-- Notes section -->
             <div class="event-popup-notes">
                 <div class="event-popup-notes-title">Notes:</div>
@@ -191,7 +197,7 @@
                         </div>
                         <div>
                             <label for="booking-end-date">End Date:</label>
-                            <input type="date" id="booking-end-date" name="booking-end-date" required>
+                            <input type="date" id="booking-end-date" name="booking-end-date" required readonly>
                         </div>
                     </div>
                     <div class="form-group time-inputs">
@@ -200,8 +206,8 @@
                             <input type="time" id="booking-start-time" name="booking-start-time" required>
                         </div>
                         <div>
-                            <label for="booking-end-time">End Time:</label>
-                            <input type="time" id="booking-end-time" name="booking-end-time" required>
+                            <label for="booking-end-time">End Time: <small style="color: #7f8c8d;">(Auto-calculated)</small></label>
+                            <input type="time" id="booking-end-time" name="booking-end-time" required readonly>
                         </div>
                     </div>
 
