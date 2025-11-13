@@ -965,6 +965,70 @@ class MembershipPlansView(GeneralView):
             return JsonResponse({'error': 'An unexpected error occurred.'}, status=500)
 
 
+class IntegrationsView(GeneralView):
+    """View for displaying integrations (booking URL and Telegram bot)"""
+
+    def get_company_info(self, request):
+        """Get company info from external API"""
+        access_token = request.COOKIES.get('access_token')
+
+        if not access_token:
+            return None
+
+        try:
+            api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/companies"
+            cookies = {'access_token': access_token}
+
+            response = requests.get(api_url, headers=self.get_header(), cookies=cookies, timeout=10)
+
+            if response.status_code == 200:
+                data = response.json()
+                return data.get('data')
+            return None
+
+        except requests.exceptions.RequestException:
+            return None
+
+    def get(self, request):
+        # Get current user data
+        user_data = self.get_current_user(request)
+
+        if not user_data:
+            # Redirect to login for regular requests
+            redirect_response = redirect('users:login')
+            redirect_response.delete_cookie('access_token')
+            redirect_response.delete_cookie('refresh_token')
+            return redirect_response
+
+        # Check if user has company
+        if not user_data.get('company_id'):
+            return redirect('users:settings')
+
+        unread_notifications_count = self.get_unread_notifications_count(request)
+        company_info = self.get_company_info(request)
+
+        # Get company ID
+        company_id = user_data.get('company_id', '')
+
+        # Construct booking URL using current app's domain
+        # Get the scheme (http or https) and host from the current request
+        scheme = 'https' if request.is_secure() else 'http'
+        host = request.get_host()  # This includes the domain and port if present
+        booking_url = f"{scheme}://{host}/customers/{company_id}"
+
+        # Token and user data are valid, serve integrations page
+        return render(request, 'users/integrations.html', {
+            'is_authenticated': True,
+            'user_data': user_data,
+            'user_data_json': json.dumps(user_data),
+            'unread_notifications_count': unread_notifications_count,
+            'company_id': company_id,
+            'booking_url': booking_url,
+            'company_info': company_info,
+            'API_BASE_URL': getattr(settings, 'API_BASE_URL', 'https://api.salona.me')
+        })
+
+
 class CloseTabView(View):
     """View that automatically closes the browser tab when accessed"""
 

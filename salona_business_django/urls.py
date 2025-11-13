@@ -32,5 +32,5 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('', views.home, name='home'),  # Home page
     path('verify-email/', views.VerifyEmailView.as_view(), name='verify_email'),
-    path('customer/', include('customers.urls'))
+    path('customers/', include('customers.urls'))
 ]

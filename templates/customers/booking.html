@@ -3,395 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book an Appointment</title>
+    <title>{{ company_name }}</title>
     {% load static %}
-    <style>
-        :root {
-            --primary: #00A884;
-            --light-gray: #f5f5f5;
-            --medium-gray: #e0e0e0;
-            --dark-gray: #757575;
-            --white: #ffffff;
-            --border-radius: 8px;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: var(--light-gray);
-            color: #333;
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        /* Steps indicator */
-        .steps {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 40px;
-            position: relative;
-        }
-
-        .steps::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background-color: var(--medium-gray);
-            z-index: 1;
-        }
-
-        .step {
-            display: flex;
-            align-items: center;
-            position: relative;
-            z-index: 2;
-            background: var(--light-gray);
-            padding: 0 10px;
-        }
-
-        .step-number {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background-color: var(--medium-gray);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 10px;
-            font-weight: bold;
-        }
-
-        .step.active .step-number {
-            background-color: var(--primary);
-        }
-
-        .step-text {
-            font-size: 16px;
-            color: var(--dark-gray);
-        }
-
-        .step.active .step-text {
-            color: #333;
-            font-weight: bold;
-        }
-
-        /* Services section */
-        h1 {
-            font-size: 32px;
-            margin-bottom: 20px;
-        }
-
-        /* Tabs */
-        .tabs {
-            display: flex;
-            border-bottom: 2px solid var(--medium-gray);
-            margin-bottom: 30px;
-        }
-
-        .tab {
-            padding: 10px 30px;
-            cursor: pointer;
-            font-weight: 500;
-            color: var(--dark-gray);
-            position: relative;
-        }
-
-        .tab.active {
-            color: var(--primary);
-            font-weight: bold;
-        }
-
-        .tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background-color: var(--primary);
-        }
-
-        /* Service cards */
-        .services-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .service-card {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-            background: white;
-            border-radius: var(--border-radius);
-            border: 1px solid var(--medium-gray);
-            transition: all 0.2s;
-        }
-
-        .service-card.selected {
-            border: 2px solid var(--primary);
-        }
-
-        .service-info {
-            flex-grow: 1;
-        }
-
-        .service-name {
-            font-size: 18px;
-            font-weight: 500;
-            margin-bottom: 5px;
-        }
-
-        .service-details {
-            color: var(--dark-gray);
-            font-size: 14px;
-        }
-
-        .service-price {
-            font-size: 18px;
-            font-weight: 500;
-            margin-right: 20px;
-        }
-
-        .select-button {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: var(--dark-gray);
-            border: 2px solid var(--medium-gray);
-            background: white;
-            font-size: 18px;
-            transition: all 0.2s;
-        }
-
-        .service-card.selected .select-button {
-            background-color: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        /* Footer actions */
-        .actions {
-            margin-top: 40px;
-            display: flex;
-            justify-content: flex-end;
-        }
-
-        .next-btn {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: var(--border-radius);
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            text-transform: uppercase;
-        }
-
-        .next-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        /* Hide services that don't match the active tab */
-        .service-card[data-category] {
-            display: flex;
-        }
-
-        .tab-content:not(.active) {
-            display: none;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/booking.css' %}">
 </head>
 <body>
-    <div class="container">
-        <!-- Steps indicator -->
-        <div class="steps">
-            <div class="step active">
-                <div class="step-number">1</div>
-                <div class="step-text">Select Services</div>
-            </div>
-            <div class="step">
-                <div class="step-number">2</div>
-                <div class="step-text">Choose Professional & Time</div>
-            </div>
-            <div class="step">
-                <div class="step-number">3</div>
-                <div class="step-text">Review Booking</div>
-            </div>
-        </div>
+    <!-- Company Header -->
+    <div class="booking-header">
+        <h1 class="company-name">{{ company_name }}</h1>
+        <p class="booking-header-subtitle">Book Your Appointment</p>
+    </div>
 
-        <h1>Services</h1>
+    <div class="booking-container">
+        <!-- Main Content -->
+        <div class="booking-main">
+            <!-- Services Section -->
+            <div class="booking-section" id="services-section">
+                <div class="section-header">
+                    <div class="section-number">1</div>
+                    <h2 class="section-title">Choose Services</h2>
+                </div>
+                <p class="section-subtitle">Select one or more services you'd like to book</p>
 
-        <!-- Tabs -->
-        <div class="tabs">
-            <div class="tab active" data-tab="all">ALL</div>
-            <div class="tab" data-tab="men">MEN</div>
-            <div class="tab" data-tab="women">WOMEN</div>
-        </div>
+                <div class="service-tabs">
+                    <button class="service-tab active" data-category="all">All Services</button>
+                    <button class="service-tab" data-category="men">Men</button>
+                    <button class="service-tab" data-category="women">Women</button>
+                </div>
 
-        <!-- Service listings -->
-        <form id="booking-form" method="post" action="{% url 'customers_booking' company_id=company_id %}">
-            {% csrf_token %}
-            <input type="hidden" name="step" value="1">
-            <input type="hidden" id="selected-services" name="selected_services" value="">
-
-            <div id="all-services" class="tab-content active">
-                <div class="services-list">
-                    <!-- Services will be populated by JavaScript -->
+                <div class="services-grid" id="services-grid">
+                    <div class="loading">Loading services...</div>
                 </div>
             </div>
 
-            <div class="actions">
-                <button type="submit" class="next-btn" id="next-button">NEXT</button>
+            <!-- Staff Section -->
+            <div class="booking-section" id="staff-section">
+                <div class="section-header">
+                    <div class="section-number inactive" id="staff-number">2</div>
+                    <h2 class="section-title">Select Professional</h2>
+                </div>
+                <p class="section-subtitle">Choose your preferred professional or any available</p>
+
+                <div class="staff-grid" id="staff-grid">
+                    <div class="loading">Select a service first</div>
+                </div>
             </div>
-        </form>
+
+            <!-- Date & Time Section -->
+            <div class="booking-section" id="datetime-section">
+                <div class="section-header">
+                    <div class="section-number inactive" id="datetime-number">3</div>
+                    <h2 class="section-title">Pick Date & Time</h2>
+                </div>
+                <p class="section-subtitle">Choose when you'd like your appointment</p>
+
+                <div class="datetime-container">
+                    <div class="date-picker">
+                        <div class="calendar-header">
+                            <div class="calendar-month" id="calendar-month">December 2024</div>
+                            <div class="calendar-nav">
+                                <button class="nav-btn" id="prev-month">←</button>
+                                <button class="nav-btn" id="next-month">→</button>
+                            </div>
+                        </div>
+                        <div class="calendar-grid" id="calendar-grid">
+                            <div class="calendar-day-header">Sun</div>
+                            <div class="calendar-day-header">Mon</div>
+                            <div class="calendar-day-header">Tue</div>
+                            <div class="calendar-day-header">Wed</div>
+                            <div class="calendar-day-header">Thu</div>
+                            <div class="calendar-day-header">Fri</div>
+                            <div class="calendar-day-header">Sat</div>
+                        </div>
+                    </div>
+
+                    <div class="time-slots-container">
+                        <div class="calendar-month" style="margin-bottom: 15px;">Available Times</div>
+                        <div class="time-slots-grid" id="time-slots-grid">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">🕐</div>
+                                <div>Select a date to view available times</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Information Section -->
+            <div class="booking-section" id="customer-section">
+                <div class="section-header">
+                    <div class="section-number inactive" id="customer-number">4</div>
+                    <h2 class="section-title">Your Information</h2>
+                </div>
+                <p class="section-subtitle">We'll use this to confirm your booking</p>
+
+                <form class="customer-form" id="customer-form">
+                    <div class="form-group">
+                        <label class="form-label" for="first-name">First Name *</label>
+                        <input type="text" id="first-name" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="last-name">Last Name *</label>
+                        <input type="text" id="last-name" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="email">Email *</label>
+                        <input type="email" id="email" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="phone">Phone Number *</label>
+                        <input type="tel" id="phone" class="form-input" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label" for="notes">Additional Notes (Optional)</label>
+                        <textarea id="notes" class="form-input" placeholder="Any special requests or preferences..."></textarea>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Summary Sidebar -->
+        <div class="booking-summary">
+            <h3 class="summary-title">Booking Summary</h3>
+
+            <div class="summary-section">
+                <div class="summary-label">Services</div>
+                <div id="summary-services">
+                    <div class="summary-placeholder">No services selected</div>
+                </div>
+            </div>
+
+            <div class="summary-section">
+                <div class="summary-label">Professional</div>
+                <div id="summary-staff">
+                    <div class="summary-placeholder">Not selected</div>
+                </div>
+            </div>
+
+            <div class="summary-section">
+                <div class="summary-label">Date & Time</div>
+                <div id="summary-datetime">
+                    <div class="summary-placeholder">Not selected</div>
+                </div>
+            </div>
+
+            <div class="summary-total">
+                <div class="summary-total-label">Total</div>
+                <div class="summary-total-price" id="summary-total">€0</div>
+            </div>
+
+            <button class="book-button" id="book-button" disabled>Complete Booking</button>
+        </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const companyId = '{{ company_id }}';
-            const servicesList = document.querySelector('.services-list');
-            const selectedServices = new Set();
-
-            // Fetch services from API
-            fetchServices();
-
-            async function fetchServices() {
-                try {
-                    const response = await fetch(`http://127.0.0.1:8000/api/v1/services/companies/${companyId}/services`);
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch services');
-                    }
-
-                    const data = await response.json();
-                    if (data.success && data.data) {
-                        renderServices(data.data);
-                        setupEventListeners();
-                    } else {
-                        throw new Error('Invalid response format');
-                    }
-                } catch (error) {
-                    console.error('Error fetching services:', error);
-                    servicesList.innerHTML = `
-                        <div class="service-card error">
-                            <div class="service-info">
-                                <div class="service-name">Error loading services</div>
-                                <div class="service-details">Please try again later</div>
-                            </div>
-                        </div>`;
-                }
-            }
-
-            function renderServices(categories) {
-                // Clear existing services
-                servicesList.innerHTML = '';
-
-                // Create HTML for all services
-                categories.forEach(category => {
-                    if (category.services && category.services.length > 0) {
-                        category.services.forEach(service => {
-                            if (service.status === 'active') {
-                                const price = service.discount_price || service.price;
-                                const card = document.createElement('div');
-                                card.className = 'service-card';
-                                card.dataset.id = service.id;
-                                card.dataset.category = category.name.toLowerCase();
-                                card.innerHTML = `
-                                    <div class="service-info">
-                                        <div class="service-name">${service.name}</div>
-                                        <div class="service-details">${service.duration} min • ${category.name}</div>
-                                    </div>
-                                    <div class="service-price">€${price}</div>
-                                    <div class="select-button">+</div>
-                                `;
-                                servicesList.appendChild(card);
-                            }
-                        });
-                    }
-                });
-            }
-
-            function setupEventListeners() {
-                // Tab switching functionality
-                const tabs = document.querySelectorAll('.tab');
-                const serviceCards = document.querySelectorAll('.service-card');
-
-                tabs.forEach(tab => {
-                    tab.addEventListener('click', function() {
-                        // Remove active class from all tabs
-                        tabs.forEach(t => t.classList.remove('active'));
-                        // Add active class to clicked tab
-                        this.classList.add('active');
-
-                        const category = this.dataset.tab;
-
-                        // Show/hide services based on the selected tab
-                        serviceCards.forEach(card => {
-                            if (category === 'all' || card.dataset.category === category) {
-                                card.style.display = 'flex';
-                            } else {
-                                card.style.display = 'none';
-                            }
-                        });
-                    });
-                });
-
-                // Service selection functionality
-                serviceCards.forEach(card => {
-                    card.addEventListener('click', function() {
-                        const serviceId = this.dataset.id;
-
-                        if (this.classList.contains('selected')) {
-                            // Deselect
-                            this.classList.remove('selected');
-                            selectedServices.delete(serviceId);
-                            this.querySelector('.select-button').textContent = '+';
-                        } else {
-                            // Select
-                            this.classList.add('selected');
-                            selectedServices.add(serviceId);
-                            this.querySelector('.select-button').textContent = '✓';
-                        }
-
-                        // Update hidden field with selected services
-                        document.getElementById('selected-services').value = Array.from(selectedServices).join(',');
-
-                        // Enable/disable next button based on selection
-                        document.getElementById('next-button').disabled = selectedServices.size === 0;
-                    });
-                });
-
-                // Form submission
-                document.getElementById('booking-form').addEventListener('submit', function(e) {
-                    if (selectedServices.size === 0) {
-                        e.preventDefault();
-                        alert('Please select at least one service to continue.');
-                        return false;
-                    }
-
-                    // Update hidden field with selected services before submit
-                    document.getElementById('selected-services').value = Array.from(selectedServices).join(',');
-                    return true;
-                });
-            }
-        });
+        // Inject company_id into the booking state
+        const bookingState = {
+            companyId: '{{ company_id }}',
+            services: [],
+            selectedServices: new Set(),
+            selectedStaff: null,
+            selectedDate: null,
+            selectedTime: null,
+            allServices: [],
+            allStaff: [],
+            currentMonth: new Date(),
+            availableTimeSlots: []
+        };
     </script>
+    <script src="{% static 'js/booking.js' %}"></script>
 </body>
 </html>

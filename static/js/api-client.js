@@ -242,15 +242,15 @@ class APIClient {
         });
     }
 
-    async updateCompanySettings(companyData) {
-        return this.request('/users/api/v1/companies/settings', {
-            method: 'PUT',
-            body: JSON.stringify(companyData)
+    async addTelegramBot(data) {
+        return this.request('/customers/api/v1/integrations/telegram', {
+            method: 'POST',
+            body: JSON.stringify(data)
         });
     }
 
-    async getMembershipPlans() {
-        return this.request('/users/api/v1/memberships/plan');
+    async getTelegramBot() {
+        return this.request('/customers/api/v1/integrations/telegram');
     }
 
     // Helper methods for common operations

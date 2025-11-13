@@ -317,6 +317,9 @@ const Settings = (() => {
             await saveCompanyDetails();
         });
 
+        // Setup form validation for company details
+        setupFormValidation('company-details-form');
+
         // Company emails form functionality
         const addEmailBtn = document.getElementById('add-email-btn');
         const emailsContainer = document.getElementById('emails-container');
@@ -324,6 +327,12 @@ const Settings = (() => {
 
         if (addEmailBtn) {
             addEmailBtn.addEventListener('click', () => {
+                // Open the collapsible section if it's closed
+                const emailsContent = document.getElementById('company-emails-content');
+                const emailsToggle = document.querySelector('[data-target="company-emails-content"] .collapse-toggle');
+                if (emailsContent && emailsContent.classList.contains('collapsed')) {
+                    toggleSection(emailsToggle, emailsContent);
+                }
                 addEmailField();
             });
         }
@@ -333,7 +342,13 @@ const Settings = (() => {
                 e.preventDefault();
                 await saveCompanyEmails();
             });
+
+            // Setup form validation for emails
+            setupFormValidation('company-emails-form');
         }
+
+        // Setup delete email modal handlers ONCE
+        setupEmailDeleteModal();
 
         // Setup delete email button handlers
         setupEmailDeleteHandlers();
@@ -345,16 +360,100 @@ const Settings = (() => {
             await saveCompanyPhones();
         });
 
+        // Setup form validation for phones
+        // setupFormValidation('company-phones-form');
+
         // Setup add phone button
         const addPhoneBtn = document.getElementById('add-phone-btn');
         if (addPhoneBtn) {
             addPhoneBtn.addEventListener('click', () => {
+                // Open the collapsible section if it's closed
+                const phonesContent = document.getElementById('company-phones-content');
+                const phonesToggle = document.querySelector('[data-target="company-phones-content"] .collapse-toggle');
+                if (phonesContent && phonesContent.classList.contains('collapsed')) {
+                    toggleSection(phonesToggle, phonesContent);
+                }
                 addPhoneField();
             });
         }
 
+        // Setup delete phone modal handlers ONCE
+        setupPhoneDeleteModal();
+
         // Setup initial delete phone buttons
         setupDeletePhoneButtons();
+
+        // Setup form validation for address
+        setupFormValidation('company-address-form');
+    };
+
+    // Setup form validation to enable/disable save buttons based on data
+    const setupFormValidation = (formId) => {
+        const form = document.getElementById(formId);
+        if (!form) return;
+
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (!submitButton) return;
+
+        // Store original form values to detect changes
+        const originalValues = {};
+        const formInputs = form.querySelectorAll('input, textarea, select');
+
+        formInputs.forEach(input => {
+            originalValues[input.id || input.name] = input.value;
+        });
+
+        // Function to check if form has data and has changed
+        const validateForm = () => {
+            let hasData = false;
+            let hasChanges = false;
+
+            const inputs = form.querySelectorAll('input, textarea, select');
+
+            inputs.forEach(input => {
+                // Skip if it's a delete button or hidden input
+                if (input.type === 'button' || input.type === 'hidden') return;
+
+                // Check if input has value
+                if (input.value && input.value.trim() !== '') {
+                    hasData = true;
+                }
+
+                // Check if value has changed from original
+                const originalValue = originalValues[input.id || input.name] || '';
+                if (input.value !== originalValue) {
+                    hasChanges = true;
+                }
+            });
+
+            // Add/remove inactive class based on data and changes
+            const shouldBeInactive = !hasData || !hasChanges;
+            if (shouldBeInactive) {
+                submitButton.classList.add('btn-inactive');
+                submitButton.disabled = true;
+            } else {
+                submitButton.classList.remove('btn-inactive');
+                submitButton.disabled = false;
+            }
+        };
+
+        // Add event listeners to all form inputs
+        formInputs.forEach(input => {
+            input.addEventListener('input', validateForm);
+            input.addEventListener('change', validateForm);
+        });
+
+        // Run initial validation
+        validateForm();
+
+        // Update original values after successful save
+        form.addEventListener('formSaved', () => {
+            const inputs = form.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+                originalValues[input.id || input.name] = input.value;
+            });
+            validateForm();
+        });
     };
 
     // Load all company information from the API
@@ -560,16 +659,13 @@ const Settings = (() => {
                             <div class="form-row">
                                 <div class="form-group flex-grow-1">
                                     <label for="company-phone-${index}">Phone Number</label>
-                                    <input type="tel" id="company-phone-${index}" name="company-phone-${index}" class="company-phone" value="${phone.number}" required data-phone-id="${phone.id}">
+                                    <input type="tel" id="company-phone-${index}" name="company-phone-${index}" class="company-phone" value="${phone.phone}" required data-phone-id="${phone.id}">
                                 </div>
                                 <div class="form-group phone-type-group">
                                     <label for="company-phone-type-${index}">Type</label>
                                     <select id="company-phone-type-${index}" name="company-phone-type-${index}" class="phone-type">
-                                        <option value="primary" ${phone.type === 'primary' ? 'selected' : ''}>Primary</option>
-                                        <option value="business" ${phone.type === 'business' ? 'selected' : ''}>Business</option>
-                                        <option value="mobile" ${phone.type === 'mobile' ? 'selected' : ''}>Mobile</option>
-                                        <option value="fax" ${phone.type === 'fax' ? 'selected' : ''}>Fax</option>
-                                        <option value="other" ${phone.type === 'other' ? 'selected' : ''}>Other</option>
+                                        <option value="primary" ${phone.is_primary === true ? 'selected' : ''}>Primary</option>
+                                        <option value="other" ${phone.is_primary === false ? 'selected' : ''}>Other</option>
                                     </select>
                                 </div>
                                 <div class="form-group delete-btn-container">
@@ -635,6 +731,8 @@ const Settings = (() => {
         // Setup delete handler for the new email entry
         setupEmailDeleteHandlers();
 
+        // Re-setup form validation for the emails form
+        setupFormValidation('company-emails-form');
     };
 
     // Add a new phone field
@@ -673,6 +771,9 @@ const Settings = (() => {
 
         // Setup delete handler for the new phone entry
         setupDeletePhoneButtons();
+
+        // Re-setup form validation for the phones form
+        // setupFormValidation('company-phones-form');
     };
 
     // Setup email delete button handlers
@@ -695,32 +796,45 @@ const Settings = (() => {
                 }
             });
         });
-
-        // Setup the email delete confirmation modal buttons
-        setupEmailDeleteModal();
     };
 
-    // Setup the email delete modal buttons
+    // Setup the email delete modal buttons (called once during initialization)
     const setupEmailDeleteModal = () => {
         const deleteModal = document.getElementById('delete-email-modal');
+        if (!deleteModal) return;
 
         // Cancel delete button
-        document.getElementById('cancel-delete-email-btn').addEventListener('click', () => {
-            deleteModal.style.display = 'none';
-        });
+        const cancelBtn = document.getElementById('cancel-delete-email-btn');
+        const confirmBtn = document.getElementById('confirm-delete-email-btn');
+        const closeBtn = deleteModal.querySelector('.close-modal');
 
-        // Confirm delete button
-        document.getElementById('confirm-delete-email-btn').addEventListener('click', () => {
-            deleteEmail(currentEmailId);
-        });
+        // Remove existing listeners by cloning and replacing (prevents duplicates)
+        if (cancelBtn) {
+            const newCancelBtn = cancelBtn.cloneNode(true);
+            cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+            newCancelBtn.addEventListener('click', () => {
+                deleteModal.style.display = 'none';
+            });
+        }
 
-        // Close modal by clicking X
-        deleteModal.querySelector('.close-modal').addEventListener('click', () => {
-            deleteModal.style.display = 'none';
-        });
+        if (confirmBtn) {
+            const newConfirmBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+            newConfirmBtn.addEventListener('click', () => {
+                deleteEmail(currentEmailId);
+            });
+        }
 
-        // Close modal by clicking outside
-        window.addEventListener('click', (e) => {
+        if (closeBtn) {
+            const newCloseBtn = closeBtn.cloneNode(true);
+            closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+            newCloseBtn.addEventListener('click', () => {
+                deleteModal.style.display = 'none';
+            });
+        }
+
+        // Close modal by clicking outside (use once to avoid duplicates)
+        deleteModal.addEventListener('click', (e) => {
             if (e.target === deleteModal) {
                 deleteModal.style.display = 'none';
             }
@@ -737,16 +851,13 @@ const Settings = (() => {
             deleteBtn.disabled = true;
             deleteBtn.textContent = 'Deleting...';
 
-            // Delete email from the API using the correct endpoint
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/companies/emails/${emailId}`, {
-                method: 'DELETE',
-                headers: Auth.getAuthHeader(),
-                credentials: 'include'
+            // Delete email from the API using the correct endpoint - ADD AWAIT
+            const response = await api.request(`/users/api/v1/companies/emails/${emailId}`, {
+                method: 'DELETE'
             });
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || `Error: ${response.status}`);
+            if (!response.success) {
+                throw new Error(response.message || 'Failed to delete email');
             }
 
             // Success - close modal and reload emails
@@ -813,24 +924,16 @@ const Settings = (() => {
                     }))
                 };
 
-                await api.request('/users/api/v1/companies/emails', {
+                const result = await api.request('/users/api/v1/companies/emails', {
                     body: JSON.stringify(requestData),
                     method: 'POST'
                 });
-            }
 
-            // Delete emails
-            // for (const emailId of emailsToDelete) {
-            //     const response = await fetch(`http://127.0.0.1:8000/api/v1/companies/emails/${emailId}`, {
-            //         method: 'DELETE',
-            //         headers: Auth.getAuthHeader(),
-            //         credentials: 'include'
-            //     });
-            //
-            //     if (!response.ok) {
-            //         throw new Error(`Error deleting email: ${response.status}`);
-            //     }
-            // }
+                // Check if the save was successful
+                if (!result.success) {
+                    throw new Error(result.message || 'Failed to save company emails');
+                }
+            }
 
             // Reload company emails
             await loadCompanyEmails();
@@ -838,7 +941,7 @@ const Settings = (() => {
             showToast('Company emails saved successfully', 'success');
         } catch (error) {
             console.error('Error saving company emails:', error);
-            showToast('Failed to save company emails. Please try again.', 'error');
+            showToast(`Failed to save company emails: ${error.message}`, 'error');
         }
     };
 
@@ -866,27 +969,14 @@ const Settings = (() => {
             // Disable submit button and show loading state
             const submitBtn = document.querySelector('#company-details-form button[type="submit"]');
             submitBtn.disabled = true;
+            submitBtn.classList.add('btn-inactive');
             submitBtn.textContent = 'Saving...';
 
-            // Send request to update company details using Auth helper for consistent headers
-            const response = await fetch('http://127.0.0.1:8000/api/v1/companies', {
+            // Send request to update company details using api-client
+            const result = await api.request('/users/api/v1/companies', {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...Auth.getAuthHeader()
-                },
-                credentials: 'include',
                 body: JSON.stringify(detailsData)
             });
-
-            // Handle different response statuses
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || `Server error: ${response.status}`);
-            }
-
-            // Process successful response
-            const result = await response.json();
 
             if (!result.success) {
                 throw new Error(result.message || 'Failed to update company details');
@@ -894,6 +984,10 @@ const Settings = (() => {
 
             // Update local data
             companyData = { ...companyData, ...result.data };
+
+            // Trigger the formSaved event to update validation state
+            const form = document.getElementById('company-details-form');
+            form.dispatchEvent(new Event('formSaved'));
 
             // Show success message with custom animation
             showToast('Company details saved successfully!', 'success');
@@ -910,6 +1004,7 @@ const Settings = (() => {
             // Reset button state
             const submitBtn = document.querySelector('#company-details-form button[type="submit"]');
             submitBtn.disabled = false;
+            submitBtn.classList.remove('btn-inactive');
             submitBtn.textContent = 'Save Details';
         }
     };
@@ -924,14 +1019,13 @@ const Settings = (() => {
         const phones = [];
         phoneInputs.forEach((input, index) => {
             if (input.value) {
+                const phoneType = phoneTypeInputs[index]?.value || 'other';
                 phones.push({
                     phone: input.value,
+                    is_primary: phoneType === 'primary'
                 });
             }
         });
-
-        // Use the first phone as the primary phone
-        const primaryPhone = phones.length > 0 ? phones[0].number : '';
 
         const phoneData = {
             company_phones: phones
@@ -949,7 +1043,10 @@ const Settings = (() => {
                 method: 'POST',
                 body: JSON.stringify(phoneData)
             });
-
+            // Check if the save was successful
+            if (!result.success) {
+                throw new Error(result.message || 'Failed to save company emails');
+            }
             // Show success message
             showToast('Company phones saved successfully!', 'success');
 
@@ -1024,35 +1121,35 @@ const Settings = (() => {
         modal.dataset.categoryId = categoryId;
         modal.style.display = 'block';
     };
-    
+
     // Delete a category
     const deleteCategory = async (categoryId) => {
         if (!categoryId) return;
-        
+
         try {
             // Show loading state
             const deleteBtn = document.getElementById('confirm-delete-category-btn');
             deleteBtn.disabled = true;
             deleteBtn.textContent = 'Deleting...';
-            
+
             const token = localStorage.getItem('accessToken');
             if (!token) throw new Error('No access token found');
-            
+
             // Send delete request to the API
             const response = await fetch(`http://127.0.0.1:8000/api/v1/services/categories/${categoryId}`, {
                 method: 'DELETE',
                 headers: Auth.getAuthHeader(),
                 credentials: 'include'
             });
-            
+
             if (!response.ok) throw new Error(`Error: ${response.status}`);
-            
+
             // Close modal and reload data
             document.getElementById('delete-category-modal').style.display = 'none';
-            
+
             // Reload categories for dropdown and services list
             await Promise.all([loadCategories(), loadServices()]);
-            
+
             // Show success message
             showToast('Category deleted successfully!', 'success');
         } catch (error) {
@@ -1065,7 +1162,7 @@ const Settings = (() => {
             deleteBtn.textContent = 'Delete Category';
         }
     };
-    
+
     // Setup delete phone button handlers
     const setupDeletePhoneButtons = () => {
         document.querySelectorAll('.delete-phone-btn').forEach(button => {
@@ -1082,36 +1179,48 @@ const Settings = (() => {
                 } else {
                     // For phones that haven't been saved yet, just remove from the DOM
                     phoneEntry.remove();
-                    updateDeletePhoneButtons();
                 }
             });
         });
-
-        // Setup the phone delete confirmation modal buttons
-        setupPhoneDeleteModal();
     };
 
-    // Setup the phone delete modal buttons
+    // Setup the phone delete modal buttons (called once during initialization)
     const setupPhoneDeleteModal = () => {
         const deleteModal = document.getElementById('delete-phone-modal');
+        if (!deleteModal) return;
 
         // Cancel delete button
-        document.getElementById('cancel-delete-phone-btn').addEventListener('click', () => {
-            deleteModal.style.display = 'none';
-        });
+        const cancelBtn = document.getElementById('cancel-delete-phone-btn');
+        const confirmBtn = document.getElementById('confirm-delete-phone-btn');
+        const closeBtn = deleteModal.querySelector('.close-modal');
 
-        // Confirm delete button
-        document.getElementById('confirm-delete-phone-btn').addEventListener('click', () => {
-            deletePhone(currentPhoneId);
-        });
+        // Remove existing listeners by cloning and replacing (prevents duplicates)
+        if (cancelBtn) {
+            const newCancelBtn = cancelBtn.cloneNode(true);
+            cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+            newCancelBtn.addEventListener('click', () => {
+                deleteModal.style.display = 'none';
+            });
+        }
 
-        // Close modal by clicking X
-        deleteModal.querySelector('.close-modal').addEventListener('click', () => {
-            deleteModal.style.display = 'none';
-        });
+        if (confirmBtn) {
+            const newConfirmBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+            newConfirmBtn.addEventListener('click', () => {
+                deletePhone(currentPhoneId);
+            });
+        }
 
-        // Close modal by clicking outside
-        window.addEventListener('click', (e) => {
+        if (closeBtn) {
+            const newCloseBtn = closeBtn.cloneNode(true);
+            closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+            newCloseBtn.addEventListener('click', () => {
+                deleteModal.style.display = 'none';
+            });
+        }
+
+        // Close modal by clicking outside (use once to avoid duplicates)
+        deleteModal.addEventListener('click', (e) => {
             if (e.target === deleteModal) {
                 deleteModal.style.display = 'none';
             }
@@ -1128,16 +1237,13 @@ const Settings = (() => {
             deleteBtn.disabled = true;
             deleteBtn.textContent = 'Deleting...';
 
-            // Delete phone from the API using the correct endpoint
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/companies/phones/${phoneId}`, {
-                method: 'DELETE',
-                headers: Auth.getAuthHeader(),
-                credentials: 'include'
+            // Delete phone from the API using the correct endpoint - ADD AWAIT
+            const response = await api.request(`/users/api/v1/companies/phones/${phoneId}`, {
+                method: 'DELETE'
             });
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || `Error: ${response.status}`);
+            if (!response.success) {
+                throw new Error(response.message || 'Failed to delete phone');
             }
 
             // Success - close modal and reload phones

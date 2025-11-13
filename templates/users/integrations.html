@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salona - Integrations</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
+    <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
+    <link rel="stylesheet" href="{% static 'css/integrations.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+</head>
+<body>
+    <!-- 3D Background Shapes -->
+    <div class="bg-shape bg-shape-1"></div>
+    <div class="bg-shape bg-shape-2"></div>
+    <div class="bg-shape bg-shape-3"></div>
+
+    <div class="app-container">
+        <!-- Include reusable sidebar -->
+        {% include 'partials/sidebar.html' %}
+
+        <!-- Main content area -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="back-button" onclick="window.location.href='/users/dashboard/'">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h2 class="page-title">Integrations</h2>
+                </div>
+                <div class="header-actions">
+                    {% include 'partials/notification_icon.html' %}
+                    <div class="user-info welcome-message">
+                        <span class="user-name">Welcome, {{ user_data.first_name }}!</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Tab Navigation -->
+            <div class="integrations-tabs">
+                <button class="tab-button active" data-tab="booking-url">
+                    <i class="fas fa-link"></i> Booking URL
+                </button>
+                <button class="tab-button" data-tab="telegram-bot">
+                    <i class="fab fa-telegram"></i> Telegram Bot
+                </button>
+            </div>
+
+            <!-- Booking URL Tab -->
+            <div id="booking-url" class="tab-content active">
+                <div class="integration-card">
+                    <h3><i class="fas fa-calendar-check"></i> Customer Booking URL</h3>
+                    <p style="color: #666; margin-bottom: 20px;">
+                        Share this URL with your customers so they can book appointments directly with your business.
+                    </p>
+
+                    <div class="url-display">
+                        <input
+                            type="text"
+                            class="url-input"
+                            id="booking-url-input"
+                            value="{{ booking_url }}"
+                            readonly
+                        >
+                        <button class="copy-button" id="copy-booking-url">
+                            <i class="fas fa-copy"></i>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+
+                    <div class="info-box">
+                        <p><strong>How to use:</strong></p>
+                        <p>• Share this link on your website, social media, or via email</p>
+                        <p>• Customers can view available services and book appointments</p>
+                        <p>• Bookings appear automatically in your dashboard</p>
+                    </div>
+
+                    <!-- QR Code Section -->
+                    <div class="qr-code-container">
+                        <img
+                            src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={{ booking_url|urlencode }}"
+                            alt="Booking QR Code"
+                        >
+                        <p>Customers can scan this QR code to book appointments</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Telegram Bot Tab -->
+            <div id="telegram-bot" class="tab-content">
+                <div class="integration-card">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
+                        <div>
+                            <h3><i class="fab fa-telegram"></i> Telegram Bot Configuration</h3>
+                            <p style="color: #666; margin-top: 5px;">
+                                Connect your Telegram bot to receive booking notifications and manage appointments.
+                            </p>
+                        </div>
+                        <span class="status-badge disconnected">
+                            <i class="fas fa-circle"></i>
+                            Not Connected
+                        </span>
+                    </div>
+
+                    <div class="telegram-setup">
+                        <div class="setup-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>Create a Telegram Bot</h4>
+                                <p>Open Telegram and search for <strong>@BotFather</strong>. Send the command <code>/newbot</code> and follow the instructions to create your bot.</p>
+                            </div>
+                        </div>
+
+                        <div class="setup-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h4>Get Your Bot Token</h4>
+                                <p>After creating the bot, BotFather will provide you with an API token. Copy this token.</p>
+                            </div>
+                        </div>
+
+                        <div class="setup-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h4>Configure Your Bot</h4>
+                                <form class="telegram-form" id="telegram-config-form">
+                                    <div class="form-group">
+                                        <label for="bot-token">Bot Token</label>
+                                        <input
+                                            type="text"
+                                            id="bot-token"
+                                            name="bot-token"
+                                            placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
+                                            required
+                                        >
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="chat-id">Chat ID (Optional)</label>
+                                        <input
+                                            type="text"
+                                            id="chat-id"
+                                            name="chat-id"
+                                            placeholder="Your Telegram Chat ID"
+                                        >
+                                        <small style="color: #666;">Leave empty to receive notifications in bot chat</small>
+                                    </div>
+
+                                    <button type="submit" class="save-button">
+                                        <i class="fas fa-save"></i> Save Configuration
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-box" style="margin-top: 30px;">
+                        <p><strong>What you'll receive:</strong></p>
+                        <p>• Real-time notifications for new bookings</p>
+                        <p>• Booking confirmations and cancellations</p>
+                        <p>• Daily schedule summaries</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="{% static 'js/api-client.js' %}"></script>
+    <script src="{% static 'js/utils.js' %}"></script>
+    <script src="{% static 'js/script.js' %}"></script>
+    <script src="{% static 'js/auth.js' %}"></script>
+    <script src="{% static 'js/notifications.js' %}"></script>
+    <script src="{% static 'js/integrations.js' %}"></script>
+</body>
+</html>
+
