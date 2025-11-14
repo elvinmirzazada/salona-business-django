@@ -3,6 +3,7 @@ Views for the main Salona application
 """
 from django.shortcuts import render
 from django.views import View
+from django.utils.translation import gettext_lazy as _
 import requests
 from django.conf import settings
 
@@ -12,33 +13,33 @@ def home(request):
         'page_title': 'Salona - Professional Beauty Business Management',
         'features': [
             {
-                'title': 'Smart Booking System',
-                'description': 'Effortless appointment scheduling with automated confirmations and reminders',
+                'title': _('Smart Booking System'),
+                'description': _('Effortless appointment scheduling with automated confirmations and reminders'),
                 'icon': 'fas fa-calendar-alt'
             },
             {
-                'title': 'Client Management', 
-                'description': 'Comprehensive customer profiles with service history and preferences',
+                'title': _('Client Management'),
+                'description': _('Comprehensive customer profiles with service history and preferences'),
                 'icon': 'fas fa-users'
             },
             {
-                'title': 'Staff Coordination',
-                'description': 'Manage your team schedules, services, and availability seamlessly',
+                'title': _('Staff Coordination'),
+                'description': _('Manage your team schedules, services, and availability seamlessly'),
                 'icon': 'fas fa-user-friends'
             },
             {
-                'title': 'Service Catalog',
-                'description': 'Organize your treatments, pricing, and service packages professionally',
+                'title': _('Service Catalog'),
+                'description': _('Organize your treatments, pricing, and service packages professionally'),
                 'icon': 'fas fa-cut'
             },
             {
-                'title': 'Real-time Notifications',
-                'description': 'Stay updated with instant notifications for bookings and business activities',
+                'title': _('Real-time Notifications'),
+                'description': _('Stay updated with instant notifications for bookings and business activities'),
                 'icon': 'fas fa-bell'
             },
             {
-                'title': 'Analytics Dashboard',
-                'description': 'Track performance, revenue, and business insights with detailed analytics',
+                'title': _('Analytics Dashboard'),
+                'description': _('Track performance, revenue, and business insights with detailed analytics'),
                 'icon': 'fas fa-chart-line'
             }
         ]
@@ -102,4 +103,3 @@ class VerifyEmailView(View):
                 'success': False,
                 'message': 'Unable to connect to verification service. Please try again later.'
             })
-

@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import redirect
 from django.views.generic import TemplateView
+from django.conf.urls.i18n import i18n_patterns
 from . import views
 from users.views import NotificationsView
 
@@ -29,6 +30,7 @@ def redirect_to_dashboard(request):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('i18n/', include('django.conf.urls.i18n')),  # Language switching endpoint
     path('users/', include('users.urls')),
     path('', views.home, name='home'),  # Home page
     path('verify-email/', views.VerifyEmailView.as_view(), name='verify_email'),

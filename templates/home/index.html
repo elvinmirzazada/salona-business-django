@@ -1,3 +1,4 @@
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -25,34 +26,33 @@
             <div class="hero-content">
                 <div class="hero-text">
                     <h1 class="hero-title">
-                        Transform Your <span class="gradient-text">Beauty Business</span> with Salona
+                        {% blocktrans %}Transform Your <span class="gradient-text">Beauty Business</span> with Salona{% endblocktrans %}
                     </h1>
                     <p class="hero-subtitle">
-                        The complete salon management platform that streamlines bookings, manages clients,
-                        and grows your beauty business with professional excellence.
+                        {% trans "The complete salon management platform that streamlines bookings, manages clients, and grows your beauty business with professional excellence." %}
                     </p>
                     <div class="hero-buttons">
                         <a href="{% url 'users:signup' %}" class="btn btn-primary">
                             <i class="fas fa-rocket"></i>
-                            Start Free Trial
+                            {% trans "Start Free Trial" %}
                         </a>
                         <a href="#features" class="btn btn-secondary">
                             <i class="fas fa-play-circle"></i>
-                            Watch Demo
+                            {% trans "Watch Demo" %}
                         </a>
                     </div>
                     <div class="hero-stats">
                         <div class="stat">
                             <span class="stat-number">500+</span>
-                            <span class="stat-label">Salons Trust Us</span>
+                            <span class="stat-label">{% trans "Salons Trust Us" %}</span>
                         </div>
                         <div class="stat">
                             <span class="stat-number">50k+</span>
-                            <span class="stat-label">Appointments Managed</span>
+                            <span class="stat-label">{% trans "Appointments Managed" %}</span>
                         </div>
                         <div class="stat">
                             <span class="stat-number">99.9%</span>
-                            <span class="stat-label">Uptime</span>
+                            <span class="stat-label">{% trans "Uptime" %}</span>
                         </div>
                     </div>
                 </div>
@@ -61,7 +61,7 @@
                         <div class="card-header">
                             <div class="card-title">
                                 <i class="fas fa-calendar-alt"></i>
-                                Today's Schedule
+                                {% trans "Today's Schedule" %}
                             </div>
                         </div>
                         <div class="card-content">
@@ -69,38 +69,38 @@
                                 <div class="appointment-time">09:30</div>
                                 <div class="appointment-details">
                                     <div class="client-name">Sarah Johnson</div>
-                                    <div class="service">Hair Cut & Style</div>
+                                    <div class="service">{% trans "Hair Cut & Style" %}</div>
                                 </div>
-                                <div class="appointment-status confirmed">Confirmed</div>
+                                <div class="appointment-status confirmed">{% trans "Confirmed" %}</div>
                             </div>
                             <div class="appointment-item">
                                 <div class="appointment-time">11:00</div>
                                 <div class="appointment-details">
                                     <div class="client-name">Maria Garcia</div>
-                                    <div class="service">Facial Treatment</div>
+                                    <div class="service">{% trans "Facial Treatment" %}</div>
                                 </div>
-                                <div class="appointment-status pending">Pending</div>
+                                <div class="appointment-status pending">{% trans "Pending" %}</div>
                             </div>
                             <div class="appointment-item">
                                 <div class="appointment-time">14:15</div>
                                 <div class="appointment-details">
                                     <div class="client-name">Emma Wilson</div>
-                                    <div class="service">Manicure & Pedicure</div>
+                                    <div class="service">{% trans "Manicure & Pedicure" %}</div>
                                 </div>
-                                <div class="appointment-status confirmed">Confirmed</div>
+                                <div class="appointment-status confirmed">{% trans "Confirmed" %}</div>
                             </div>
                         </div>
                     </div>
                     <div class="hero-card floating-notification">
                         <i class="fas fa-bell"></i>
-                        <span>New booking from Lisa Chen</span>
+                        <span>{% trans "New booking from Lisa Chen" %}</span>
                     </div>
                     <div class="hero-card stats-card">
                         <div class="stats-item">
                             <i class="fas fa-chart-line"></i>
                             <div>
                                 <div class="stats-number">+23%</div>
-                                <div class="stats-label">Revenue Growth</div>
+                                <div class="stats-label">{% trans "Revenue Growth" %}</div>
                             </div>
                         </div>
                     </div>
@@ -113,8 +113,8 @@
     <section id="features" class="features">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">Everything You Need to Run Your Salon</h2>
-                <p class="section-subtitle">Powerful features designed specifically for beauty professionals</p>
+                <h2 class="section-title">{% trans "Everything You Need to Run Your Salon" %}</h2>
+                <p class="section-subtitle">{% trans "Powerful features designed specifically for beauty professionals" %}</p>
             </div>
             <div class="features-grid">
                 {% for feature in features %}
@@ -135,32 +135,30 @@
         <div class="container">
             <div class="about-content">
                 <div class="about-text">
-                    <h2 class="about-title">Built for Beauty Professionals</h2>
+                    <h2 class="about-title">{% trans "Built for Beauty Professionals" %}</h2>
                     <p class="about-description">
-                        Salona understands the unique challenges of running a beauty business. From managing
-                        complex appointment schedules to tracking client preferences and building lasting
-                        relationships, our platform is designed with your success in mind.
+                        {% trans "Salona understands the unique challenges of running a beauty business. From managing complex appointment schedules to tracking client preferences and building lasting relationships, our platform is designed with your success in mind." %}
                     </p>
                     <div class="about-features">
                         <div class="about-feature">
                             <i class="fas fa-check-circle"></i>
-                            <span>Automated appointment reminders</span>
+                            <span>{% trans "Automated appointment reminders" %}</span>
                         </div>
                         <div class="about-feature">
                             <i class="fas fa-check-circle"></i>
-                            <span>Integrated payment processing</span>
+                            <span>{% trans "Integrated payment processing" %}</span>
                         </div>
                         <div class="about-feature">
                             <i class="fas fa-check-circle"></i>
-                            <span>Staff performance tracking</span>
+                            <span>{% trans "Staff performance tracking" %}</span>
                         </div>
                         <div class="about-feature">
                             <i class="fas fa-check-circle"></i>
-                            <span>Customer loyalty programs</span>
+                            <span>{% trans "Customer loyalty programs" %}</span>
                         </div>
                     </div>
                     <a href="{% url 'users:signup' %}" class="btn btn-primary">
-                        Start Your Journey
+                        {% trans "Start Your Journey" %}
                         <i class="fas fa-arrow-right"></i>
                     </a>
                 </div>
@@ -180,21 +178,21 @@
                                 </div>
                                 <div class="client-info">
                                     <h4>Jessica Martinez</h4>
-                                    <p>VIP Client • Last visit: Oct 15, 2025</p>
+                                    <p>{% trans "VIP Client" %} • {% trans "Last visit" %}: Oct 15, 2025</p>
                                 </div>
                             </div>
                             <div class="service-history">
-                                <h5>Recent Services</h5>
+                                <h5>{% trans "Recent Services" %}</h5>
                                 <div class="service-item">
-                                    <span>Balayage Highlights</span>
+                                    <span>{% trans "Balayage Highlights" %}</span>
                                     <span>$185</span>
                                 </div>
                                 <div class="service-item">
-                                    <span>Deep Conditioning</span>
+                                    <span>{% trans "Deep Conditioning" %}</span>
                                     <span>$45</span>
                                 </div>
                                 <div class="service-item">
-                                    <span>Eyebrow Shaping</span>
+                                    <span>{% trans "Eyebrow Shaping" %}</span>
                                     <span>$35</span>
                                 </div>
                             </div>
@@ -209,16 +207,16 @@
     <section class="cta">
         <div class="container">
             <div class="cta-content">
-                <h2 class="cta-title">Ready to Elevate Your Beauty Business?</h2>
-                <p class="cta-subtitle">Join thousands of salon owners who have transformed their operations with Salona</p>
+                <h2 class="cta-title">{% trans "Ready to Elevate Your Beauty Business?" %}</h2>
+                <p class="cta-subtitle">{% trans "Join thousands of salon owners who have transformed their operations with Salona" %}</p>
                 <div class="cta-buttons">
                     <a href="{% url 'users:signup' %}" class="btn btn-primary btn-large">
                         <i class="fas fa-crown"></i>
-                        Start Free Trial
+                        {% trans "Start Free Trial" %}
                     </a>
                     <div class="cta-note">
                         <i class="fas fa-shield-alt"></i>
-                        <span>No credit card required • 30-day free trial</span>
+                        <span>{% trans "No credit card required • 30-day free trial" %}</span>
                     </div>
                 </div>
             </div>
@@ -235,7 +233,7 @@
                         <span>Salona</span>
                     </div>
                     <p class="footer-description">
-                        Empowering beauty professionals with cutting-edge salon management technology.
+                        {% trans "Empowering beauty professionals with cutting-edge salon management technology." %}
                     </p>
                     <div class="social-links">
                         <a href="#" class="social-link">
@@ -253,35 +251,35 @@
                     </div>
                 </div>
                 <div class="footer-section">
-                    <h4 class="footer-title">Product</h4>
+                    <h4 class="footer-title">{% trans "Product" %}</h4>
                     <ul class="footer-links">
-                        <li><a href="#features">Features</a></li>
-                        <li><a href="#">Pricing</a></li>
-                        <li><a href="#">Integrations</a></li>
-                        <li><a href="#">API</a></li>
+                        <li><a href="#features">{% trans "Features" %}</a></li>
+                        <li><a href="#">{% trans "Pricing" %}</a></li>
+                        <li><a href="#">{% trans "Integrations" %}</a></li>
+                        <li><a href="#">{% trans "API" %}</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h4 class="footer-title">Support</h4>
+                    <h4 class="footer-title">{% trans "Support" %}</h4>
                     <ul class="footer-links">
-                        <li><a href="#">Help Center</a></li>
-                        <li><a href="#">Documentation</a></li>
-                        <li><a href="#">Contact Us</a></li>
-                        <li><a href="#">System Status</a></li>
+                        <li><a href="#">{% trans "Help Center" %}</a></li>
+                        <li><a href="#">{% trans "Documentation" %}</a></li>
+                        <li><a href="#">{% trans "Contact Us" %}</a></li>
+                        <li><a href="#">{% trans "System Status" %}</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h4 class="footer-title">Company</h4>
+                    <h4 class="footer-title">{% trans "Company" %}</h4>
                     <ul class="footer-links">
-                        <li><a href="#about">About Us</a></li>
-                        <li><a href="#">Careers</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#about">{% trans "About Us" %}</a></li>
+                        <li><a href="#">{% trans "Careers" %}</a></li>
+                        <li><a href="#">{% trans "Privacy Policy" %}</a></li>
+                        <li><a href="#">{% trans "Terms of Service" %}</a></li>
                     </ul>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 Salona. All rights reserved.</p>
+                <p>&copy; 2025 Salona. {% trans "All rights reserved." %}</p>
             </div>
         </div>
     </footer>

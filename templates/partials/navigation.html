@@ -1,4 +1,5 @@
 {% load static %}
+{% load i18n %}
 <!-- Navigation -->
 <nav class="navbar">
     <div class="nav-container">
@@ -7,15 +8,15 @@
             <span>Salona</span>
         </a>
         <div class="nav-links">
-            <a href="{% url 'home' %}#features" class="nav-link">Features</a>
-            <a href="{% url 'home' %}#about" class="nav-link">About</a>
-            <a href="{% url 'home' %}#contact" class="nav-link">Contact</a>
-            <a href="{% url 'users:login' %}" class="nav-link login-btn">Login</a>
-            <a href="{% url 'users:signup' %}" class="nav-link signup-btn">Get Started</a>
+            <a href="{% url 'home' %}#features" class="nav-link">{% trans "Features" %}</a>
+            <a href="{% url 'home' %}#about" class="nav-link">{% trans "About" %}</a>
+            <a href="{% url 'home' %}#contact" class="nav-link">{% trans "Contact" %}</a>
+            {% include 'partials/language_switcher.html' %}
+            <a href="{% url 'users:login' %}" class="nav-link login-btn">{% trans "Login" %}</a>
+            <a href="{% url 'users:signup' %}" class="nav-link signup-btn">{% trans "Get Started" %}</a>
         </div>
         <div class="mobile-menu-btn">
             <i class="fas fa-bars"></i>
         </div>
     </div>
 </nav>
-
