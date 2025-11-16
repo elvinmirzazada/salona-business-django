@@ -24,8 +24,9 @@ document.getElementById('copy-booking-url').addEventListener('click', function()
     document.execCommand('copy');
 
     const button = this;
+    const translations = window.integrationsTranslations || {};
     const originalContent = button.innerHTML;
-    button.innerHTML = '<i class="fas fa-check"></i><span>Copied!</span>';
+    button.innerHTML = `<i class="fas fa-check"></i><span>${translations.copied || 'Copied!'}</span>`;
     button.classList.add('copied');
 
     setTimeout(() => {
@@ -64,13 +65,14 @@ async function loadTelegramConfig() {
 
 // Update Telegram connection status
 function updateTelegramStatus(isConnected) {
+    const translations = window.integrationsTranslations || {};
     const statusBadge = document.querySelector('.status-badge');
     if (isConnected) {
         statusBadge.className = 'status-badge connected';
-        statusBadge.innerHTML = '<i class="fas fa-circle"></i> Connected';
+        statusBadge.innerHTML = `<i class="fas fa-circle"></i> ${translations.connected || 'Connected'}`;
     } else {
         statusBadge.className = 'status-badge disconnected';
-        statusBadge.innerHTML = '<i class="fas fa-circle"></i> Not Connected';
+        statusBadge.innerHTML = `<i class="fas fa-circle"></i> ${translations.notConnected || 'Not Connected'}`;
     }
 }
 
@@ -78,19 +80,20 @@ function updateTelegramStatus(isConnected) {
 document.getElementById('telegram-config-form').addEventListener('submit', async function(e) {
     e.preventDefault();
 
+    const translations = window.integrationsTranslations || {};
     const botToken = document.getElementById('bot-token').value.trim();
     const chatId = document.getElementById('chat-id').value.trim();
 
     // Validate bot token format
     if (!botToken) {
-        alert('Please enter a valid bot token');
+        alert(translations.enterValidToken || 'Please enter a valid bot token');
         return;
     }
 
     // Show loading state
     const submitButton = this.querySelector('.save-button');
     const originalButtonContent = submitButton.innerHTML;
-    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${translations.saving || 'Saving...'}`;
     submitButton.disabled = true;
 
     try {
@@ -103,23 +106,23 @@ document.getElementById('telegram-config-form').addEventListener('submit', async
 
         if (response.success) {
             // Show success message
-            showNotification('Telegram bot configuration saved successfully!', 'success');
+            showNotification(translations.configSavedSuccess || 'Telegram bot configuration saved successfully!', 'success');
 
             // Update status badge
             updateTelegramStatus(true);
 
             // Reset button
-            submitButton.innerHTML = '<i class="fas fa-check"></i> Saved!';
+            submitButton.innerHTML = `<i class="fas fa-check"></i> ${translations.saved || 'Saved!'}`;
             setTimeout(() => {
                 submitButton.innerHTML = originalButtonContent;
                 submitButton.disabled = false;
             }, 2000);
         } else {
-            throw new Error(data.message || 'Failed to save configuration');
+            throw new Error(data.message || (translations.failedToSave || 'Failed to save configuration'));
         }
     } catch (error) {
         console.error('Error saving Telegram config:', error);
-        showNotification('Error: ' + error.message, 'error');
+        showNotification((translations.error || 'Error:') + ' ' + error.message, 'error');
 
         // Reset button
         submitButton.innerHTML = originalButtonContent;

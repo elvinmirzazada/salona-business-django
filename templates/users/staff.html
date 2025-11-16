@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salona - Staff Management</title>
+    <title>{% load i18n %}Salona - {% trans "Staff Management" %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
@@ -30,12 +30,12 @@
                     <button class="back-button" onclick="window.location.href='/users/dashboard/'">
                         <i class="fas fa-arrow-left"></i>
                     </button>
-                    <h2 class="page-title">Staff</h2>
+                    <h2 class="page-title">{% trans "Staff" %}</h2>
                 </div>
                 <div class="header-actions">
                     {% include 'partials/notification_icon.html' %}
                     <div class="user-info welcome-message">
-                        <span class="user-name">Welcome, {{ user_data.first_name }}!</span>
+                        <span class="user-name">{% blocktrans with name=user_data.first_name %}Welcome, {{ name }}!{% endblocktrans %}</span>
                     </div>
                 </div>
             </header>
@@ -48,15 +48,15 @@
                             <div class="header-text">
                                 <h2 class="staff-title">
                                     <i class="fas fa-users staff-icon"></i>
-                                    Manage Staff
+                                    {% trans "Manage Staff" %}
                                 </h2>
-                                <p class="staff-subtitle">Create, edit, and organize your staff members</p>
+                                <p class="staff-subtitle">{% trans "Create, edit, and organize your staff members" %}</p>
                             </div>
                             <div class="header-actions">
                                 {% if user_data.role == 'owner' or user_data.role == 'admin' %}
                                     <button class="add-staff-btn" onclick="openAddModal()">
                                         <i class="fas fa-plus-circle"></i>
-                                        <span>Add New Staff</span>
+                                        <span>{% trans "Add New Staff" %}</span>
                                     </button>
                                 {% endif %}
                             </div>
@@ -72,12 +72,12 @@
                                 <table id="staff-table">
                                     <thead>
                                         <tr>
-                                            <th>Name</th>
-                                            <th>Email</th>
-                                            <th>Phone</th>
-                                            <th>Role</th>
-                                            <th>Status</th>
-                                            <th>Actions</th>
+                                            <th>{% trans "Name" %}</th>
+                                            <th>{% trans "Email" %}</th>
+                                            <th>{% trans "Phone" %}</th>
+                                            <th>{% trans "Role" %}</th>
+                                            <th>{% trans "Status" %}</th>
+                                            <th>{% trans "Actions" %}</th>
                                         </tr>
                                     </thead>
                                     <tbody id="staff-tbody">
@@ -95,9 +95,9 @@
                             <div class="no-staff">
                                 <i class="fas fa-users"></i>
                                 {% if user_data.role == 'owner' or user_data.role == 'admin' %}
-                                    <p>No staff members found. Click "Add New Staff" to create your first staff member.</p>
+                                    <p>{% trans 'No staff members found. Click "Add New Staff" to create your first staff member.' %}</p>
                                 {% else %}
-                                    <p>Insufficient privileges, Please contact your administrator.</p>
+                                    <p>{% trans "Insufficient privileges, Please contact your administrator." %}</p>
                                 {% endif %}
                             </div>
                         </div>
@@ -111,44 +111,44 @@
     <div id="staff-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title" id="modal-title">Add Staff Member</h3>
+                <h3 class="modal-title" id="modal-title">{% trans "Add Staff Member" %}</h3>
                 <span class="close" onclick="closeModal()">&times;</span>
             </div>
             <div class="modal-body">
                 <form id="staff-form">
                     <div class="form-group">
-                        <label class="form-label" for="first_name">First Name</label>
+                        <label class="form-label" for="first_name">{% trans "First Name" %}</label>
                         <input type="text" id="first_name" name="first_name" class="form-input" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="last_name">Last Name</label>
+                        <label class="form-label" for="last_name">{% trans "Last Name" %}</label>
                         <input type="text" id="last_name" name="last_name" class="form-input" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="email">Email</label>
+                        <label class="form-label" for="email">{% trans "Email" %}</label>
                         <input type="email" id="email" name="email" class="form-input" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="phone">Phone</label>
+                        <label class="form-label" for="phone">{% trans "Phone" %}</label>
                         <input type="tel" id="phone" name="phone" class="form-input">
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="role">Role</label>
+                        <label class="form-label" for="role">{% trans "Role" %}</label>
                         <select id="role" name="role" class="form-select">
-                            <option value="staff">Staff</option>
-                            <option value="manager">Manager</option>
-                            <option value="admin">Admin</option>
+                            <option value="staff">{% trans "Staff" %}</option>
+                            <option value="manager">{% trans "Manager" %}</option>
+                            <option value="admin">{% trans "Admin" %}</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label class="form-label">
                             <input type="checkbox" id="is_active" name="is_active" class="form-checkbox" checked>
-                            Active
+                            {% trans "Active" %}
                         </label>
                     </div>
                     <div class="modal-actions">
-                        <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
-                        <button type="submit" class="btn-primary" id="submit-btn">Add Staff Member</button>
+                        <button type="button" class="btn-secondary" onclick="closeModal()">{% trans "Cancel" %}</button>
+                        <button type="submit" class="btn-primary" id="submit-btn">{% trans "Add Staff Member" %}</button>
                     </div>
                 </form>
             </div>
@@ -159,14 +159,14 @@
     <div id="delete-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">Confirm Delete</h3>
+                <h3 class="modal-title">{% trans "Confirm Delete" %}</h3>
                 <span class="close" onclick="closeDeleteModal()">&times;</span>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete this staff member? This action cannot be undone.</p>
+                <p>{% trans "Are you sure you want to delete this staff member? This action cannot be undone." %}</p>
                 <div class="modal-actions">
-                    <button type="button" class="btn-secondary" onclick="closeDeleteModal()">Cancel</button>
-                    <button type="button" class="btn-primary" onclick="confirmDelete()" style="background: linear-gradient(135deg, #e53e3e, #c53030);">Delete</button>
+                    <button type="button" class="btn-secondary" onclick="closeDeleteModal()">{% trans "Cancel" %}</button>
+                    <button type="button" class="btn-primary" onclick="confirmDelete()" style="background: linear-gradient(135deg, #e53e3e, #c53030);">{% trans "Delete" %}</button>
                 </div>
             </div>
         </div>
@@ -182,6 +182,32 @@
     <script>
         // Pass user data to the staff manager
         window.userData = {{ user_data_json|safe }};
+
+        // Pass translations to JavaScript
+        window.staffTranslations = {
+            active: "{% trans 'Active' %}",
+            inactive: "{% trans 'Inactive' %}",
+            edit: "{% trans 'Edit' %}",
+            delete: "{% trans 'Delete' %}",
+            addStaffMember: "{% trans 'Add Staff Member' %}",
+            editStaffMember: "{% trans 'Edit Staff Member' %}",
+            updateStaffMember: "{% trans 'Update Staff Member' %}",
+            saving: "{% trans 'Saving...' %}",
+            fillRequiredFields: "{% trans 'Please fill in all required fields' %}",
+            staffUpdatedSuccess: "{% trans 'Staff member updated successfully' %}",
+            staffUpdateFailed: "{% trans 'Failed to update staff member' %}",
+            staffAddedSuccess: "{% trans 'Staff member added successfully' %}",
+            staffAddFailed: "{% trans 'Failed to create staff member' %}",
+            staffDeletedSuccess: "{% trans 'Staff member deleted successfully' %}",
+            staffDeleteFailed: "{% trans 'Failed to delete staff member' %}",
+            staffNotFound: "{% trans 'Staff member not found' %}",
+            failedToSave: "{% trans 'Failed to save staff member' %}",
+            selectStaffMember: "{% trans 'Select a staff member' %}",
+            staff: "{% trans 'Staff' %}",
+            manager: "{% trans 'Manager' %}",
+            admin: "{% trans 'Admin' %}",
+            owner: "{% trans 'Owner' %}"
+        };
     </script>
 </body>
 </html>

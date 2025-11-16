@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salona - Membership Plans</title>
+    <title>{% load i18n %}Salona - {% trans "Membership Plans" %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
@@ -31,12 +31,12 @@
                     <button class="back-button" onclick="window.location.href='/users/dashboard/'">
                         <i class="fas fa-arrow-left"></i>
                     </button>
-                    <h2 class="page-title">Membership Plans</h2>
+                    <h2 class="page-title">{% trans "Membership Plans" %}</h2>
                 </div>
                 <div class="header-actions">
                     {% include 'partials/notification_icon.html' %}
                     <div class="user-info welcome-message">
-                        <span class="user-name">Welcome, {{ user_data.first_name }}!</span>
+                        <span class="user-name">{% blocktrans with name=user_data.first_name %}Welcome, {{ name }}!{% endblocktrans %}</span>
                     </div>
                 </div>
             </header>
@@ -46,9 +46,9 @@
                 <div class="plans-header">
                     <h2 class="plans-title">
                         <i class="fas fa-crown"></i>
-                        Choose Your Plan
+                        {% trans "Choose Your Plan" %}
                     </h2>
-                    <p class="plans-subtitle">Select the perfect membership plan for your business needs</p>
+                    <p class="plans-subtitle">{% trans "Select the perfect membership plan for your business needs" %}</p>
                 </div>
 
                 <!-- Active Plan Section -->
@@ -57,7 +57,7 @@
                         <div class="active-plan-content">
                             <div class="active-plan-header">
                                 <i class="fas fa-check-circle"></i>
-                                <h3>Your Active Plan</h3>
+                                <h3>{% trans "Your Active Plan" %}</h3>
                             </div>
                             <div id="active-plan-details">
                                 <!-- Active plan details will be rendered here -->
@@ -66,14 +66,14 @@
                     </div>
 
                     <div class="section-divider">
-                        <span>Available Plans</span>
+                        <span>{% trans "Available Plans" %}</span>
                     </div>
                 </div>
 
                 <!-- Loading State -->
                 <div id="plans-loading" class="loading-container">
                     <div class="spinner"></div>
-                    <p>Loading membership plans...</p>
+                    <p>{% trans "Loading membership plans..." %}</p>
                 </div>
 
                 <!-- Plans Container -->
@@ -84,16 +84,16 @@
                 <!-- Error State -->
                 <div id="plans-error" class="error-state" style="display: none;">
                     <i class="fas fa-exclamation-circle"></i>
-                    <p>Failed to load membership plans. Please try again later.</p>
+                    <p>{% trans "Failed to load membership plans. Please try again later." %}</p>
                     <button class="btn-primary" onclick="location.reload()">
-                        <i class="fas fa-refresh"></i> Retry
+                        <i class="fas fa-refresh"></i> {% trans "Retry" %}
                     </button>
                 </div>
 
                 <!-- Empty State -->
                 <div id="plans-empty" class="empty-state" style="display: none;">
                     <i class="fas fa-inbox"></i>
-                    <p>No membership plans available at this time.</p>
+                    <p>{% trans "No membership plans available at this time." %}</p>
                 </div>
             </div>
         </main>
@@ -103,6 +103,38 @@
         // Pass membership plans data to JavaScript
         window.membershipPlans = {{ membership_plans_json|safe }};
         window.activePlan = {{ active_plan_json|safe }};
+
+        // Pass translations to JavaScript
+        window.membershipTranslations = {
+            planName: "{% trans 'Plan Name' %}",
+            planType: "{% trans 'Plan Type' %}",
+            price: "{% trans 'Price' %}",
+            status: "{% trans 'Status' %}",
+            startDate: "{% trans 'Start Date' %}",
+            endDate: "{% trans 'End Date' %}",
+            autoRenew: "{% trans 'Auto Renew' %}",
+            yes: "{% trans 'YES' %}",
+            no: "{% trans 'NO' %}",
+            currentPlan: "{% trans 'Current Plan' %}",
+            choosePlan: "{% trans 'Choose Plan' %}",
+            processing: "{% trans 'Processing...' %}",
+            per: "{% trans 'per' %}",
+            month: "{% trans 'month' %}",
+            year: "{% trans 'year' %}",
+            week: "{% trans 'week' %}",
+            days: "{% trans 'days' %}",
+            accessToBookingSystem: "{% trans 'Access to booking system' %}",
+            customerManagement: "{% trans 'Customer management' %}",
+            basicAnalytics: "{% trans 'Basic analytics' %}",
+            advancedAnalytics: "{% trans 'Advanced analytics' %}",
+            prioritySupport: "{% trans 'Priority support' %}",
+            customBranding: "{% trans 'Custom branding' %}",
+            unlimitedBookings: "{% trans 'Unlimited bookings' %}",
+            dedicatedSupport: "{% trans 'Dedicated support' %}",
+            apiAccess: "{% trans 'API access' %}",
+            whiteLabelSolution: "{% trans 'White-label solution' %}",
+            errorCheckout: "{% trans 'Failed to start checkout process. Please try again or contact support.' %}"
+        };
     </script>
     <script src="{% static 'js/api-client.js' %}"></script>
     <script src="{% static 'js/membership-plans.js' %}"></script>

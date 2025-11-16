@@ -8,6 +8,7 @@ class StaffManager {
         this.staff = [];
         this.currentEditingId = null;
         this.currentDeletingId = null;
+        this.translations = window.staffTranslations || {};
     }
 
     /**
@@ -94,14 +95,14 @@ class StaffManager {
         // Render staff rows
         tbody.innerHTML = this.staff.map(staff => {
             const statusClass = staff.status ? 'status-active' : 'status-inactive';
-            const statusText = staff.status ? 'Active' : 'Inactive';
+            const statusText = staff.status ? this.translations.active : this.translations.inactive;
 
             return `
                 <tr data-staff-id="${staff.user.id}">
                     <td>${staff.user.first_name || ''} ${staff.user.last_name || ''}</td>
                     <td>${staff.user.email || '-'}</td>
                     <td>${staff.user.phone || '-'}</td>
-                    <td>${this.capitalizeRole(staff.role || 'staff')}</td>
+                    <td>${this.translateRole(staff.role || 'staff')}</td>
                     <td>
                         <span class="${statusClass}">
                             ${statusText}
@@ -109,10 +110,10 @@ class StaffManager {
                     </td>
                     <td class="actions-cell">
                         ${window.userData && (window.userData.role === 'owner' || window.userData.role === 'admin') ? `
-                            <button class="action-btn edit-btn" onclick="staffManager.openEditModal('${staff.user.id}')" title="Edit">
+                            <button class="action-btn edit-btn" onclick="staffManager.openEditModal('${staff.user.id}')" title="${this.translations.edit}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="action-btn delete-btn" onclick="staffManager.openDeleteModal('${staff.user.id}')" title="Delete">
+                            <button class="action-btn delete-btn" onclick="staffManager.openDeleteModal('${staff.user.id}')" title="${this.translations.delete}">
                                 <i class="fas fa-trash"></i>
                             </button>
                         ` : ''}
@@ -120,6 +121,14 @@ class StaffManager {
                 </tr>
             `;
         }).join('');
+    }
+
+    /**
+     * Translate role name
+     */
+    translateRole(role) {
+        const roleLower = role.toLowerCase();
+        return this.translations[roleLower] || this.capitalizeRole(role);
     }
 
     /**
@@ -176,8 +185,8 @@ class StaffManager {
 
         // Reset form
         if (form) form.reset();
-        if (modalTitle) modalTitle.textContent = 'Add Staff Member';
-        if (submitBtn) submitBtn.textContent = 'Add Staff Member';
+        if (modalTitle) modalTitle.textContent = this.translations.addStaffMember || 'Add Staff Member';
+        if (submitBtn) submitBtn.textContent = this.translations.addStaffMember || 'Add Staff Member';
 
         // Set default values
         const isActiveCheckbox = document.getElementById('is_active');
@@ -193,7 +202,7 @@ class StaffManager {
     openEditModal(staffId) {
         const staff = this.staff.find(s => s.id === staffId);
         if (!staff) {
-            this.showError('Staff member not found');
+            this.showError(this.translations.staffNotFound || 'Staff member not found');
             return;
         }
 
@@ -211,8 +220,8 @@ class StaffManager {
         document.getElementById('role').value = staff.role || 'staff';
         document.getElementById('is_active').checked = staff.status !== false;
 
-        if (modalTitle) modalTitle.textContent = 'Edit Staff Member';
-        if (submitBtn) submitBtn.textContent = 'Update Staff Member';
+        if (modalTitle) modalTitle.textContent = this.translations.editStaffMember || 'Edit Staff Member';
+        if (submitBtn) submitBtn.textContent = this.translations.updateStaffMember || 'Update Staff Member';
 
         this.currentEditingId = staffId;
         modal.style.display = 'block';
@@ -237,7 +246,7 @@ class StaffManager {
             const submitBtn = document.getElementById('submit-btn');
             if (submitBtn) {
                 submitBtn.disabled = true;
-                submitBtn.textContent = 'Saving...';
+                submitBtn.textContent = this.translations.saving || 'Saving...';
             }
 
             const formData = {
@@ -251,10 +260,12 @@ class StaffManager {
 
             // Validate required fields
             if (!formData.first_name || !formData.last_name || !formData.email) {
-                this.showError('Please fill in all required fields');
+                this.showError(this.translations.fillRequiredFields || 'Please fill in all required fields');
                 if (submitBtn) {
                     submitBtn.disabled = false;
-                    submitBtn.textContent = this.currentEditingId ? 'Update Staff Member' : 'Add Staff Member';
+                    submitBtn.textContent = this.currentEditingId ?
+                        (this.translations.updateStaffMember || 'Update Staff Member') :
+                        (this.translations.addStaffMember || 'Add Staff Member');
                 }
                 return;
             }
@@ -265,7 +276,7 @@ class StaffManager {
                 response = await window.api.updateStaff(this.currentEditingId, formData);
 
                 if (response && response.success !== false) {
-                    this.showSuccess('Staff member updated successfully');
+                    this.showSuccess(this.translations.staffUpdatedSuccess || 'Staff member updated successfully');
 
                     // Update local data
                     const index = this.staff.findIndex(s => s.id === this.currentEditingId);
@@ -273,23 +284,23 @@ class StaffManager {
                         this.staff[index] = { ...this.staff[index], ...formData };
                     }
                 } else {
-                    throw new Error(response?.message || 'Failed to update staff member');
+                    throw new Error(response?.message || (this.translations.staffUpdateFailed || 'Failed to update staff member'));
                 }
             } else {
                 // Create new staff
                 response = await window.api.createStaff(formData);
 
                 if (response && response.data) {
-                    this.showSuccess('Staff member added successfully');
+                    this.showSuccess(this.translations.staffAddedSuccess || 'Staff member added successfully');
 
                     // Add to local data
                     this.staff.push(response.data);
                 } else if (response && response.success !== false) {
-                    this.showSuccess('Staff member added successfully');
+                    this.showSuccess(this.translations.staffAddedSuccess || 'Staff member added successfully');
                     // Reload to get fresh data
                     await this.loadStaff();
                 } else {
-                    throw new Error(response?.message || 'Failed to create staff member');
+                    throw new Error(response?.message || (this.translations.staffAddFailed || 'Failed to create staff member'));
                 }
             }
 
@@ -298,12 +309,14 @@ class StaffManager {
 
         } catch (error) {
             console.error('Failed to save staff:', error);
-            this.showError(error.message || 'Failed to save staff member');
+            this.showError(error.message || (this.translations.failedToSave || 'Failed to save staff member'));
         } finally {
             const submitBtn = document.getElementById('submit-btn');
             if (submitBtn) {
                 submitBtn.disabled = false;
-                submitBtn.textContent = this.currentEditingId ? 'Update Staff Member' : 'Add Staff Member';
+                submitBtn.textContent = this.currentEditingId ?
+                    (this.translations.updateStaffMember || 'Update Staff Member') :
+                    (this.translations.addStaffMember || 'Add Staff Member');
             }
         }
     }
@@ -314,7 +327,7 @@ class StaffManager {
     openDeleteModal(staffId) {
         const staff = this.staff.find(s => s.id === staffId);
         if (!staff) {
-            this.showError('Staff member not found');
+            this.showError(this.translations.staffNotFound || 'Staff member not found');
             return;
         }
 
@@ -344,7 +357,7 @@ class StaffManager {
             const response = await window.api.deleteStaff(this.currentDeletingId);
 
             if (response && response.success !== false) {
-                this.showSuccess('Staff member deleted successfully');
+                this.showSuccess(this.translations.staffDeletedSuccess || 'Staff member deleted successfully');
 
                 // Remove from local data
                 this.staff = this.staff.filter(s => s.id !== this.currentDeletingId);
@@ -352,12 +365,12 @@ class StaffManager {
                 this.closeDeleteModal();
                 this.renderStaffTable();
             } else {
-                throw new Error(response?.message || 'Failed to delete staff member');
+                throw new Error(response?.message || (this.translations.staffDeleteFailed || 'Failed to delete staff member'));
             }
 
         } catch (error) {
             console.error('Failed to delete staff:', error);
-            this.showError(error.message || 'Failed to delete staff member');
+            this.showError(error.message || (this.translations.staffDeleteFailed || 'Failed to delete staff member'));
         }
     }
 
@@ -381,8 +394,10 @@ class StaffManager {
                 return;
             }
 
+            const translations = window.staffTranslations || {};
+
             // Clear existing options
-            staffSelect.innerHTML = '<option value="">Select a staff member</option>';
+            staffSelect.innerHTML = `<option value="">${translations.selectStaffMember || 'Select a staff member'}</option>`;
 
             // Populate dropdown with staff members
             staffData.forEach(staffMember => {

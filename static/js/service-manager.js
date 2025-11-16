@@ -12,6 +12,7 @@ class ServiceManager {
         this.currentCategory = null;
         this.deleteServiceId = null;
         this.deleteCategoryId = null;
+        this.translations = window.serviceTranslations || {};
     }
 
     /**
@@ -125,28 +126,28 @@ class ServiceManager {
         // Render service rows
         tableBody.innerHTML = this.services.map(service => {
             const category = this.categories.find(c => c.id === service.category_id);
-            const categoryName = category ? category.name : 'Uncategorized';
+            const categoryName = category ? category.name : (this.translations.uncategorized || 'Uncategorized');
 
             // Get staff assigned to this service
             const serviceStaff = service.staff_ids || [];
             const staffNames = serviceStaff.map(staffId => {
                 const staffMember = this.staff.find(s => s.id === staffId);
                 return staffMember ? `${staffMember.first_name} ${staffMember.last_name}` : '';
-            }).filter(name => name).join(', ') || 'No staff assigned';
+            }).filter(name => name).join(', ') || (this.translations.noStaffAssigned || 'No staff assigned');
 
             return `
                 <tr data-service-id="${service.id}">
                     <td class="service-name">${service.name}</td>
                     <td>${categoryName}</td>
-                    <td>${service.duration} min</td>
+                    <td>${service.duration} ${this.translations.min || 'min'}</td>
                     <td>$${parseFloat(service.price).toFixed(2)}</td>
                     <td class="staff-cell">${staffNames}</td>
                     <td class="actions-cell">
                         ${window.userData && (window.userData.role === 'owner' || window.userData.role === 'admin') ? `
-                            <button class="btn-icon btn-edit" onclick="serviceManager.editService('${service.id}')" title="Edit">
+                            <button class="btn-icon btn-edit" onclick="serviceManager.editService('${service.id}')" title="${this.translations.edit || 'Edit'}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn-icon btn-delete" onclick="serviceManager.confirmDeleteService('${service.id}')" title="Delete">
+                            <button class="btn-icon btn-delete" onclick="serviceManager.confirmDeleteService('${service.id}')" title="${this.translations.delete || 'Delete'}">
                                 <i class="fas fa-trash"></i>
                             </button>
                         ` : ''}
@@ -188,7 +189,6 @@ class ServiceManager {
                     <td class="text-center">${serviceCount}</td>
                     <td class="actions-cell">
                         ${window.userData && (window.userData.role === 'owner' || window.userData.role === 'admin') ? `
-                            <button class="btn-icon btn-edit" onclick="serviceManager.editCategory('${category.id}')" title="Edit">
                                 <i class="fas fa-edit"></i>
                             </button>
                                 <i class="fas fa-trash"></i>

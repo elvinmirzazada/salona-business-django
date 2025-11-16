@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-14 22:00+0000\n"
+"POT-Creation-Date: 2025-11-16 18:27+0000\n"
 "PO-Revision-Date: 2025-11-14 21:50+0000\n"
 "Last-Translator: Salona Team\n"
 "Language-Team: Estonian\n"
@@ -18,56 +18,72 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: salona_business_django/settings.py:150
 msgid "English"
 msgstr "Inglise keel"
 
+#: salona_business_django/settings.py:151
 msgid "Estonian"
 msgstr "Eesti keel"
 
+#: salona_business_django/views.py:16
 msgid "Smart Booking System"
 msgstr "Nutikas broneerimissüsteem"
 
+#: salona_business_django/views.py:17
 msgid ""
 "Effortless appointment scheduling with automated confirmations and reminders"
 msgstr "Lihtne broneerimine automaatsete kinnituste ja meeldetuletustega"
 
+#: salona_business_django/views.py:21 templates/users/login.html:109
 msgid "Client Management"
 msgstr "Kliendihaldus"
 
+#: salona_business_django/views.py:22
 msgid "Comprehensive customer profiles with service history and preferences"
 msgstr "Põhjalikud kliendiprofiilid teenusajaloo ja eelistustega"
 
+#: salona_business_django/views.py:26
 msgid "Staff Coordination"
 msgstr "Töötajate koordineerimine"
 
+#: salona_business_django/views.py:27
 msgid "Manage your team schedules, services, and availability seamlessly"
 msgstr "Halda oma meeskonna ajakavasid, teenuseid ja saadavust sujuvalt"
 
+#: salona_business_django/views.py:31
 msgid "Service Catalog"
 msgstr "Teenustekataloog"
 
+#: salona_business_django/views.py:32
 msgid "Organize your treatments, pricing, and service packages professionally"
 msgstr "Korralda oma hooldused, hinnakiri ja teenusepaketid professionaalselt"
 
+#: salona_business_django/views.py:36
 msgid "Real-time Notifications"
 msgstr "Reaalajas teavitused"
 
+#: salona_business_django/views.py:37
 msgid ""
 "Stay updated with instant notifications for bookings and business activities"
 msgstr "Püsi kursis koheste broneeringu- ja tegevusteavitustega"
 
+#: salona_business_django/views.py:41
 msgid "Analytics Dashboard"
 msgstr "Analüütika juhtpaneel"
 
+#: salona_business_django/views.py:42
 msgid ""
 "Track performance, revenue, and business insights with detailed analytics"
 msgstr "Jälgi tulemusi, tulu ja ärivõimekust üksikasjaliku analüütikaga"
 
+#: templates/home/index.html:29
 msgid ""
 "Transform Your <span class=\"gradient-text\">Beauty Business</span> with "
 "Salona"
 msgstr "Muuda oma ilusalongi äri Salona abil"
 
+#: templates/home/index.html:32
 msgid ""
 "The complete salon management platform that streamlines bookings, manages "
 "clients, and grows your beauty business with professional excellence."
@@ -75,54 +91,71 @@ msgstr ""
 "Täielik salongihaldusplatvorm, mis lihtsustab broneeringuid, haldab kliente "
 "ja kasvatab sinu iluteenuste äri professionaalse täpsusega."
 
+#: templates/home/index.html:37 templates/home/index.html:215
 msgid "Start Free Trial"
 msgstr "Alusta tasuta prooviperioodi"
 
+#: templates/home/index.html:41
 msgid "Watch Demo"
 msgstr "Vaata demo"
 
+#: templates/home/index.html:47
 msgid "Salons Trust Us"
 msgstr "Salongid usaldavad meid"
 
+#: templates/home/index.html:51
 msgid "Appointments Managed"
 msgstr "Hallatud broneeringud"
 
+#: templates/home/index.html:55
 msgid "Uptime"
 msgstr "Töökindlus"
 
+#: templates/home/index.html:64
 msgid "Today's Schedule"
 msgstr "Tänane ajakava"
 
+#: templates/home/index.html:72
 msgid "Hair Cut & Style"
 msgstr "Juukselõikus ja stiil"
 
+#: templates/home/index.html:74 templates/home/index.html:90
 msgid "Confirmed"
 msgstr "Kinnitatud"
 
+#: templates/home/index.html:80
 msgid "Facial Treatment"
 msgstr "Näohooldus"
 
+#: templates/home/index.html:82
 msgid "Pending"
 msgstr "Ootel"
 
+#: templates/home/index.html:88
 msgid "Manicure & Pedicure"
 msgstr "Maniküür ja pediküür"
 
+#: templates/home/index.html:96
 msgid "New booking from Lisa Chen"
 msgstr "Uus broneering: Lisa Chen"
 
+#: templates/home/index.html:103
 msgid "Revenue Growth"
 msgstr "Tulude kasv"
 
+#: templates/home/index.html:116
 msgid "Everything You Need to Run Your Salon"
 msgstr "Kõik, mida vajad oma salongi juhtimiseks"
 
+#: templates/home/index.html:117
 msgid "Powerful features designed specifically for beauty professionals"
 msgstr "Võimsad funktsioonid, mis on loodud just ilutöötajatele"
 
+#: templates/home/index.html:138
 msgid "Built for Beauty Professionals"
 msgstr "Loodud ilutöö spetsialistidele"
 
+#: templates/home/index.html:140
 msgid ""
 "Salona understands the unique challenges of running a beauty business. From "
 "managing complex appointment schedules to tracking client preferences and "
@@ -134,42 +167,55 @@ msgstr ""
 "ja tugevate kliendisuhete loomiseni — meie platvorm on loodud sinu edu "
 "silmas pidades."
 
+#: templates/home/index.html:145
 msgid "Automated appointment reminders"
 msgstr "Automaatsed broneeringumeeldetuletused"
 
+#: templates/home/index.html:149
 msgid "Integrated payment processing"
 msgstr "Integreeritud maksete töötlemine"
 
+#: templates/home/index.html:153
 msgid "Staff performance tracking"
 msgstr "Töötajate töö tulemuslikkuse jälgimine"
 
+#: templates/home/index.html:157
 msgid "Customer loyalty programs"
 msgstr "Kliendilojaalsusprogrammid"
 
+#: templates/home/index.html:161
 msgid "Start Your Journey"
 msgstr "Alusta oma teekonda"
 
+#: templates/home/index.html:181
 msgid "VIP Client"
 msgstr "VIP klient"
 
+#: templates/home/index.html:181
 msgid "Last visit"
 msgstr "Viimane külastus"
 
+#: templates/home/index.html:185
 msgid "Recent Services"
 msgstr "Hiljutised teenused"
 
+#: templates/home/index.html:187
 msgid "Balayage Highlights"
 msgstr "Balayage triibud"
 
+#: templates/home/index.html:191
 msgid "Deep Conditioning"
 msgstr "Süvahooldus"
 
+#: templates/home/index.html:195
 msgid "Eyebrow Shaping"
 msgstr "Kulmukujundus"
 
+#: templates/home/index.html:210
 msgid "Ready to Elevate Your Beauty Business?"
 msgstr "Valmis oma iluteenuste äri kõrgemale tasemele viima?"
 
+#: templates/home/index.html:211
 msgid ""
 "Join thousands of salon owners who have transformed their operations with "
 "Salona"
@@ -177,126 +223,467 @@ msgstr ""
 "Liitu tuhandete salongiomanikega, kes on oma töökorralduse Salona abil ümber "
 "kujundanud"
 
+#: templates/home/index.html:219
 msgid "No credit card required • 30-day free trial"
 msgstr "Krediitkaarti pole vaja • 30-päevane tasuta prooviperiood"
 
+#: templates/home/index.html:236
 msgid ""
 "Empowering beauty professionals with cutting-edge salon management "
 "technology."
 msgstr "Toetame ilutöötajaid tipptasemel salongihaldustehnoloogiaga."
 
+#: templates/home/index.html:254
 msgid "Product"
 msgstr "Toode"
 
+#: templates/home/index.html:256 templates/partials/navigation.html:11
 msgid "Features"
 msgstr "Funktsioonid"
 
+#: templates/home/index.html:257
 msgid "Pricing"
 msgstr "Hinnakiri"
 
+#: templates/home/index.html:258 templates/partials/sidebar.html:48
 msgid "Integrations"
 msgstr "Integratsioonid"
 
+#: templates/home/index.html:259
 msgid "API"
 msgstr "API"
 
+#: templates/home/index.html:263
 msgid "Support"
 msgstr "Tugi"
 
+#: templates/home/index.html:265
 msgid "Help Center"
 msgstr "Abikeskus"
 
+#: templates/home/index.html:266
 msgid "Documentation"
 msgstr "Dokumentatsioon"
 
+#: templates/home/index.html:267
 msgid "Contact Us"
 msgstr "Võta meiega ühendust"
 
+#: templates/home/index.html:268
 msgid "System Status"
 msgstr "Süsteemi olek"
 
+#: templates/home/index.html:272
 msgid "Company"
 msgstr "Ettevõte"
 
+#: templates/home/index.html:274
 msgid "About Us"
 msgstr "Meist"
 
+#: templates/home/index.html:275
 msgid "Careers"
 msgstr "Karjäär"
 
+#: templates/home/index.html:276
 msgid "Privacy Policy"
 msgstr "Privaatsuspoliitika"
 
+#: templates/home/index.html:277
 msgid "Terms of Service"
 msgstr "Teenusetingimused"
 
+#: templates/home/index.html:282
 msgid "All rights reserved."
 msgstr "Kõik õigused kaitstud."
 
+#: templates/partials/navigation.html:12
 #, fuzzy
 #| msgid "About Us"
 msgid "About"
 msgstr "Meist"
 
+#: templates/partials/navigation.html:13
 #, fuzzy
 #| msgid "Contact Us"
 msgid "Contact"
 msgstr "Kontakt"
 
+#: templates/partials/navigation.html:15
 msgid "Login"
 msgstr "Logi sisse"
 
+#: templates/partials/navigation.html:16
 msgid "Get Started"
 msgstr "Alusta"
 
+#: templates/partials/sidebar.html:18 templates/users/dashboard.html:31
+msgid "Dashboard"
+msgstr "Juhtpaneel"
+
+#: templates/partials/sidebar.html:24 templates/users/services.html:87
+#: templates/users/staff.html:33 templates/users/staff.html:138
+#: templates/users/staff.html:206
+#, fuzzy
+#| msgid "All Staff"
+msgid "Staff"
+msgstr "Kõik töötajad"
+
+#: templates/partials/sidebar.html:30 templates/users/company_customers.html:33
+#, fuzzy
+#| msgid "New Customer"
+msgid "Customers"
+msgstr "Uus klient"
+
+#: templates/partials/sidebar.html:36 templates/users/services.html:6
+#: templates/users/services.html:34 templates/users/services.html:49
+#, fuzzy
+#| msgid "Services:"
+msgid "Services"
+msgstr "Teenused:"
+
+#: templates/partials/sidebar.html:42
+msgid "Membership"
+msgstr ""
+
+#: templates/partials/sidebar.html:54
+#, fuzzy
+#| msgid "Real-time Notifications"
+msgid "Notifications"
+msgstr "Reaalajas teavitused"
+
+#: templates/partials/sidebar.html:64
+msgid "Settings"
+msgstr ""
+
+#: templates/partials/sidebar.html:91
+msgid "Logout"
+msgstr ""
+
+#: templates/users/company_customers.html:6
+#, fuzzy
+#| msgid "Client Management"
+msgid "Customers Management"
+msgstr "Kliendibaasi haldus"
+
+#: templates/users/company_customers.html:38 templates/users/dashboard.html:35
+#: templates/users/services.html:39 templates/users/staff.html:38
+#, python-format
+msgid "Welcome, %(name)s!"
+msgstr "Tere tulemast, %(name)s!"
+
+#: templates/users/company_customers.html:51
+#, fuzzy
+#| msgid "New Customer"
+msgid "Company Customers"
+msgstr "Ettevõtte kliendid"
+
+#: templates/users/company_customers.html:53
+msgid "View and manage your business customers"
+msgstr "Vaata ja halda oma äriklienti"
+
+#: templates/users/company_customers.html:66 templates/users/staff.html:75
+msgid "Name"
+msgstr "Nimi"
+
+#: templates/users/company_customers.html:67 templates/users/staff.html:76
+#: templates/users/staff.html:128
+msgid "Email"
+msgstr "E-post"
+
+#: templates/users/company_customers.html:68 templates/users/staff.html:77
+#: templates/users/staff.html:132
+msgid "Phone"
+msgstr "Telefon"
+
+#: templates/users/company_customers.html:69 templates/users/staff.html:79
+msgid "Status"
+msgstr "Olek"
+
+#: templates/users/company_customers.html:70 templates/users/services.html:88
+#: templates/users/services.html:141 templates/users/staff.html:80
+msgid "Actions"
+msgstr "Tegevused"
+
+#: templates/users/company_customers.html:86
+msgid "No customers found."
+msgstr "Kliente ei leitud."
+
+#: templates/users/company_customers.html:105 templates/users/staff.html:146
+#: templates/users/staff.html:188
+msgid "Active"
+msgstr "Aktiivne"
+
+#: templates/users/company_customers.html:106
+msgid "Disabled"
+msgstr "Keelatud"
+
+#: templates/users/company_customers.html:107
+msgid "View Details"
+msgstr "Vaata üksikasju"
+
+#: templates/users/company_customers.html:108
+msgid "Failed to load customers"
+msgstr "Klientide laadimine ebaõnnestus"
+
+#: templates/users/company_customers.html:109
+#: templates/users/dashboard.html:263
+msgid "New Customer"
+msgstr "Uus klient"
+
+#: templates/users/dashboard.html:6
+msgid "Salona - Dashboard"
+msgstr "Salona - Juhtpaneel"
+
+#: templates/users/dashboard.html:59
+msgid "Filter by staff:"
+msgstr "Filtreeri töötaja järgi:"
+
+#: templates/users/dashboard.html:61
+msgid "All Staff"
+msgstr "Kõik töötajad"
+
+#: templates/users/dashboard.html:89
+msgid "Booking Details"
+msgstr "Broneeringu üksikasjad"
+
+#: templates/users/dashboard.html:91
+msgid "Confirm booking"
+msgstr "Kinnita broneering"
+
+#: templates/users/dashboard.html:94
+msgid "Edit booking"
+msgstr "Muuda broneeringut"
+
+#: templates/users/dashboard.html:97
+msgid "Delete booking"
+msgstr "Kustuta broneering"
+
+#: templates/users/dashboard.html:124
+msgid "Customer Information"
+msgstr "Kliendi andmed"
+
+#: templates/users/dashboard.html:144
+msgid "Booked Services"
+msgstr "Broneeritud teenused"
+
+#: templates/users/dashboard.html:150
+msgid "Notes:"
+msgstr "Märkmed:"
+
+#: templates/users/dashboard.html:163
+msgid "Add Booking"
+msgstr "Lisa broneering"
+
+#: templates/users/dashboard.html:166
+msgid "Add Time Off"
+msgstr "Lisa puhkeaeg"
+
+#: templates/users/dashboard.html:174
+msgid "Add New Booking"
+msgstr "Lisa uus broneering"
+
+#: templates/users/dashboard.html:182
+msgid "Date & Service"
+msgstr "Kuupäev ja teenus"
+
+#: templates/users/dashboard.html:186
+msgid "Staff & Customer"
+msgstr "Töötaja ja klient"
+
+#: templates/users/dashboard.html:195 templates/users/dashboard.html:332
+msgid "Start Date:"
+msgstr "Alguskuupäev:"
+
+#: templates/users/dashboard.html:199 templates/users/dashboard.html:336
+msgid "End Date:"
+msgstr "Lõppkuupäev:"
+
+#: templates/users/dashboard.html:205 templates/users/dashboard.html:342
+msgid "Start Time:"
+msgstr "Algusaeg:"
+
+#: templates/users/dashboard.html:209 templates/users/dashboard.html:346
+msgid "End Time:"
+msgstr "Lõppaeg:"
+
+#: templates/users/dashboard.html:209
+msgid "Auto-calculated"
+msgstr "Automaatselt arvutatud"
+
+#: templates/users/dashboard.html:215
+msgid "Search Services:"
+msgstr "Otsi teenuseid:"
+
+#: templates/users/dashboard.html:216
+msgid "Search by service name..."
+msgstr "Otsi teenuse nime järgi..."
+
+#: templates/users/dashboard.html:220
+msgid "Services:"
+msgstr "Teenused:"
+
+#: templates/users/dashboard.html:227
+msgid "Selected Services"
+msgstr "Valitud teenused"
+
+#: templates/users/dashboard.html:230
+msgid "No services selected"
+msgstr "Teenuseid pole valitud"
+
+#: templates/users/dashboard.html:234
+msgid "Total Duration:"
+msgstr "Kogu kestus:"
+
+#: templates/users/dashboard.html:238
+msgid "Total Price:"
+msgstr "Koguhind:"
+
+#: templates/users/dashboard.html:246
+msgid "Next"
+msgstr "Edasi"
+
+#: templates/users/dashboard.html:253 templates/users/dashboard.html:352
+msgid "Staff Member:"
+msgstr "Töötaja:"
+
+#: templates/users/dashboard.html:255 templates/users/dashboard.html:354
+msgid "Select staff member"
+msgstr "Vali töötaja"
+
+#: templates/users/dashboard.html:261
+msgid "Customer (Optional):"
+msgstr "Klient (valikuline):"
+
+#: templates/users/dashboard.html:270
+msgid "First Name:"
+msgstr "Eesnimi:"
+
+#: templates/users/dashboard.html:274
+msgid "Last Name:"
+msgstr "Perekonnanimi:"
+
+#: templates/users/dashboard.html:278
+msgid "Email:"
+msgstr "E-post:"
+
+#: templates/users/dashboard.html:282
+msgid "Phone:"
+msgstr "Telefon:"
+
+#: templates/users/dashboard.html:288
+msgid "Description/Notes:"
+msgstr "Kirjeldus/Märkmed:"
+
+#: templates/users/dashboard.html:293
+msgid "Back"
+msgstr "Tagasi"
+
+#: templates/users/dashboard.html:294
+msgid "Create Booking"
+msgstr "Loo broneering"
+
+#: templates/users/dashboard.html:305
+msgid "Confirm Action"
+msgstr "Kinnita tegevus"
+
+#: templates/users/dashboard.html:309
+msgid "Are you sure you want to delete this booking?"
+msgstr "Kas oled kindel, et soovid selle broneeringu kustutada?"
+
+#: templates/users/dashboard.html:312
+msgid "No"
+msgstr "Ei"
+
+#: templates/users/dashboard.html:313
+msgid "Yes"
+msgstr "Jah"
+
+#: templates/users/dashboard.html:325 templates/users/dashboard.html:365
+msgid "Schedule Time Off"
+msgstr "Planeeri puhkeaeg"
+
+#: templates/users/dashboard.html:360 templates/users/dashboard.html:408
+msgid "Reason:"
+msgstr "Põhjus:"
+
+#: templates/users/dashboard.html:361
+msgid "Provide a reason for the time off (optional)"
+msgstr "Anna puhkeaja põhjus (valikuline)"
+
+#: templates/users/dashboard.html:374
+msgid "Time Off Details"
+msgstr "Puhkeaja üksikasjad"
+
+#: templates/users/dashboard.html:388
+msgid "Staff Information"
+msgstr "Töötaja andmed"
+
+#: templates/users/login.html:7
 msgid "Welcome to Salona - Login"
 msgstr "Tere tulemast Salonasse - Logi sisse"
 
+#: templates/users/login.html:31
 msgid "Welcome Back"
 msgstr "Tere tulemast tagasi"
 
+#: templates/users/login.html:32
 msgid "Sign in to your Salona account"
 msgstr "Logi sisse oma Salona kontole"
 
+#: templates/users/login.html:48 templates/users/signup.html:60
 msgid "Email Address"
 msgstr "E-posti aadress"
 
+#: templates/users/login.html:50
 msgid "Enter your email"
 msgstr "Sisesta oma e-post"
 
+#: templates/users/login.html:56 templates/users/signup.html:77
 msgid "Password"
 msgstr "Parool"
 
+#: templates/users/login.html:58
 msgid "Enter your password"
 msgstr "Sisesta oma parool"
 
+#: templates/users/login.html:65
 msgid "Remember me"
 msgstr "Jäta mind meelde"
 
+#: templates/users/login.html:67
 msgid "Forgot password?"
 msgstr "Unustasid parooli?"
 
+#: templates/users/login.html:72
 msgid "Sign In"
 msgstr "Logi sisse"
 
+#: templates/users/login.html:77
 msgid "Don't have an account?"
 msgstr "Sul pole veel kontot?"
 
+#: templates/users/login.html:77
 msgid "Create one here"
 msgstr "Loo konto siin"
 
+#: templates/users/login.html:81 templates/users/signup.html:116
 msgid "or continue with"
 msgstr "või jätka"
 
+#: templates/users/login.html:87 templates/users/signup.html:122
 msgid "Google"
 msgstr "Google"
 
+#: templates/users/login.html:91 templates/users/signup.html:126
 msgid "Facebook"
 msgstr "Facebook"
 
+#: templates/users/login.html:102
 msgid "Smart Scheduling"
 msgstr "Nutikas ajastamine"
 
+#: templates/users/login.html:103
 #, fuzzy
 #| msgid ""
 #| "Effortless appointment scheduling with automated confirmations and "
@@ -304,99 +691,1025 @@ msgstr "Nutikas ajastamine"
 msgid "Effortless appointment management with automated reminders"
 msgstr "Lihtne broneerimine automaatsete kinnituste ja meeldetuletustega"
 
+#: templates/users/login.html:110
 #, fuzzy
 #| msgid "Comprehensive customer profiles with service history and preferences"
 msgid "Comprehensive customer profiles and service history"
 msgstr "Põhjalikud kliendiprofiilid ja teenusajalugu"
 
+#: templates/users/login.html:116
 msgid "Business Insights"
 msgstr "Äriülevaated"
 
+#: templates/users/login.html:117
 msgid "Real-time analytics to grow your salon business"
 msgstr "Reaalajas analüütika oma salongi äri kasvatamiseks"
 
+#: templates/users/services.html:50
+msgid "Categories"
+msgstr ""
+
+#: templates/users/services.html:63
+msgid "Manage Services"
+msgstr "Halda teenuseid"
+
+#: templates/users/services.html:65
+msgid "Create, edit, and organize your business services"
+msgstr "Loo, muuda ja korrasta oma äri teenuseid"
+
+#: templates/users/services.html:71
+msgid "Add New Service"
+msgstr "Lisa uus teenus"
+
+#: templates/users/services.html:83 templates/users/services.html:179
+msgid "Service Name"
+msgstr "Teenuse nimi"
+
+#: templates/users/services.html:84 templates/users/services.html:183
+msgid "Category"
+msgstr "Kategooria"
+
+#: templates/users/services.html:85
+msgid "Duration"
+msgstr "Kestus"
+
+#: templates/users/services.html:86 templates/users/services.html:195
+msgid "Price"
+msgstr "Hind"
+
+#: templates/users/services.html:101
+msgid "No services found. Click \"Add Service\" to create your first service."
+msgstr "Teenuseid ei leitud. Klõpsa nupul \"Lisa teenus\", et luua oma esimene teenus."
+
+#: templates/users/services.html:103 templates/users/services.html:156
+msgid "Insufficient privileges. Please contact your administrator."
+msgstr "Ebapiisavad õigused. Palun võtke ühendust oma administraatoriga."
+
+#: templates/users/services.html:118
+msgid "Manage Categories"
+msgstr "Halda kategooriaid"
+
+#: templates/users/services.html:120
+msgid "Organize and structure your service categories"
+msgstr "Korralda ja struktuuri oma teenuste kategooriaid"
+
+#: templates/users/services.html:126
+msgid "Add New Category"
+msgstr "Lisa uus kategooria"
+
+#: templates/users/services.html:138 templates/users/services.html:256
+msgid "Category Name"
+msgstr "Kategooria nimi"
+
+#: templates/users/services.html:139 templates/users/services.html:210
+#: templates/users/services.html:260
+msgid "Description"
+msgstr "Kirjeldus"
+
+#: templates/users/services.html:140
+msgid "Services Count"
+msgstr "Teenuste arv"
+
+#: templates/users/services.html:154
+msgid ""
+"No categories found. Click \"Add Category\" to create your first category."
+msgstr "Kategooriaid ei leitud. Klõpsa nupul \"Lisa kategooria\", et luua oma esimene kategooria."
+
+#: templates/users/services.html:172 templates/users/services.html:340
+msgid "Add Service"
+msgstr "Lisa teenus"
+
+#: templates/users/services.html:185
+msgid "Select a category"
+msgstr "Vali kategooria"
+
+#: templates/users/services.html:191
+msgid "Duration (minutes)"
+msgstr "Kestus (minutit)"
+
+#: templates/users/services.html:203
+msgid "Discount Price (optional)"
+msgstr "Soodushind (valikuline)"
+
+#: templates/users/services.html:214
+msgid "Staff who perform this service"
+msgstr "Töötajad, kes teostavad seda teenust"
+
+#: templates/users/services.html:221 templates/users/services.html:341
+msgid "Save Service"
+msgstr "Salvesta teenus"
+
+#: templates/users/services.html:232
+msgid "Delete Service"
+msgstr "Kustuta teenus"
+
+#: templates/users/services.html:236
+msgid "Are you sure you want to delete this service?"
+msgstr "Kas olete kindel, et soovite seda teenust kustutada?"
+
+#: templates/users/services.html:237 templates/users/services.html:299
+#: templates/users/services.html:317
+msgid "This action cannot be undone."
+msgstr "Seda tegevust ei saa tagasi võtta."
+
+#: templates/users/services.html:250 templates/users/services.html:344
+msgid "Add Category"
+msgstr "Lisa kategooria"
+
+#: templates/users/services.html:265 templates/users/services.html:345
+msgid "Save Category"
+msgstr "Salvesta kategooria"
+
+#: templates/users/services.html:276 templates/users/services.html:284
+msgid "Delete Category"
+msgstr "Kustuta kategooria"
+
+#: templates/users/services.html:280
+msgid ""
+"Are you sure you want to delete the category \"<span id=\"delete-category-"
+"name\"></span>\"?"
+msgstr "Kas olete kindel, et soovite kategooriat \"<span id=\"delete-category-name\"></span>\" kustutada?"
+
+#: templates/users/services.html:281
+msgid ""
+"This will remove all services in this category. This action cannot be undone."
+msgstr "See eemaldab kõik selle kategooria teenused. Seda tegevust ei saa tagasi võtta."
+
+#: templates/users/services.html:294
+msgid "Delete Email"
+msgstr "Kustuta e-post"
+
+#: templates/users/services.html:298
+msgid "Are you sure you want to delete this email address?"
+msgstr "Kas olete kindel, et soovite seda e-posti aadressi kustutada?"
+
+#: templates/users/services.html:312
+msgid "Delete Phone Number"
+msgstr "Kustuta telefoninumber"
+
+#: templates/users/services.html:316
+msgid "Are you sure you want to delete this phone number?"
+msgstr "Kas olete kindel, et soovite seda telefoninumbrit kustutada?"
+
+#: templates/users/services.html:334
+msgid "Uncategorized"
+msgstr "Kategooriata"
+
+#: templates/users/services.html:335
+msgid "No staff assigned"
+msgstr "Töötajaid pole määratud"
+
+#: templates/users/services.html:338
+msgid "min"
+msgstr "min"
+
+#: templates/users/services.html:339
+msgid "Edit Service"
+msgstr "Muuda teenust"
+
+#: templates/users/services.html:342
+msgid "Update Service"
+msgstr "Uuenda teenust"
+
+#: templates/users/services.html:343
+msgid "Edit Category"
+msgstr "Muuda kategooriat"
+
+#: templates/users/services.html:346
+msgid "Update Category"
+msgstr "Uuenda kategooriat"
+
+#: templates/users/services.html:347
+msgid "Service created successfully"
+msgstr "Teenus edukalt loodud"
+
+#: templates/users/services.html:348
+msgid "Service updated successfully"
+msgstr "Teenus edukalt uuendatud"
+
+#: templates/users/services.html:349
+msgid "Service deleted successfully"
+msgstr "Teenus edukalt kustutatud"
+
+#: templates/users/services.html:350
+msgid "Category created successfully"
+msgstr "Kategooria edukalt loodud"
+
+#: templates/users/services.html:351
+msgid "Category updated successfully"
+msgstr "Kategooria edukalt uuendatud"
+
+#: templates/users/services.html:352
+msgid "Category deleted successfully"
+msgstr "Kategooria edukalt kustutatud"
+
+#: templates/users/services.html:353
+msgid "Error creating service"
+msgstr "Viga teenuse loomisel"
+
+#: templates/users/services.html:354
+msgid "Error updating service"
+msgstr "Viga teenuse uuendamisel"
+
+#: templates/users/services.html:355
+msgid "Error deleting service"
+msgstr "Viga teenuse kustutamisel"
+
+#: templates/users/services.html:356
+msgid "Error creating category"
+msgstr "Viga kategooria loomisel"
+
+#: templates/users/services.html:357
+msgid "Error updating category"
+msgstr "Viga kategooria uuendamisel"
+
+#: templates/users/services.html:358
+msgid "Error deleting category"
+msgstr "Viga kategooria kustutamisel"
+
+#: templates/users/signup.html:7
 msgid "Welcome to Salona - Sign Up"
 msgstr "Tere tulemast Salonasse - Registreeru"
 
+#: templates/users/signup.html:31
 msgid "Join Salona"
 msgstr "Liitu Salonaga"
 
+#: templates/users/signup.html:32
 msgid "Create your account and start managing your salon"
 msgstr "Loo oma konto ja hakka oma salongi juhtima"
 
+#: templates/users/signup.html:43 templates/users/staff.html:120
 msgid "First Name"
 msgstr "Eesnimi"
 
+#: templates/users/signup.html:45
 msgid "Enter your first name"
 msgstr "Sisesta oma eesnimi"
 
+#: templates/users/signup.html:51 templates/users/staff.html:124
 msgid "Last Name"
 msgstr "Perekonnanimi"
 
+#: templates/users/signup.html:53
 msgid "Enter your last name"
 msgstr "Sisesta oma perekonnanimi"
 
+#: templates/users/signup.html:62
 msgid "Enter your email address"
 msgstr "Sisesta oma e-posti aadress"
 
+#: templates/users/signup.html:68
 msgid "Phone Number"
 msgstr "Telefoninumber"
 
+#: templates/users/signup.html:70
 msgid "Enter your phone number"
 msgstr "Sisesta oma telefoninumber"
 
+#: templates/users/signup.html:79
 msgid "Create a password"
 msgstr "Loo parool"
 
+#: templates/users/signup.html:85
 msgid "Confirm Password"
 msgstr "Kinnita parool"
 
+#: templates/users/signup.html:87
 msgid "Confirm your password"
 msgstr "Kinnita oma parool"
 
+#: templates/users/signup.html:95
 msgid ""
 "I agree to the <a href=\"#\" class=\"terms-link\">Terms of Service</a> and "
 "<a href=\"#\" class=\"terms-link\">Privacy Policy</a>"
 msgstr ""
-"Nõustun <a href=\"#\" class=\"terms-link\">teenusetingimustega</a> ja "
-"<a href=\"#\" class=\"terms-link\">privaatsuspoliitikaga</a>"
+"Nõustun <a href=\"#\" class=\"terms-link\">teenusetingimustega</a> ja <a "
+"href=\"#\" class=\"terms-link\">privaatsuspoliitikaga</a>"
 
+#: templates/users/signup.html:102
 msgid "Creating your account..."
 msgstr "Konto loomine..."
 
+#: templates/users/signup.html:107
 msgid "Create Account"
 msgstr "Loo konto"
 
+#: templates/users/signup.html:112
 msgid "Already have an account?"
 msgstr "Kas sul on juba konto olemas?"
 
+#: templates/users/signup.html:112
 msgid "Sign in here"
-msgstr "Logi sisse siit"
+msgstr "Logi sisse siin"
 
-msgid "Why Choose Salona?"
-msgstr "Miks valida Salona?"
+# Membership Plans Page Translations
+#: templates/users/membership_plans.html
+msgid "Membership Plans"
+msgstr "Liikmelisuse plaanid"
 
-msgid "Quick Setup"
-msgstr "Kiire seadistamine"
+#: templates/users/membership_plans.html
+msgid "Choose Your Plan"
+msgstr "Vali oma plaan"
 
-msgid "Get your salon online in minutes, not hours"
-msgstr "Vii oma salon veebi minutitega, mitte tundidega"
+#: templates/users/membership_plans.html
+msgid "Select the perfect membership plan for your business needs"
+msgstr "Vali oma ärivajadustele sobiv liikmelisuse plaan"
 
-msgid "Secure & Reliable"
-msgstr "Turvaline ja usaldusväärne"
+#: templates/users/membership_plans.html
+msgid "Your Active Plan"
+msgstr "Sinu aktiivne plaan"
 
-#, python-format
-msgid "Bank-level security with 99.9%% uptime guarantee"
-msgstr "Pangataseme turvalisus koos 99,9%% töökindluse garantiiga"
+#: templates/users/membership_plans.html
+msgid "Available Plans"
+msgstr "Saadaolevad plaanid"
 
-msgid "24/7 Support"
-msgstr "24/7 tugi"
+#: templates/users/membership_plans.html
+msgid "Loading membership plans..."
+msgstr "Laadin liikmelisuse plaane..."
 
-msgid "Expert support whenever you need assistance"
-msgstr "Eksperditugi, kui seda vajad"
+#: templates/users/membership_plans.html
+msgid "Failed to load membership plans. Please try again later."
+msgstr "Liikmelisuse plaanide laadimine ebaõnnestus. Palun proovi hiljem uuesti."
 
-msgid "Grow Your Business"
-msgstr "Kasvatage oma äri"
+#: templates/users/membership_plans.html
+msgid "Retry"
+msgstr "Proovi uuesti"
 
-msgid "Powerful analytics to boost your salon's success"
-msgstr "Võimas analüütika, et tõsta oma salongi edu"
+#: templates/users/membership_plans.html
+msgid "No membership plans available at this time."
+msgstr "Praegu pole liikmelisuse plaane saadaval."
+
+#: templates/users/membership_plans.html
+msgid "Plan Name"
+msgstr "Plaani nimi"
+
+#: templates/users/membership_plans.html
+msgid "Plan Type"
+msgstr "Plaani tüüp"
+
+#: templates/users/membership_plans.html
+msgid "Start Date"
+msgstr "Alguskuupäev"
+
+#: templates/users/membership_plans.html
+msgid "End Date"
+msgstr "Lõppkuupäev"
+
+#: templates/users/membership_plans.html
+msgid "Auto Renew"
+msgstr "Automaatne pikendamine"
+
+#: templates/users/membership_plans.html
+msgid "YES"
+msgstr "JAH"
+
+#: templates/users/membership_plans.html
+msgid "NO"
+msgstr "EI"
+
+#: templates/users/membership_plans.html
+msgid "Current Plan"
+msgstr "Praegune plaan"
+
+#: templates/users/membership_plans.html
+msgid "Choose Plan"
+msgstr "Vali plaan"
+
+#: templates/users/membership_plans.html
+msgid "Processing..."
+msgstr "Töötlemine..."
+
+#: templates/users/membership_plans.html
+msgid "per"
+msgstr "per"
+
+#: templates/users/membership_plans.html
+msgid "month"
+msgstr "kuu"
+
+#: templates/users/membership_plans.html
+msgid "year"
+msgstr "aasta"
+
+#: templates/users/membership_plans.html
+msgid "week"
+msgstr "nädal"
+
+#: templates/users/membership_plans.html
+msgid "days"
+msgstr "päeva"
+
+#: templates/users/membership_plans.html
+msgid "Access to booking system"
+msgstr "Juurdepääs broneerimissüsteemile"
+
+#: templates/users/membership_plans.html
+msgid "Customer management"
+msgstr "Kliendihaldus"
+
+#: templates/users/membership_plans.html
+msgid "Basic analytics"
+msgstr "Põhianalüütika"
+
+#: templates/users/membership_plans.html
+msgid "Advanced analytics"
+msgstr "Täiustatud analüütika"
+
+#: templates/users/membership_plans.html
+msgid "Priority support"
+msgstr "Eelistoe"
+
+#: templates/users/membership_plans.html
+msgid "Custom branding"
+msgstr "Kohandatud bränding"
+
+#: templates/users/membership_plans.html
+msgid "Unlimited bookings"
+msgstr "Piiramatu arv broneeringuid"
+
+#: templates/users/membership_plans.html
+msgid "Dedicated support"
+msgstr "Pühendatud tugi"
+
+#: templates/users/membership_plans.html
+msgid "API access"
+msgstr "API juurdepääs"
+
+#: templates/users/membership_plans.html
+msgid "White-label solution"
+msgstr "Valge märgise lahendus"
+
+#: templates/users/membership_plans.html
+msgid "Failed to start checkout process. Please try again or contact support."
+msgstr "Maksekorralduse alustamine ebaõnnestus. Palun proovi uuesti või võta ühendust toega."
+
+# Integrations Page Translations
+#: templates/users/integrations.html
+msgid "Booking URL"
+msgstr "Broneeringu URL"
+
+#: templates/users/integrations.html
+msgid "Telegram Bot"
+msgstr "Telegram Bot"
+
+#: templates/users/integrations.html
+msgid "Customer Booking URL"
+msgstr "Kliendi broneeringu URL"
+
+#: templates/users/integrations.html
+msgid "Share this URL with your customers so they can book appointments directly with your business."
+msgstr "Jaga seda URL-i oma klientidega, et nad saaksid broneerida otse sinu ettevõttega."
+
+#: templates/users/integrations.html
+msgid "Copy"
+msgstr "Kopeeri"
+
+#: templates/users/integrations.html
+msgid "How to use:"
+msgstr "Kuidas kasutada:"
+
+#: templates/users/integrations.html
+msgid "Share this link on your website, social media, or via email"
+msgstr "Jaga seda linki oma veebisaidil, sotsiaalmeediias või e-posti teel"
+
+#: templates/users/integrations.html
+msgid "Customers can view available services and book appointments"
+msgstr "Kliendid saavad vaadata saadaolevaid teenuseid ja broneerida aegu"
+
+#: templates/users/integrations.html
+msgid "Bookings appear automatically in your dashboard"
+msgstr "Broneeringud ilmuvad automaatselt sinu juhtpaneelile"
+
+#: templates/users/integrations.html
+msgid "Booking QR Code"
+msgstr "Broneeringu QR-kood"
+
+#: templates/users/integrations.html
+msgid "Customers can scan this QR code to book appointments"
+msgstr "Kliendid saavad seda QR-koodi skannida, et broneerida aegu"
+
+#: templates/users/integrations.html
+msgid "Telegram Bot Configuration"
+msgstr "Telegram Boti seadistamine"
+
+#: templates/users/integrations.html
+msgid "Connect your Telegram bot to receive booking notifications and manage appointments."
+msgstr "Ühenda oma Telegram bot, et saada broneeringuteavitusi ja hallata broneeringuid."
+
+#: templates/users/integrations.html
+msgid "Not Connected"
+msgstr "Pole ühendatud"
+
+#: templates/users/integrations.html
+msgid "Create a Telegram Bot"
+msgstr "Loo Telegram Bot"
+
+#: templates/users/integrations.html
+msgid "Open Telegram and search for <strong>@BotFather</strong>. Send the command <code>/newbot</code> and follow the instructions to create your bot."
+msgstr "Ava Telegram ja otsi <strong>@BotFather</strong>. Saada käsk <code>/newbot</code> ja järgi juhiseid oma boti loomiseks."
+
+#: templates/users/integrations.html
+msgid "Get Your Bot Token"
+msgstr "Hangi oma boti märgis"
+
+#: templates/users/integrations.html
+msgid "After creating the bot, BotFather will provide you with an API token. Copy this token."
+msgstr "Pärast boti loomist annab BotFather sulle API märgise. Kopeeri see märgis."
+
+#: templates/users/integrations.html
+msgid "Configure Your Bot"
+msgstr "Seadista oma bot"
+
+#: templates/users/integrations.html
+msgid "Bot Token"
+msgstr "Boti märgis"
+
+#: templates/users/integrations.html
+msgid "Chat ID (Optional)"
+msgstr "Vestluse ID (valikuline)"
+
+#: templates/users/integrations.html
+msgid "Your Telegram Chat ID"
+msgstr "Sinu Telegrami vestluse ID"
+
+#: templates/users/integrations.html
+msgid "Leave empty to receive notifications in bot chat"
+msgstr "Jäta tühjaks, et saada teavitusi boti vestluses"
+
+#: templates/users/integrations.html
+msgid "Save Configuration"
+msgstr "Salvesta seadistus"
+
+#: templates/users/integrations.html
+msgid "What you'll receive:"
+msgstr "Mida sa saad:"
+
+#: templates/users/integrations.html
+msgid "Real-time notifications for new bookings"
+msgstr "Reaalajas teavitused uute broneeringute kohta"
+
+#: templates/users/integrations.html
+msgid "Booking confirmations and cancellations"
+msgstr "Broneeringu kinnitused ja tühistamised"
+
+#: templates/users/integrations.html
+msgid "Daily schedule summaries"
+msgstr "Igapäevased ajakava kokkuvõtted"
+
+#: templates/users/integrations.html
+msgid "Copied!"
+msgstr "Kopeeritud!"
+
+#: templates/users/integrations.html
+msgid "Connected"
+msgstr "Ühendatud"
+
+#: templates/users/integrations.html
+msgid "Saving..."
+msgstr "Salvestamine..."
+
+#: templates/users/integrations.html
+msgid "Saved!"
+msgstr "Salvestatud!"
+
+#: templates/users/integrations.html
+msgid "Please enter a valid bot token"
+msgstr "Palun sisesta kehtiv boti märgis"
+
+#: templates/users/integrations.html
+msgid "Telegram bot configuration saved successfully!"
+msgstr "Telegram boti seadistus edukalt salvestatud!"
+
+#: templates/users/integrations.html
+msgid "Failed to save configuration"
+msgstr "Seadistuse salvestamine ebaõnnestus"
+
+#: templates/notifications/notifications.html
+msgid "notifications"
+msgstr "teavitused"
+
+#: templates/notifications/notifications.html
+msgid "notification"
+msgstr "teavitus"
+
+#: templates/notifications/notifications.html
+msgid "Mark All Read"
+msgstr "Märgi kõik loetuks"
+
+#: templates/notifications/notifications.html
+msgid "Refresh"
+msgstr "Värskenda"
+
+#: templates/notifications/notifications.html
+msgid "All"
+msgstr "Kõik"
+
+#: templates/notifications/notifications.html
+msgid "Type"
+msgstr "Tüüp"
+
+#: templates/notifications/notifications.html
+msgid "No notifications found"
+msgstr "Teavitusi ei leitud"
+
+#: templates/notifications/notifications.html
+msgid "You're all caught up! No notifications to display."
+msgstr "Sa oled kõigega kursis! Teavitusi pole kuvada."
+
+#: templates/notifications/notifications.html
+msgid "Page 1 of 1"
+msgstr "Lehekülg 1/1"
+
+#: templates/notifications/notifications.html
+msgid "Are you sure you want to perform this action?"
+msgstr "Kas olete kindel, et soovite seda tegevust teha?"
+
+#: templates/notifications/notifications.html
+msgid "General Notification"
+msgstr "Üldine teavitus"
+
+#: templates/notifications/notifications.html
+msgid "Booking Update"
+msgstr "Broneeringu uuendus"
+
+#: templates/notifications/notifications.html
+msgid "Booking Created"
+msgstr "Broneering loodud"
+
+#: templates/notifications/notifications.html
+msgid "Payment Notification"
+msgstr "Makseteade"
+
+#: templates/notifications/notifications.html
+msgid "System Notification"
+msgstr "Süsteemi teavitus"
+
+#: templates/notifications/notifications.html
+msgid "Mark as read"
+msgstr "Märgi loetuks"
+
+#: templates/notifications/notifications.html
+msgid "Delete notification"
+msgstr "Kustuta teavitus"
+
+#: templates/notifications/notifications.html
+msgid "Delete Notification"
+msgstr "Kustuta teavitus"
+
+#: templates/notifications/notifications.html
+msgid "Are you sure you want to delete this notification? This action cannot be undone."
+msgstr "Kas olete kindel, et soovite seda teavitust kustutada? Seda tegevust ei saa tagasi võtta."
+
+#: templates/notifications/notifications.html
+msgid "Mark All as Read"
+msgstr "Märgi kõik loetuks"
+
+#: templates/notifications/notifications.html
+msgid "Are you sure you want to mark all"
+msgstr "Kas olete kindel, et soovite märkida kõik"
+
+#: templates/notifications/notifications.html
+msgid "unread notifications as read?"
+msgstr "lugemata teavitused loetuks?"
+
+#: templates/notifications/notifications.html
+msgid "Notification marked as read"
+msgstr "Teavitus märgitud loetuks"
+
+#: templates/notifications/notifications.html
+msgid "Failed to mark notification as read"
+msgstr "Teavituse loetuks märkimine ebaõnnestus"
+
+#: templates/notifications/notifications.html
+msgid "Notification deleted successfully"
+msgstr "Teavitus edukalt kustutatud"
+
+#: templates/notifications/notifications.html
+msgid "Failed to delete notification"
+msgstr "Teavituse kustutamine ebaõnnestus"
+
+#: templates/notifications/notifications.html
+msgid "No unread notifications to mark as read"
+msgstr "Lugemata teavitusi pole, mida loetuks märkida"
+
+#: templates/notifications/notifications.html
+msgid "All notifications marked as read"
+msgstr "Kõik teavitused märgitud loetuks"
+
+#: templates/notifications/notifications.html
+msgid "Failed to mark all notifications as read"
+msgstr "Kõikide teavituste loetuks märkimine ebaõnnestus"
+
+#: templates/notifications/notifications.html
+msgid "Error loading notifications"
+msgstr "Viga teavituste laadimisel"
+
+#: templates/notifications/notifications.html
+msgid "Please try refreshing the page"
+msgstr "Palun proovi lehte värskendada"
+
+#: templates/notifications/notifications.html
+msgid "Just now"
+msgstr "Just nüüd"
+
+#: templates/notifications/notifications.html
+msgid "m ago"
+msgstr " min tagasi"
+
+#: templates/notifications/notifications.html
+msgid "h ago"
+msgstr " t tagasi"
+
+#: templates/notifications/notifications.html
+msgid "d ago"
+msgstr " p tagasi"
+
+#: templates/notifications/notifications.html
+msgid "Page"
+msgstr "Lehekülg"
+
+#: templates/notifications/notifications.html
+msgid "of"
+msgstr "/"
+
+# Settings Page Translations
+#: templates/users/settings.html
+msgid "Settings"
+msgstr "Seaded"
+
+#: templates/users/settings.html
+msgid "Company Information"
+msgstr "Ettevõtte informatsioon"
+
+#: templates/users/settings.html
+msgid "Create Company"
+msgstr "Loo ettevõte"
+
+#: templates/users/settings.html
+msgid "Company Name"
+msgstr "Ettevõtte nimi"
+
+#: templates/users/settings.html
+msgid "Business Type"
+msgstr "Ettevõtte tüüp"
+
+#: templates/users/settings.html
+msgid "Company Logo URL"
+msgstr "Ettevõtte logo URL"
+
+#: templates/users/settings.html
+msgid "Website"
+msgstr "Veebisait"
+
+#: templates/users/settings.html
+msgid "Team Size"
+msgstr "Meeskonna suurus"
+
+#: templates/users/settings.html
+msgid "Save Company"
+msgstr "Salvesta ettevõte"
+
+#: templates/users/settings.html
+msgid "Company Details"
+msgstr "Ettevõtte üksikasjad"
+
+#: templates/users/settings.html
+msgid "Save Details"
+msgstr "Salvesta üksikasjad"
+
+#: templates/users/settings.html
+msgid "Company Emails"
+msgstr "Ettevõtte e-postid"
+
+#: templates/users/settings.html
+msgid "Add Email"
+msgstr "Lisa e-post"
+
+#: templates/users/settings.html
+msgid "Billing"
+msgstr "Arved"
+
+#: templates/users/settings.html
+msgid "Save Emails"
+msgstr "Salvesta e-postid"
+
+#: templates/users/settings.html
+msgid "Company Phone Numbers"
+msgstr "Ettevõtte telefoninumbrid"
+
+#: templates/users/settings.html
+msgid "Add Phone"
+msgstr "Lisa telefon"
+
+#: templates/users/settings.html
+msgid "Business"
+msgstr "Äri"
+
+#: templates/users/settings.html
+msgid "Fax"
+msgstr "Faks"
+
+#: templates/users/settings.html
+msgid "Save Phone Numbers"
+msgstr "Salvesta telefoninumbrid"
+
+#: templates/users/settings.html
+msgid "Company Address"
+msgstr "Ettevõtte aadress"
+
+#: templates/users/settings.html
+msgid "Street Address"
+msgstr "Tänavaaadress"
+
+#: templates/users/settings.html
+msgid "City"
+msgstr "Linn"
+
+#: templates/users/settings.html
+msgid "State/Province"
+msgstr "Maakond/Provints"
+
+#: templates/users/settings.html
+msgid "ZIP/Postal Code"
+msgstr "Postiindeks"
+
+#: templates/users/settings.html
+msgid "Save Address"
+msgstr "Salvesta aadress"
+
+#: templates/users/settings.html
+msgid "Delete"
+msgstr "Kustuta"
+
+#: templates/users/settings.html
+msgid "Company created successfully!"
+msgstr "Ettevõte edukalt loodud!"
+
+#: templates/users/settings.html
+msgid "Company details updated successfully!"
+msgstr "Ettevõtte üksikasjad edukalt uuendatud!"
+
+#: templates/users/settings.html
+msgid "Company emails saved successfully!"
+msgstr "Ettevõtte e-postid edukalt salvestatud!"
+
+#: templates/users/settings.html
+msgid "Company phone numbers saved successfully!"
+msgstr "Ettevõtte telefoninumbrid edukalt salvestatud!"
+
+#: templates/users/settings.html
+msgid "Company address saved successfully!"
+msgstr "Ettevõtte aadress edukalt salvestatud!"
+
+#: templates/users/settings.html
+msgid "Error saving company"
+msgstr "Viga ettevõtte salvestamisel"
+
+#: templates/users/settings.html
+msgid "Error updating company details"
+msgstr "Viga ettevõtte üksikasjade uuendamisel"
+
+#: templates/users/settings.html
+msgid "Error saving company emails"
+msgstr "Viga ettevõtte e-postide salvestamisel"
+
+#: templates/users/settings.html
+msgid "Error saving company phone numbers"
+msgstr "Viga ettevõtte telefoninumbrite salvestamisel"
+
+#: templates/users/settings.html
+msgid "Error saving company address"
+msgstr "Viga ettevõtte aadressi salvestamisel"
+
+# Logout Redirect Page Translations
+#: templates/users/logout_redirect.html
+msgid "Logging out..."
+msgstr "Väljalogimine..."
+
+#: templates/users/logout_redirect.html
+msgid "Logging you out..."
+msgstr "Logime sind välja..."
+
+#: templates/users/logout_redirect.html
+msgid "Please wait while we log you out securely."
+msgstr "Palun oota, kuni logime sind turvaliselt välja."
+
+# Close Tab Page Translations
+#: templates/users/close_tab.html
+msgid "Closing..."
+msgstr "Sulgemine..."
+
+#: templates/users/close_tab.html
+msgid "Success!"
+msgstr "Õnnestus!"
+
+#: templates/users/close_tab.html
+msgid "Error"
+msgstr "Viga"
+
+#: templates/users/close_tab.html
+msgid "Cancelled"
+msgstr "Tühistatud"
+
+#: templates/users/close_tab.html
+msgid "Complete"
+msgstr "Valmis"
+
+#: templates/users/close_tab.html
+msgid "This window will close automatically in"
+msgstr "See aken sulgub automaatselt"
+
+#: templates/users/close_tab.html
+msgid "seconds..."
+msgstr "sekundi pärast..."
+
+#: templates/users/close_tab.html
+msgid "Close Now"
+msgstr "Sulge kohe"
+
+#: templates/users/close_tab.html
+msgid "Almost Done!"
+msgstr "Peaaegu valmis!"
+
+#: templates/users/close_tab.html
+msgid "Please close this window manually."
+msgstr "Palun sulge see aken käsitsi."
+
+#: templates/users/close_tab.html
+msgid "Press"
+msgstr "Vajuta"
+
+#: templates/users/close_tab.html
+msgid "or"
+msgstr "või"
+
+#: templates/users/close_tab.html
+msgid "to close this tab."
+msgstr "selle vahekaardi sulgemiseks."
+
+# Check Email Page Translations
+#: templates/users/check_email.html
+msgid "Check Your Email - Salona"
+msgstr "Kontrolli oma e-posti - Salona"
+
+#: templates/users/check_email.html
+msgid "Check Your Email"
+msgstr "Kontrolli oma e-posti"
+
+#: templates/users/check_email.html
+msgid "We've sent a verification link to"
+msgstr "Oleme saatnud kinnituslingi aadressile"
+
+#: templates/users/check_email.html
+msgid "Next Steps:"
+msgstr "Järgmised sammud:"
+
+#: templates/users/check_email.html
+msgid "Check your email inbox for a message from Salona"
+msgstr "Kontrolli oma e-posti postkasti Salona sõnumit"
+
+#: templates/users/check_email.html
+msgid "Click the verification link in the email"
+msgstr "Klõpsa e-kirjas olevale kinnituslingile"
+
+#: templates/users/check_email.html
+msgid "Once verified, you can log in to your account"
+msgstr "Pärast kinnitamist saad oma kontole sisse logida"
+
+#: templates/users/check_email.html
+msgid "If you don't see the email, check your spam folder"
+msgstr "Kui sa e-kirja ei näe, kontrolli oma rämpsposti kausta"
+
+#: templates/users/check_email.html
+msgid "Back to Login"
+msgstr "Tagasi sisselogimisse"
+
+#: templates/users/check_email.html
+msgid "Go to Home"
+msgstr "Mine avalehele"
+
+#: templates/users/check_email.html
+msgid "Didn't receive the email?"
+msgstr "Kas sa ei saanud e-kirja?"
+
+#: templates/users/check_email.html
+msgid "Resend verification email"
+msgstr "Saada kinnitusmeil uuesti"
+
+# Verify Email Page Translations
+#: templates/users/verify_email.html
+msgid "Email Verification - Salona"
+msgstr "E-posti kinnitamine - Salona"
+
+#: templates/users/verify_email.html
+msgid "Email Verified!"
+msgstr "E-post kinnitatud!"
+
+#: templates/users/verify_email.html
+msgid "Verification Failed"
+msgstr "Kinnitamine ebaõnnestus"
+
+#: templates/users/verify_email.html
+msgid "Sign Up Again"
+msgstr "Registreeru uuesti"

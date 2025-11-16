@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salona - Dashboard</title>
+    <title>{% load i18n %}{% trans "Salona - Dashboard" %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
@@ -28,11 +28,11 @@
         <main class="main-content">
 
             <header class="header">
-                <h2 class="page-title">Dashboard</h2>
+                <h2 class="page-title">{% trans "Dashboard" %}</h2>
                 <div class="header-actions">
                     {% include 'partials/notification_icon.html' %}
                     <div class="user-info welcome-message">
-                        <span class="user-name">Welcome, {{ user_data.first_name }}!</span>
+                        <span class="user-name">{% blocktrans with name=user_data.first_name %}Welcome, {{ name }}!{% endblocktrans %}</span>
                     </div>
                 </div>
             </header>
@@ -56,9 +56,9 @@
 
                   <!-- Filter -->
             <div class="filter-section">
-                <label for="staffFilter" class="filter-label">Filter by staff:</label>
+                <label for="staffFilter" class="filter-label">{% trans "Filter by staff:" %}</label>
                 <select id="staff-filter" class="staff-select">
-                    <option value="all">All Staff</option>
+                    <option value="all">{% trans "All Staff" %}</option>
                     {% if staff_data and staff_data %}
                         {% for staff in staff_data %}
                             <option value="{{ staff.user.id }}">{{ staff.user.first_name }} {{ staff.user.last_name }}</option>
@@ -86,15 +86,15 @@
     <!-- Event popup -->
     <div id="event-popup" class="event-popup">
         <div class="event-popup-header">
-            <div class="event-popup-title">Booking Details</div>
+            <div class="event-popup-title">{% trans "Booking Details" %}</div>
             <div class="event-popup-actions">
-                <button id="event-popup-confirm" class="event-popup-confirm-btn" title="Confirm booking" style="display: none;">
+                <button id="event-popup-confirm" class="event-popup-confirm-btn" title="{% trans 'Confirm booking' %}" style="display: none;">
                     <i class="fas fa-check"></i>
                 </button>
-                <button id="event-popup-edit" class="event-popup-edit-btn" title="Edit booking">
+                <button id="event-popup-edit" class="event-popup-edit-btn" title="{% trans 'Edit booking' %}">
                     <i class="fas fa-edit"></i>
                 </button>
-                <button id="event-popup-delete" class="event-popup-delete-btn" title="Delete booking">
+                <button id="event-popup-delete" class="event-popup-delete-btn" title="{% trans 'Delete booking' %}">
                     <i class="fas fa-trash-alt"></i>
                 </button>
                 <button class="event-popup-close">&times;</button>
@@ -121,7 +121,7 @@
 
             <!-- Customer information section -->
             <div class="event-popup-customer">
-                <div class="event-popup-section-title">Customer Information</div>
+                <div class="event-popup-section-title">{% trans "Customer Information" %}</div>
                 <!-- Customer name -->
                 <div class="event-popup-customer-detail">
                     <i class="fas fa-user"></i>
@@ -141,13 +141,13 @@
 
             <!-- Services section -->
             <div class="event-popup-services">
-                <div class="event-popup-section-title">Booked Services</div>
+                <div class="event-popup-section-title">{% trans "Booked Services" %}</div>
                 <div id="event-popup-services-list"></div>
             </div>
 
             <!-- Notes section -->
             <div class="event-popup-notes">
-                <div class="event-popup-notes-title">Notes:</div>
+                <div class="event-popup-notes-title">{% trans "Notes:" %}</div>
                 <div id="event-popup-notes-value"></div>
             </div>
         </div>
@@ -160,10 +160,10 @@
         </div>
         <div class="slot-action-buttons">
             <button id="add-booking-btn" class="slot-action-button">
-                <i class="fas fa-calendar-plus"></i> Add Booking
+                <i class="fas fa-calendar-plus"></i> {% trans "Add Booking" %}
             </button>
             <button id="add-timeoff-btn" class="slot-action-button">
-                <i class="fas fa-coffee"></i> Add Time Off
+                <i class="fas fa-coffee"></i> {% trans "Add Time Off" %}
             </button>
         </div>
     </div>
@@ -171,7 +171,7 @@
     <!-- Booking Form Panel -->
     <div id="booking-form-panel" class="booking-form-panel">
         <div class="booking-form-header">
-            <h3>Add New Booking</h3>
+            <h3>{% trans "Add New Booking" %}</h3>
             <button class="close-panel-btn">&times;</button>
         </div>
         <div class="booking-form-content">
@@ -179,11 +179,11 @@
             <div class="booking-steps">
                 <div class="booking-step active" data-step="1">
                     <span class="step-number">1</span>
-                    <span class="step-name">Date & Service</span>
+                    <span class="step-name">{% trans "Date & Service" %}</span>
                 </div>
                 <div class="booking-step" data-step="2">
                     <span class="step-number">2</span>
-                    <span class="step-name">Staff & Customer</span>
+                    <span class="step-name">{% trans "Staff & Customer" %}</span>
                 </div>
             </div>
 
@@ -192,50 +192,50 @@
                 <div id="booking-step-1" class="booking-step-content active">
                     <div class="form-group time-inputs">
                         <div>
-                            <label for="booking-start-date">Start Date:</label>
+                            <label for="booking-start-date">{% trans "Start Date:" %}</label>
                             <input type="date" id="booking-start-date" name="booking-start-date" required>
                         </div>
                         <div>
-                            <label for="booking-end-date">End Date:</label>
+                            <label for="booking-end-date">{% trans "End Date:" %}</label>
                             <input type="date" id="booking-end-date" name="booking-end-date" required readonly>
                         </div>
                     </div>
                     <div class="form-group time-inputs">
                         <div>
-                            <label for="booking-start-time">Start Time:</label>
+                            <label for="booking-start-time">{% trans "Start Time:" %}</label>
                             <input type="time" id="booking-start-time" name="booking-start-time" required>
                         </div>
                         <div>
-                            <label for="booking-end-time">End Time: <small style="color: #7f8c8d;">(Auto-calculated)</small></label>
+                            <label for="booking-end-time">{% trans "End Time:" %} <small style="color: #7f8c8d;">({% trans "Auto-calculated" %})</small></label>
                             <input type="time" id="booking-end-time" name="booking-end-time" required readonly>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="service-search">Search Services:</label>
-                        <input type="text" id="service-search" name="service-search" placeholder="Search by service name...">
+                        <label for="service-search">{% trans "Search Services:" %}</label>
+                        <input type="text" id="service-search" name="service-search" placeholder="{% trans 'Search by service name...' %}">
                     </div>
 
                     <div class="form-group">
-                        <label>Services:</label>
+                        <label>{% trans "Services:" %}</label>
                         <div id="custom-service-select" class="custom-service-list">
                             <!-- Service categories will be populated here -->
                         </div>
                     </div>
 
                     <div class="services-summary">
-                        <h4>Selected Services</h4>
+                        <h4>{% trans "Selected Services" %}</h4>
                         <div id="selected-services-list" class="selected-services-list">
                             <!-- Selected services will appear here -->
-                            <div class="empty-selection-message">No services selected</div>
+                            <div class="empty-selection-message">{% trans "No services selected" %}</div>
                         </div>
                         <div class="services-summary-totals">
                             <div>
-                                <span>Total Duration:</span>
+                                <span>{% trans "Total Duration:" %}</span>
                                 <span id="total-duration">0 min</span>
                             </div>
                             <div>
-                                <span>Total Price:</span>
+                                <span>{% trans "Total Price:" %}</span>
                                 <span id="total-price">$0.00</span>
                             </div>
                         </div>
@@ -243,55 +243,55 @@
 
                     <div class="form-actions">
                         <div></div>
-                        <button type="button" id="step-1-next" class="primary-button">Next</button>
+                        <button type="button" id="step-1-next" class="primary-button">{% trans "Next" %}</button>
                     </div>
                 </div>
 
                 <!-- Step 2: Staff Member and Customer -->
                 <div id="booking-step-2" class="booking-step-content">
                     <div class="form-group">
-                        <label for="booking-worker">Staff Member:</label>
+                        <label for="booking-worker">{% trans "Staff Member:" %}</label>
                         <select id="booking-worker" name="booking-worker" required>
-                            <option value="">Select staff member</option>
+                            <option value="">{% trans "Select staff member" %}</option>
                             <!-- Options will be populated via API -->
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label for="booking-customer">Customer (Optional):</label>
+                        <label for="booking-customer">{% trans "Customer (Optional):" %}</label>
                         <select id="booking-customer" name="booking-customer" required>
-                            <option value="new">New Customer</option>
+                            <option value="new">{% trans "New Customer" %}</option>
                             <!-- Existing customers would be loaded here -->
                         </select>
                     </div>
 
                     <div id="new-customer-fields">
                         <div class="form-group">
-                            <label for="customer-first-name">First Name:</label>
+                            <label for="customer-first-name">{% trans "First Name:" %}</label>
                             <input type="text" id="customer-first-name" name="customer-first-name">
                         </div>
                         <div class="form-group">
-                            <label for="customer-last-name">Last Name:</label>
+                            <label for="customer-last-name">{% trans "Last Name:" %}</label>
                             <input type="text" id="customer-last-name" name="customer-last-name">
                         </div>
                         <div class="form-group">
-                            <label for="customer-email">Email:</label>
+                            <label for="customer-email">{% trans "Email:" %}</label>
                             <input type="email" id="customer-email" name="customer-email">
                         </div>
                         <div class="form-group">
-                            <label for="customer-phone">Phone:</label>
+                            <label for="customer-phone">{% trans "Phone:" %}</label>
                             <input type="tel" id="customer-phone" name="customer-phone">
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="booking-description">Description/Notes:</label>
+                        <label for="booking-description">{% trans "Description/Notes:" %}</label>
                         <textarea id="booking-description" name="booking-description" rows="3"></textarea>
                     </div>
 
                     <div class="form-actions">
-                        <button type="button" id="step-2-back" class="secondary-button">Back</button>
-                        <button type="submit" id="booking-submit-btn" class="primary-button">Create Booking</button>
+                        <button type="button" id="step-2-back" class="secondary-button">{% trans "Back" %}</button>
+                        <button type="submit" id="booking-submit-btn" class="primary-button">{% trans "Create Booking" %}</button>
                     </div>
                 </div>
             </form>
@@ -302,15 +302,15 @@
     <div id="confirmation-popup" class="confirmation-popup">
         <div class="confirmation-popup-content">
             <div class="confirmation-popup-header">
-                <h3>Confirm Action</h3>
+                <h3>{% trans "Confirm Action" %}</h3>
                 <button class="confirmation-popup-close">&times;</button>
             </div>
             <div class="confirmation-popup-body">
-                <p id="confirmation-message">Are you sure you want to delete this booking?</p>
+                <p id="confirmation-message">{% trans "Are you sure you want to delete this booking?" %}</p>
             </div>
             <div class="confirmation-popup-footer">
-                <button id="confirmation-cancel-btn" class="secondary-button">No</button>
-                <button id="confirmation-confirm-btn" class="primary-button">Yes</button>
+                <button id="confirmation-cancel-btn" class="secondary-button">{% trans "No" %}</button>
+                <button id="confirmation-confirm-btn" class="primary-button">{% trans "Yes" %}</button>
             </div>
         </div>
     </div>
@@ -322,47 +322,47 @@
     <!-- Time Off Form Panel -->
     <div id="time-off-panel" class="booking-form-panel">
         <div class="booking-form-header">
-            <h3>Schedule Time Off</h3>
+            <h3>{% trans "Schedule Time Off" %}</h3>
             <button id="time-off-close-btn" class="close-panel-btn">&times;</button>
         </div>
         <div class="booking-form-content">
             <form id="time-off-form">
                 <div class="form-group time-inputs">
                     <div>
-                        <label for="time-off-start-date">Start Date:</label>
+                        <label for="time-off-start-date">{% trans "Start Date:" %}</label>
                         <input type="date" id="time-off-start-date" name="time-off-start-date" required>
                     </div>
                     <div>
-                        <label for="time-off-end-date">End Date:</label>
+                        <label for="time-off-end-date">{% trans "End Date:" %}</label>
                         <input type="date" id="time-off-end-date" name="time-off-end-date" required>
                     </div>
                 </div>
                 <div class="form-group time-inputs">
                     <div>
-                        <label for="time-off-start-time">Start Time:</label>
+                        <label for="time-off-start-time">{% trans "Start Time:" %}</label>
                         <input type="time" id="time-off-start-time" name="time-off-start-time" required>
                     </div>
                     <div>
-                        <label for="time-off-end-time">End Time:</label>
+                        <label for="time-off-end-time">{% trans "End Time:" %}</label>
                         <input type="time" id="time-off-end-time" name="time-off-end-time" required>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="time-off-staff">Staff Member:</label>
+                    <label for="time-off-staff">{% trans "Staff Member:" %}</label>
                     <select id="time-off-staff" name="time-off-staff" required>
-                        <option value="">Select staff member</option>
+                        <option value="">{% trans "Select staff member" %}</option>
                         <!-- Options will be populated via API -->
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="time-off-reason">Reason:</label>
-                    <textarea id="time-off-reason" name="time-off-reason" rows="3" placeholder="Provide a reason for the time off (optional)"></textarea>
+                    <label for="time-off-reason">{% trans "Reason:" %}</label>
+                    <textarea id="time-off-reason" name="time-off-reason" rows="3" placeholder="{% trans 'Provide a reason for the time off (optional)' %}"></textarea>
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" id="time-off-submit-btn" class="primary-button">Schedule Time Off</button>
+                    <button type="submit" id="time-off-submit-btn" class="primary-button">{% trans "Schedule Time Off" %}</button>
                 </div>
             </form>
         </div>
@@ -371,7 +371,7 @@
     <!-- Time Off Details Popup -->
     <div id="time-off-popup" class="event-popup time-off-popup">
         <div class="event-popup-header">
-            <div class="event-popup-title">Time Off Details</div>
+            <div class="event-popup-title">{% trans "Time Off Details" %}</div>
             <div class="event-popup-actions">
                 <button class="event-popup-close">&times;</button>
             </div>
@@ -385,7 +385,7 @@
 
             <!-- Staff information section -->
             <div class="event-popup-customer">
-                <div class="event-popup-section-title">Staff Information</div>
+                <div class="event-popup-section-title">{% trans "Staff Information" %}</div>
                 <!-- Staff name -->
                 <div class="event-popup-customer-detail">
                     <i class="fas fa-user"></i>
@@ -405,7 +405,7 @@
 
             <!-- Reason section -->
             <div class="event-popup-notes">
-                <div class="event-popup-notes-title">Reason:</div>
+                <div class="event-popup-notes-title">{% trans "Reason:" %}</div>
                 <div id="time-off-popup-reason-value"></div>
             </div>
         </div>

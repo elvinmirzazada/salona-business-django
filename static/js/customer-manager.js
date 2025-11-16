@@ -2,6 +2,7 @@
 const CustomerManager = (() => {
     // Cache for customers data
     let customersCache = null;
+    const translations = window.customerTranslations || {};
 
     // Fetch customers from API (pure data fetching - no rendering)
     const fetchCustomers = async (forceRefresh = false) => {
@@ -61,7 +62,7 @@ const CustomerManager = (() => {
                 // Add a disabled indicator if the customer is disabled
                 if (customer.status === 'disabled' || customer.status === false) {
                     option.disabled = true;
-                    displayText += ' [Disabled]';
+                    displayText += ` [${translations.disabled || 'Disabled'}]`;
                 }
 
                 option.textContent = displayText;
@@ -114,7 +115,9 @@ const CustomerManager = (() => {
                 const email = customer.email || '-';
                 const phone = customer.phone || '-';
                 const status = customer.status === 'disabled' || customer.status === false ? 'disabled' : 'active';
-                const statusText = status === 'active' ? 'Active' : 'Disabled';
+                const statusText = status === 'active' ?
+                    (translations.active || 'Active') :
+                    (translations.disabled || 'Disabled');
 
                 row.innerHTML = `
                     <td>${fullName}</td>
@@ -127,7 +130,7 @@ const CustomerManager = (() => {
                     </td>
                     <td>
                         <div class="action-buttons">
-                            <button class="action-btn view-btn" data-customer-id="${customer.id}" title="View Details">
+                            <button class="action-btn view-btn" data-customer-id="${customer.id}" title="${translations.viewDetails || 'View Details'}">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>

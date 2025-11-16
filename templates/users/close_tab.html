@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Closing...</title>
+    <title>{% load i18n %}{% trans "Closing..." %}</title>
     {% load static %}
     <style>
         * {
@@ -127,25 +127,25 @@
     <div class="container">
         {% if status == 'success' %}
             <div class="icon success">✓</div>
-            <h1>Success!</h1>
+            <h1>{% trans "Success!" %}</h1>
         {% elif status == 'error' %}
             <div class="icon error">✕</div>
-            <h1>Error</h1>
+            <h1>{% trans "Error" %}</h1>
         {% elif status == 'cancel' %}
             <div class="icon cancel">⚠</div>
-            <h1>Cancelled</h1>
+            <h1>{% trans "Cancelled" %}</h1>
         {% else %}
             <div class="icon success">✓</div>
-            <h1>Complete</h1>
+            <h1>{% trans "Complete" %}</h1>
         {% endif %}
 
         <p>{{ message }}</p>
 
         <div class="spinner"></div>
 
-        <p class="countdown">This window will close automatically in <span id="countdown">10</span> seconds...</p>
+        <p class="countdown">{% trans "This window will close automatically in" %} <span id="countdown">10</span> {% trans "seconds..." %}</p>
 
-        <button class="close-button" onclick="closeWindow()">Close Now</button>
+        <button class="close-button" onclick="closeWindow()">{% trans "Close Now" %}</button>
     </div>
 
     <script>
@@ -190,32 +190,22 @@
                 if (container && !document.hidden) {
                     container.innerHTML = `
                         <div class="icon success">✓</div>
-                        <h1>Almost Done!</h1>
-                        <p>Please close this window manually.</p>
+                        <h1>{% trans "Almost Done!" %}</h1>
+                        <p>{% trans "Please close this window manually." %}</p>
                         <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 1rem;">
-                            Press <strong>Alt+F4</strong> (Windows) or <strong>⌘+W</strong> (Mac) to close this tab.
+                            {% trans "Press" %} <strong>Alt+F4</strong> (Windows) {% trans "or" %} <strong>⌘+W</strong> (Mac) {% trans "to close this tab." %}
                         </p>
                     `;
                 }
             }, 500);
         }
 
-        // Listen for messages from parent window
+        // Listen for messages from opener window
         window.addEventListener('message', (event) => {
-            if (event.data.type === 'CLOSE_TAB') {
+            if (event.data && event.data.type === 'FORCE_CLOSE') {
                 closeWindow();
             }
         });
-
-        // Notify parent window that the page has loaded
-        if (window.opener) {
-            window.opener.postMessage({
-                type: 'CALLBACK_LOADED',
-                status: '{{ status }}',
-                message: '{{ message }}'
-            }, '*');
-        }
     </script>
 </body>
 </html>
-

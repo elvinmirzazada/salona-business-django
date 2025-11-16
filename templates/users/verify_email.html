@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email Verification - Salona</title>
+    <title>{% load i18n %}{% trans "Email Verification - Salona" %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/auth.css' %}">
     <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
@@ -146,9 +146,9 @@
 
             <h1 class="verification-title">
                 {% if success %}
-                    Email Verified!
+                    {% trans "Email Verified!" %}
                 {% else %}
-                    Verification Failed
+                    {% trans "Verification Failed" %}
                 {% endif %}
             </h1>
 
@@ -160,16 +160,16 @@
                 {% if success %}
                     <a href="{% url 'users:login' %}" class="btn btn-primary">
                         <i class="fas fa-sign-in-alt"></i>
-                        Go to Login
+                        {% trans "Go to Login" %}
                     </a>
                 {% else %}
                     <a href="{% url 'users:signup' %}" class="btn btn-primary">
                         <i class="fas fa-user-plus"></i>
-                        Sign Up Again
+                        {% trans "Sign Up Again" %}
                     </a>
                     <a href="{% url 'users:login' %}" class="btn btn-secondary">
                         <i class="fas fa-sign-in-alt"></i>
-                        Go to Login
+                        {% trans "Go to Login" %}
                     </a>
                 {% endif %}
             </div>
@@ -177,4 +177,3 @@
     </div>
 </body>
 </html>
-

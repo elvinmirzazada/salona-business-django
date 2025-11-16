@@ -17,7 +17,13 @@ This project now supports multiple languages: English (en) and Estonian (et).
 
 3. **Translation Files Directory**
    - Location: `locale/` (at project root)
-   - Will contain .po and .mo files for each language
+   - Contains .po and .mo files for each language
+
+4. **Translated Pages**
+   - ✅ Home page (index.html)
+   - ✅ Login page
+   - ✅ Signup page
+   - ✅ Dashboard page (fully translated - all UI elements, forms, popups, and buttons)
 
 ## How to Add Translations to a Page
 
@@ -62,7 +68,7 @@ After marking strings, run this command to extract them:
 python manage.py makemessages -l et
 ```
 
-This creates: `locale/et/LC_MESSAGES/django.po`
+This creates/updates: `locale/et/LC_MESSAGES/django.po`
 
 ### Step 4: Translate the Strings
 
@@ -93,6 +99,44 @@ Include the language switcher component in your template:
 
 You can add this to your navigation bar or any other suitable location.
 
+## Dashboard Translations
+
+The dashboard page has been fully translated with Estonian translations for:
+
+### Main Interface
+- Page title: "Dashboard" → "Juhtpaneel"
+- Welcome message: "Welcome, [name]!" → "Tere tulemast, [name]!"
+- Staff filter: "Filter by staff:" → "Filtreeri töötaja järgi:"
+- "All Staff" → "Kõik töötajad"
+
+### Booking Details Popup
+- "Booking Details" → "Broneeringu üksikasjad"
+- "Customer Information" → "Kliendi andmed"
+- "Booked Services" → "Broneeritud teenused"
+- "Notes:" → "Märkmed:"
+- Action buttons: Confirm, Edit, Delete
+
+### Booking Form
+- "Add New Booking" → "Lisa uus broneering"
+- Form steps: "Date & Service", "Staff & Customer"
+- All form fields: Start Date, End Date, Start Time, End Time
+- "Search Services:" → "Otsi teenuseid:"
+- "Selected Services" → "Valitud teenused"
+- "Total Duration:" → "Kogu kestus:"
+- "Total Price:" → "Koguhind:"
+
+### Time Off Management
+- "Schedule Time Off" → "Planeeri puhkeaeg"
+- "Time Off Details" → "Puhkeaja üksikasjad"
+- "Staff Information" → "Töötaja andmed"
+- "Reason:" → "Põhjus:"
+
+### Confirmation Dialogs
+- "Confirm Action" → "Kinnita tegevus"
+- "Are you sure you want to delete this booking?" → "Kas oled kindel, et soovid selle broneeringu kustutada?"
+- "Yes" → "Jah"
+- "No" → "Ei"
+
 ## Example Workflow
 
 When you're ready to translate a specific page:
@@ -109,7 +153,14 @@ When you're ready to translate a specific page:
 Users can switch languages using:
 - The language switcher dropdown (automatically redirects to current page)
 - Their browser's language preference (detected automatically)
-- The language persists in their session
+- The language preference persists in their session
+
+## Translation File Locations
+
+- **Source file (editable)**: `locale/et/LC_MESSAGES/django.po`
+- **Compiled file (auto-generated)**: `locale/et/LC_MESSAGES/django.mo`
+
+Always run `compilemessages` after editing .po files!
 
 ## Notes
 
@@ -117,4 +168,4 @@ Users can switch languages using:
 - Always run `compilemessages` after editing .po files
 - The language preference is stored in the user's session
 - Static text in JavaScript may require additional setup (we'll handle that when needed)
-
+- The .mo file (12KB) has been successfully compiled and is ready for use

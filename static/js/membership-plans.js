@@ -11,6 +11,7 @@ class MembershipPlansManager {
         this.emptyContainer = document.getElementById('plans-empty');
         this.activePlanSection = document.getElementById('active-plan-section');
         this.activePlanDetails = document.getElementById('active-plan-details');
+        this.translations = window.membershipTranslations || {};
     }
 
     /**
@@ -54,33 +55,33 @@ class MembershipPlansManager {
         this.activePlanDetails.innerHTML = `
             <div class="active-plan-info">
                 <div class="active-plan-item">
-                    <label>Plan Name</label>
+                    <label>${this.translations.planName || 'Plan Name'}</label>
                     <strong>${this.escapeHtml(plan.name)}</strong>
                 </div>
                 <div class="active-plan-item">
-                    <label>Plan Type</label>
+                    <label>${this.translations.planType || 'Plan Type'}</label>
                     <strong>${this.escapeHtml(plan.plan_type).toUpperCase()}</strong>
                 </div>
                 <div class="active-plan-item">
-                    <label>Price</label>
+                    <label>${this.translations.price || 'Price'}</label>
                     <strong>$${priceFormatted} / ${durationText}</strong>
                 </div>
                 <div class="active-plan-item">
-                    <label>Status</label>
+                    <label>${this.translations.status || 'Status'}</label>
                     <strong style="color: #ffffff;">${this.escapeHtml(subscription.status).toUpperCase()}</strong>
                 </div>
                 <div class="active-plan-item">
-                    <label>Start Date</label>
+                    <label>${this.translations.startDate || 'Start Date'}</label>
                     <strong>${startDate}</strong>
                 </div>
                 <div class="active-plan-item">
-                    <label>End Date</label>
+                    <label>${this.translations.endDate || 'End Date'}</label>
                     <strong>${endDate}</strong>
                 </div>
                 <div class="active-plan-item">
-                    <label>Auto Renew</label>
+                    <label>${this.translations.autoRenew || 'Auto Renew'}</label>
                     <strong style="color: ${subscription.auto_renew ? '#ffffff' : '#ef4444'};">
-                        ${subscription.auto_renew ? 'YES' : 'NO'}
+                        ${subscription.auto_renew ? (this.translations.yes || 'YES') : (this.translations.no || 'NO')}
                     </strong>
                 </div>
             </div>
@@ -143,7 +144,9 @@ class MembershipPlansManager {
         const priceFormatted = this.formatPrice(plan.price);
         const durationText = this.formatDuration(plan.duration_days);
 
-        const buttonText = isActive ? 'Current Plan' : 'Choose Plan';
+        const buttonText = isActive ?
+            (this.translations.currentPlan || 'Current Plan') :
+            (this.translations.choosePlan || 'Choose Plan');
         const buttonClass = isActive ? 'secondary' : (isFeatured ? 'primary' : 'secondary');
         const buttonDisabled = isActive ? 'disabled' : '';
 
@@ -157,7 +160,7 @@ class MembershipPlansManager {
                 <span class="price-amount">
                     <span class="price-currency">$</span>${priceFormatted}
                 </span>
-                <span class="price-period">per ${durationText}</span>
+                <span class="price-period">${this.translations.per || 'per'} ${durationText}</span>
             </div>
 
             <p class="plan-description">${this.escapeHtml(plan.description)}</p>
@@ -183,22 +186,22 @@ class MembershipPlansManager {
      */
     generateFeatures(plan) {
         const commonFeatures = [
-            'Access to booking system',
-            'Customer management',
-            'Basic analytics',
+            this.translations.accessToBookingSystem || 'Access to booking system',
+            this.translations.customerManagement || 'Customer management',
+            this.translations.basicAnalytics || 'Basic analytics',
         ];
 
         const premiumFeatures = [
-            'Advanced analytics',
-            'Priority support',
-            'Custom branding',
+            this.translations.advancedAnalytics || 'Advanced analytics',
+            this.translations.prioritySupport || 'Priority support',
+            this.translations.customBranding || 'Custom branding',
         ];
 
         const vipFeatures = [
-            'Unlimited bookings',
-            'Dedicated support',
-            'API access',
-            'White-label solution',
+            this.translations.unlimitedBookings || 'Unlimited bookings',
+            this.translations.dedicatedSupport || 'Dedicated support',
+            this.translations.apiAccess || 'API access',
+            this.translations.whiteLabelSolution || 'White-label solution',
         ];
 
         let features = [...commonFeatures];
@@ -226,7 +229,7 @@ class MembershipPlansManager {
             const button = event.target.closest('button');
             const originalButtonText = button.innerHTML;
             button.disabled = true;
-            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${this.translations.processing || 'Processing...'}`;
 
             // Get CSRF token from cookie
             const csrfToken = this.getCsrfToken();
@@ -262,10 +265,10 @@ class MembershipPlansManager {
             // Restore button state
             const button = event.target.closest('button');
             button.disabled = false;
-            button.innerHTML = '<i class="fas fa-crown"></i> Choose Plan';
+            button.innerHTML = `<i class="fas fa-crown"></i> ${this.translations.choosePlan || 'Choose Plan'}`;
 
             // Show error message
-            alert('Failed to start checkout process. Please try again or contact support.');
+            alert(this.translations.errorCheckout || 'Failed to start checkout process. Please try again or contact support.');
         }
     }
 
@@ -302,13 +305,13 @@ class MembershipPlansManager {
      */
     formatDuration(days) {
         if (days === 30 || days === 31) {
-            return 'month';
+            return this.translations.month || 'month';
         } else if (days === 365 || days === 366) {
-            return 'year';
+            return this.translations.year || 'year';
         } else if (days === 7) {
-            return 'week';
+            return this.translations.week || 'week';
         } else {
-            return `${days} days`;
+            return `${days} ${this.translations.days || 'days'}`;
         }
     }
 
@@ -363,9 +366,7 @@ class MembershipPlansManager {
 }
 
 // Initialize when DOM is ready
-let membershipPlansManager;
-
+const membershipPlansManager = new MembershipPlansManager();
 document.addEventListener('DOMContentLoaded', () => {
-    membershipPlansManager = new MembershipPlansManager();
     membershipPlansManager.init();
 });

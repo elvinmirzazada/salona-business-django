@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salona - Notifications</title>
+    <title>{% load i18n %}Salona - {% trans "Notifications" %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
@@ -18,7 +18,7 @@
     <div id="page-loader" class="page-loader">
         <div class="loader-container">
             <div class="loader-spinner"></div>
-            <p class="loader-text">Loading notifications...</p>
+            <p class="loader-text">{% trans "Loading notifications..." %}</p>
         </div>
     </div>
 
@@ -38,12 +38,12 @@
                     <button class="back-button" onclick="window.location.href='/users/dashboard/'">
                         <i class="fas fa-arrow-left"></i>
                     </button>
-                    <h2 class="page-title">Notifications</h2>
+                    <h2 class="page-title">{% trans "Notifications" %}</h2>
                 </div>
                 <div class="header-actions">
                     {% include 'partials/notification_icon.html' %}
                     <div class="user-info welcome-message">
-                        <span class="user-name">Welcome, {{ user_data.first_name }}!</span>
+                        <span class="user-name">{% blocktrans with name=user_data.first_name %}Welcome, {{ name }}!{% endblocktrans %}</span>
                     </div>
                 </div>
             </header>
@@ -51,18 +51,18 @@
             <!-- Notifications Controls -->
             <div class="notifications-controls">
                 <div class="notifications-stats">
-                    <span id="total-notifications">0 notifications</span>
+                    <span id="total-notifications">0 {% trans "notifications" %}</span>
                     <span class="separator">•</span>
-                    <span id="unread-notifications">0 unread</span>
+                    <span id="unread-notifications">0 {% trans "unread" %}</span>
                 </div>
                 <div class="notifications-actions">
                     <button id="mark-all-read-btn" class="action-button primary" disabled>
                         <i class="fas fa-check-double"></i>
-                        Mark All Read
+                        {% trans "Mark All Read" %}
                     </button>
                     <button id="refresh-notifications-btn" class="action-button secondary">
                         <i class="fas fa-sync-alt"></i>
-                        Refresh
+                        {% trans "Refresh" %}
                     </button>
                 </div>
             </div>
@@ -72,23 +72,23 @@
                 <div class="filter-tabs">
                     <button class="filter-tab active" data-filter="all">
                         <i class="fas fa-inbox"></i>
-                        All
+                        {% trans "All" %}
                     </button>
                     <button class="filter-tab" data-filter="unread">
                         <i class="fas fa-envelope"></i>
-                        Unread
+                        {% trans "Unread" %}
                     </button>
                     <button class="filter-tab" data-filter="general">
                         <i class="fas fa-info-circle"></i>
-                        General
+                        {% trans "General" %}
                     </button>
                     <button class="filter-tab" data-filter="booking">
                         <i class="fas fa-calendar"></i>
-                        Booking
+                        {% trans "Booking" %}
                     </button>
                     <button class="filter-tab" data-filter="payment">
                         <i class="fas fa-credit-card"></i>
-                        Payment
+                        {% trans "Payment" %}
                     </button>
                 </div>
             </div>
@@ -100,23 +100,23 @@
                     <div class="notifications-table-header">
                         <div class="header-cell">
                             <i class="fas fa-bell"></i>
-                            Type
+                            {% trans "Type" %}
                         </div>
                         <div class="header-cell">
                             <i class="fas fa-envelope"></i>
-                            Message
+                            {% trans "Message" %}
                         </div>
                         <div class="header-cell">
                             <i class="fas fa-tag"></i>
-                            Category
+                            {% trans "Category" %}
                         </div>
                         <div class="header-cell">
                             <i class="fas fa-clock"></i>
-                            Time
+                            {% trans "Time" %}
                         </div>
                         <div class="header-cell">
                             <i class="fas fa-cog"></i>
-                            Actions
+                            {% trans "Actions" %}
                         </div>
                     </div>
                     <!-- Notifications will be populated here -->
@@ -127,14 +127,14 @@
                     <div class="empty-state-icon">
                         <i class="fas fa-bell-slash"></i>
                     </div>
-                    <h3>No notifications found</h3>
-                    <p>You're all caught up! No notifications to display.</p>
+                    <h3>{% trans "No notifications found" %}</h3>
+                    <p>{% trans "You're all caught up! No notifications to display." %}</p>
                 </div>
 
                 <!-- Loading State -->
                 <div id="loading-state" class="loading-state" style="display: none;">
                     <div class="loading-spinner"></div>
-                    <p>Loading notifications...</p>
+                    <p>{% trans "Loading notifications..." %}</p>
                 </div>
             </div>
 
@@ -142,11 +142,11 @@
             <div id="pagination-container" class="pagination-container" style="display: none;">
                 <button id="prev-page" class="pagination-btn" disabled>
                     <i class="fas fa-chevron-left"></i>
-                    Previous
+                    {% trans "Previous" %}
                 </button>
-                <span id="page-info" class="page-info">Page 1 of 1</span>
+                <span id="page-info" class="page-info">{% trans "Page 1 of 1" %}</span>
                 <button id="next-page" class="pagination-btn" disabled>
-                    Next
+                    {% trans "Next" %}
                     <i class="fas fa-chevron-right"></i>
                 </button>
             </div>
@@ -157,14 +157,14 @@
     <div id="confirmation-dialog" class="confirmation-dialog" style="display: none;">
         <div class="confirmation-content">
             <div class="confirmation-header">
-                <h3 id="confirmation-title">Confirm Action</h3>
+                <h3 id="confirmation-title">{% trans "Confirm Action" %}</h3>
             </div>
             <div class="confirmation-body">
-                <p id="confirmation-message">Are you sure you want to perform this action?</p>
+                <p id="confirmation-message">{% trans "Are you sure you want to perform this action?" %}</p>
             </div>
             <div class="confirmation-actions">
-                <button id="confirmation-cancel" class="action-button secondary">Cancel</button>
-                <button id="confirmation-confirm" class="action-button danger">Confirm</button>
+                <button id="confirmation-cancel" class="action-button secondary">{% trans "Cancel" %}</button>
+                <button id="confirmation-confirm" class="action-button danger">{% trans "Confirm" %}</button>
             </div>
         </div>
     </div>
@@ -174,6 +174,43 @@
         // Get API_BASE_URL from Django template context (environment variable)
         window.API_BASE_URL = "{{ API_BASE_URL }}";
         window.userData = {{ user_data_json|safe }};
+
+        // Pass translations to JavaScript
+        window.notificationsTranslations = {
+            notifications: "{% trans 'notifications' %}",
+            notification: "{% trans 'notification' %}",
+            unread: "{% trans 'unread' %}",
+            generalNotification: "{% trans 'General Notification' %}",
+            bookingUpdate: "{% trans 'Booking Update' %}",
+            bookingCreated: "{% trans 'Booking Created' %}",
+            paymentNotification: "{% trans 'Payment Notification' %}",
+            reminder: "{% trans 'Reminder' %}",
+            alert: "{% trans 'Alert' %}",
+            systemNotification: "{% trans 'System Notification' %}",
+            read: "{% trans 'Read' %}",
+            markAsRead: "{% trans 'Mark as read' %}",
+            deleteNotification: "{% trans 'Delete notification' %}",
+            deleteNotificationTitle: "{% trans 'Delete Notification' %}",
+            deleteNotificationMessage: "{% trans 'Are you sure you want to delete this notification? This action cannot be undone.' %}",
+            markAllAsReadTitle: "{% trans 'Mark All as Read' %}",
+            markAllAsReadMessage: "{% trans 'Are you sure you want to mark all' %}",
+            unreadNotificationsAsRead: "{% trans 'unread notifications as read?' %}",
+            notificationMarkedAsRead: "{% trans 'Notification marked as read' %}",
+            failedToMarkAsRead: "{% trans 'Failed to mark notification as read' %}",
+            notificationDeleted: "{% trans 'Notification deleted successfully' %}",
+            failedToDelete: "{% trans 'Failed to delete notification' %}",
+            noUnreadNotifications: "{% trans 'No unread notifications to mark as read' %}",
+            allMarkedAsRead: "{% trans 'All notifications marked as read' %}",
+            failedToMarkAllAsRead: "{% trans 'Failed to mark all notifications as read' %}",
+            errorLoadingNotifications: "{% trans 'Error loading notifications' %}",
+            pleaseTryRefreshing: "{% trans 'Please try refreshing the page' %}",
+            justNow: "{% trans 'Just now' %}",
+            minutesAgo: "{% trans 'm ago' %}",
+            hoursAgo: "{% trans 'h ago' %}",
+            daysAgo: "{% trans 'd ago' %}",
+            page: "{% trans 'Page' %}",
+            of: "{% trans 'of' %}"
+        };
     </script>
     <script src="{% static 'js/utils.js' %}"></script>
     <script src="{% static 'js/auth.js' %}"></script>

@@ -11,6 +11,7 @@ const NotificationPage = {
 
     // Initialize the notifications page
     async init() {
+        this.translations = window.notificationsTranslations || {};
         this.setupEventListeners();
         await this.loadNotifications();
         this.hidePageLoader();
@@ -176,16 +177,17 @@ const NotificationPage = {
 
     // Get notification title based on type
     getNotificationTitle(type) {
+        const t = this.translations;
         const titleMapping = {
-            'general': 'General Notification',
-            'booking': 'Booking Update',
-            'booking_created': 'Booking Created',
-            'payment': 'Payment Notification',
-            'reminder': 'Reminder',
-            'alert': 'Alert',
-            'system': 'System Notification'
+            'general': t.generalNotification || 'General Notification',
+            'booking': t.bookingUpdate || 'Booking Update',
+            'booking_created': t.bookingCreated || 'Booking Created',
+            'payment': t.paymentNotification || 'Payment Notification',
+            'reminder': t.reminder || 'Reminder',
+            'alert': t.alert || 'Alert',
+            'system': t.systemNotification || 'System Notification'
         };
-        return titleMapping[type] || 'Notification';
+        return titleMapping[type] || (t.notification || 'Notification');
     },
 
         // Map API notification type to our display type
@@ -257,6 +259,7 @@ const NotificationPage = {
 
     // Create HTML for a notification item
     createNotificationHTML(notification) {
+        const t = this.translations;
         const timeAgo = this.formatTimeAgo(notification.timestamp);
         const isUnread = !notification.read;
 
@@ -294,19 +297,19 @@ const NotificationPage = {
                             <button class="notification-action-btn read" 
                                     data-action="read" 
                                     data-id="${notification.id}"
-                                    title="Mark as read">
+                                    title="${t.markAsRead || 'Mark as read'}">
                                 <i class="fas fa-check"></i>
                             </button>
                         ` : `
                             <div class="notification-status-indicator read">
                                 <i class="fas fa-check-circle"></i>
-                                Read
+                                ${t.read || 'Read'}
                             </div>
                         `}
                         <button class="notification-action-btn delete" 
                                 data-action="delete" 
                                 data-id="${notification.id}"
-                                title="Delete notification">
+                                title="${t.deleteNotification || 'Delete notification'}">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -373,6 +376,7 @@ const NotificationPage = {
 
     // Mark notification as read
     async markAsRead(notificationId) {
+        const t = this.translations;
         try {
             // Use API client instead of direct fetch with localStorage
             const response = await api.markNotificationAsRead(notificationId);
@@ -392,29 +396,31 @@ const NotificationPage = {
 
                 this.renderNotifications();
                 this.updateStats();
-                this.showSuccessMessage('Notification marked as read');
+                this.showSuccessMessage(t.notificationMarkedAsRead || 'Notification marked as read');
             } else {
                 throw new Error('Failed to mark notification as read');
             }
         } catch (error) {
             console.error('Error marking notification as read:', error);
-            this.showErrorMessage('Failed to mark notification as read');
+            this.showErrorMessage(t.failedToMarkAsRead || 'Failed to mark notification as read');
         }
     },
 
     // Confirm delete notification
     confirmDelete(notificationId) {
+        const t = this.translations;
         const notification = this.notifications.find(n => n.id === notificationId);
 
         this.showConfirmationDialog(
-            'Delete Notification',
-            `Are you sure you want to delete this notification? This action cannot be undone.`,
+            t.deleteNotificationTitle || 'Delete Notification',
+            t.deleteNotificationMessage || 'Are you sure you want to delete this notification? This action cannot be undone.',
             () => this.deleteNotification(notificationId)
         );
     },
 
     // Delete notification
     async deleteNotification(notificationId) {
+        const t = this.translations;
         try {
             // Use API client instead of direct fetch with localStorage
             const response = await api.request(`/users/api/v1/notifications/${notificationId}`, {
@@ -432,34 +438,36 @@ const NotificationPage = {
 
                 this.renderNotifications();
                 this.updateStats();
-                this.showSuccessMessage('Notification deleted successfully');
+                this.showSuccessMessage(t.notificationDeleted || 'Notification deleted successfully');
             } else {
                 throw new Error('Failed to delete notification');
             }
         } catch (error) {
             console.error('Error deleting notification:', error);
-            this.showErrorMessage('Failed to delete notification');
+            this.showErrorMessage(t.failedToDelete || 'Failed to delete notification');
         }
     },
 
     // Handle mark all as read
     async handleMarkAllRead() {
+        const t = this.translations;
         const unreadNotifications = this.notifications.filter(n => !n.read);
 
         if (unreadNotifications.length === 0) {
-            this.showInfoMessage('No unread notifications to mark as read');
+            this.showInfoMessage(t.noUnreadNotifications || 'No unread notifications to mark as read');
             return;
         }
 
         this.showConfirmationDialog(
-            'Mark All as Read',
-            `Are you sure you want to mark all ${unreadNotifications.length} unread notifications as read?`,
+            t.markAllAsReadTitle || 'Mark All as Read',
+            `${t.markAllAsReadMessage || 'Are you sure you want to mark all'} ${unreadNotifications.length} ${t.unreadNotificationsAsRead || 'unread notifications as read?'}`,
             () => this.markAllAsRead()
         );
     },
 
     // Mark all notifications as read
     async markAllAsRead() {
+        const t = this.translations;
         try {
             // Use API client instead of direct fetch with localStorage
             const response = await api.request('/users/api/v1/notifications/mark-all-read', {
@@ -480,30 +488,31 @@ const NotificationPage = {
 
                 this.renderNotifications();
                 this.updateStats();
-                this.showSuccessMessage('All notifications marked as read');
+                this.showSuccessMessage(t.allMarkedAsRead || 'All notifications marked as read');
             } else {
                 throw new Error('Failed to mark all notifications as read');
             }
         } catch (error) {
             console.error('Error marking all notifications as read:', error);
-            this.showErrorMessage('Failed to mark all notifications as read');
+            this.showErrorMessage(t.failedToMarkAllAsRead || 'Failed to mark all notifications as read');
         }
     },
 
     // Update statistics
     updateStats() {
+        const t = this.translations;
         const totalElement = document.getElementById('total-notifications');
         const unreadElement = document.getElementById('unread-notifications');
         const markAllReadBtn = document.getElementById('mark-all-read-btn');
 
         if (totalElement && this.notifications) {
             const total = this.notifications.length;
-            totalElement.textContent = `${total} notification${total !== 1 ? 's' : ''}`;
+            totalElement.textContent = `${total} ${total !== 1 ? (t.notifications || 'notifications') : (t.notification || 'notification')}`;
         }
 
         if (unreadElement && this.notifications) {
             const unread = this.notifications.filter(n => !n.read).length;
-            unreadElement.textContent = `${unread} unread`;
+            unreadElement.textContent = `${unread} ${t.unread || 'unread'}`;
 
             // Enable/disable mark all read button
             if (markAllReadBtn) {
@@ -514,6 +523,7 @@ const NotificationPage = {
 
     // Update pagination
     updatePagination(pagination) {
+        const t = this.translations;
         const container = document.getElementById('pagination-container');
         const prevBtn = document.getElementById('prev-page');
         const nextBtn = document.getElementById('next-page');
@@ -535,7 +545,7 @@ const NotificationPage = {
         }
 
         if (pageInfo) {
-            pageInfo.textContent = `Page ${pagination.page} of ${pagination.total_pages}`;
+            pageInfo.textContent = `${t.page || 'Page'} ${pagination.page} ${t.of || 'of'} ${pagination.total_pages}`;
         }
     },
 
@@ -594,13 +604,14 @@ const NotificationPage = {
     },
 
     showErrorState() {
+        const t = this.translations;
         const container = document.getElementById('notifications-list');
         if (container) {
             container.innerHTML = `
                 <div class="error-state" style="text-align: center; padding: 40px;">
                     <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ef4444; margin-bottom: 16px;"></i>
-                    <h3 style="color: #1f2937; margin-bottom: 8px;">Error loading notifications</h3>
-                    <p style="color: #6b7280;">Please try refreshing the page</p>
+                    <h3 style="color: #1f2937; margin-bottom: 8px;">${t.errorLoadingNotifications || 'Error loading notifications'}</h3>
+                    <p style="color: #6b7280;">${t.pleaseTryRefreshing || 'Please try refreshing the page'}</p>
                 </div>
             `;
         }
@@ -621,14 +632,15 @@ const NotificationPage = {
 
     // Format time ago
     formatTimeAgo(timestamp) {
+        const t = this.translations;
         const now = new Date();
         const time = new Date(timestamp);
         const diffInSeconds = Math.floor((now - time) / 1000);
 
-        if (diffInSeconds < 60) return 'Just now';
-        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-        if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+        if (diffInSeconds < 60) return t.justNow || 'Just now';
+        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}${t.minutesAgo || 'm ago'}`;
+        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}${t.hoursAgo || 'h ago'}`;
+        if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}${t.daysAgo || 'd ago'}`;
 
         return time.toLocaleDateString();
     },

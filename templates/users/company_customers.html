@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salona - Customers Management</title>
+    <title>{% load i18n %}Salona - {% trans "Customers Management" %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
@@ -30,12 +30,12 @@
                     <button class="back-button" onclick="window.location.href='/users/dashboard/'">
                         <i class="fas fa-arrow-left"></i>
                     </button>
-                    <h2 class="page-title">Customers</h2>
+                    <h2 class="page-title">{% trans "Customers" %}</h2>
                 </div>
                 <div class="header-actions">
                     {% include 'partials/notification_icon.html' %}
                     <div class="user-info welcome-message">
-                        <span class="user-name">Welcome, {{ user_data.first_name }}!</span>
+                        <span class="user-name">{% blocktrans with name=user_data.first_name %}Welcome, {{ name }}!{% endblocktrans %}</span>
                     </div>
                 </div>
             </header>
@@ -48,9 +48,9 @@
                             <div class="header-text">
                                 <h2 class="customers-title">
                                     <i class="fas fa-users customers-icon"></i>
-                                    Company Customers
+                                    {% trans "Company Customers" %}
                                 </h2>
-                                <p class="customers-subtitle">View and manage your business customers</p>
+                                <p class="customers-subtitle">{% trans "View and manage your business customers" %}</p>
                             </div>
                         </div>
                     </div>
@@ -63,11 +63,11 @@
                             <table class="customers-table" id="customers-table" style="display:none;">
                                 <thead>
                                     <tr>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Phone</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
+                                        <th>{% trans "Name" %}</th>
+                                        <th>{% trans "Email" %}</th>
+                                        <th>{% trans "Phone" %}</th>
+                                        <th>{% trans "Status" %}</th>
+                                        <th>{% trans "Actions" %}</th>
                                     </tr>
                                 </thead>
                                 <tbody id="customers-tbody">
@@ -83,7 +83,7 @@
                         <div id="customers-empty" class="empty-state" style="display:none;">
                             <div class="no-customers">
                                 <i class="fas fa-users"></i>
-                                <p>No customers found.</p>
+                                <p>{% trans "No customers found." %}</p>
                             </div>
                         </div>
                     </div>
@@ -100,6 +100,15 @@
     <script src="{% static 'js/notifications.js' %}"></script>
 
     <script>
+        // Pass translations to JavaScript
+        window.customerTranslations = {
+            active: "{% trans 'Active' %}",
+            disabled: "{% trans 'Disabled' %}",
+            viewDetails: "{% trans 'View Details' %}",
+            failedToLoad: "{% trans 'Failed to load customers' %}",
+            newCustomer: "{% trans 'New Customer' %}"
+        };
+
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             showLoadingState();
@@ -141,7 +150,7 @@
                 });
             } catch (error) {
                 console.error('Error loading customers:', error);
-                showAlert('Failed to load customers', 'error');
+                showAlert(window.customerTranslations.failedToLoad, 'error');
                 hideLoadingState();
             }
         }
@@ -149,22 +158,20 @@
         function viewCustomer(customer) {
             if (customer) {
                 // Show customer details
-                alert(`Customer Details:\nName: ${customer.first_name} ${customer.last_name}\nEmail: ${customer.email}\nPhone: ${customer.phone || 'N/A'}\nStatus: ${customer.status === false || customer.status === 'disabled' ? 'Disabled' : 'Active'}`);
+                console.log('View customer:', customer);
             }
         }
 
-        function showAlert(message, type = 'success') {
+        function showAlert(message, type = 'info') {
             const alertContainer = document.getElementById('alert-container');
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type}`;
-            alertDiv.textContent = message;
-
-            alertContainer.innerHTML = '';
-            alertContainer.appendChild(alertDiv);
-
-            setTimeout(() => {
-                alertDiv.remove();
-            }, 5000);
+            if (alertContainer) {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${type}`;
+                alertDiv.textContent = message;
+                alertContainer.innerHTML = '';
+                alertContainer.appendChild(alertDiv);
+                setTimeout(() => alertDiv.remove(), 5000);
+            }
         }
     </script>
 </body>

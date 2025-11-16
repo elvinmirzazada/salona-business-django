@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Check Your Email - Salona</title>
+    <title>{% load i18n %}{% trans "Check Your Email - Salona" %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/auth.css' %}">
     <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
@@ -181,42 +181,39 @@
                 <i class="fas fa-envelope"></i>
             </div>
 
-            <h1 class="check-email-title">Check Your Email</h1>
+            <h1 class="check-email-title">{% trans "Check Your Email" %}</h1>
 
             <p class="check-email-message">
-                We've sent a verification link to<br>
+                {% trans "We've sent a verification link to" %}<br>
                 <span class="email-address">{{ email }}</span>
             </p>
 
             <div class="info-box">
-                <h3><i class="fas fa-info-circle"></i> Next Steps:</h3>
+                <h3><i class="fas fa-info-circle"></i> {% trans "Next Steps:" %}</h3>
                 <ul>
-                    <li>Check your email inbox for a message from Salona</li>
-                    <li>Click the verification link in the email</li>
-                    <li>Once verified, you can log in to your account</li>
-                    <li>If you don't see the email, check your spam folder</li>
+                    <li>{% trans "Check your email inbox for a message from Salona" %}</li>
+                    <li>{% trans "Click the verification link in the email" %}</li>
+                    <li>{% trans "Once verified, you can log in to your account" %}</li>
+                    <li>{% trans "If you don't see the email, check your spam folder" %}</li>
                 </ul>
             </div>
 
             <div class="check-email-actions">
                 <a href="{% url 'users:login' %}" class="btn btn-primary">
                     <i class="fas fa-sign-in-alt"></i>
-                    Go to Login
+                    {% trans "Back to Login" %}
+                </a>
+                <a href="{% url 'home' %}" class="btn btn-secondary">
+                    <i class="fas fa-home"></i>
+                    {% trans "Go to Home" %}
                 </a>
             </div>
 
             <div class="resend-link">
-                Didn't receive the email?
-                <a href="javascript:void(0)" id="resend-link">Resend verification email</a>
+                {% trans "Didn't receive the email?" %}
+                <a href="{% url 'users:signup' %}">{% trans "Resend verification email" %}</a>
             </div>
         </div>
     </div>
-
-    <script>
-        document.getElementById('resend-link').addEventListener('click', function() {
-            alert('Resend functionality coming soon! Please check your spam folder or contact support.');
-        });
-    </script>
 </body>
 </html>
-
