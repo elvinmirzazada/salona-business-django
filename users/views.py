@@ -230,6 +230,18 @@ class CheckEmailView(View):
         })
 
 
+class TermsOfServiceView(View):
+    """Display Terms of Service page"""
+    def get(self, request):
+        return render(request, 'users/terms_of_service.html')
+
+
+class PrivacyPolicyView(View):
+    """Display Privacy Policy page"""
+    def get(self, request):
+        return render(request, 'users/privacy_policy.html')
+
+
 class DashboardView(GeneralView):
         
     def get_user_time_offs(self, request):

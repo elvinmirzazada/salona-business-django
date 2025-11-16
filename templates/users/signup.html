@@ -92,7 +92,7 @@
                     <label class="checkbox-container">
                         <input type="checkbox" id="terms-agreement" required>
                         <span class="checkmark"></span>
-                        {% blocktrans %}I agree to the <a href="#" class="terms-link">Terms of Service</a> and <a href="#" class="terms-link">Privacy Policy</a>{% endblocktrans %}
+                        <span>{% trans "I agree to the" %} <a href="{% url 'users:terms_of_service' %}" class="terms-link">{% trans "Terms of Service" %}</a> {% trans "and" %} <a href="{% url 'users:privacy_policy' %}" class="terms-link">{% trans "Privacy Policy" %}</a></span>
                     </label>
                 </div>
 
