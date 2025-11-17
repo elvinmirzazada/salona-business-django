@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% load i18n %}Salona - {% trans "Accept Invitation" %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 3D Background Shapes -->
+    <div class="bg-shape bg-shape-1"></div>
+    <div class="bg-shape bg-shape-2"></div>
+    <div class="bg-shape bg-shape-3"></div>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <!-- Loading State -->
+            <div id="loading-state" style="display: none; text-align: center;">
+                <div class="spinner" style="margin: 2rem auto;"></div>
+                <p>{% trans "Processing your invitation..." %}</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="error-state" style="display: none;">
+                <div class="error-icon" style="text-align: center; margin-bottom: 1rem;">
+                    <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: #e53e3e;"></i>
+                </div>
+                <h2 id="error-title" class="auth-title">{% trans "Invitation Error" %}</h2>
+                <p id="error-message" class="auth-subtitle"></p>
+                <div style="margin-top: 2rem;">
+                    <a href="/" class="btn-primary" style="display: inline-block; text-decoration: none; padding: 0.75rem 1.5rem;">
+                        {% trans "Back to Home" %}
+                    </a>
+                </div>
+            </div>
+
+            <!-- Info State (Already Member) -->
+            <div id="info-state" style="display: none;">
+                <div class="info-icon" style="text-align: center; margin-bottom: 1rem;">
+                    <i class="fas fa-info-circle" style="font-size: 3rem; color: #3182ce;"></i>
+                </div>
+                <h2 id="info-title" class="auth-title">{% trans "Already a Member" %}</h2>
+                <p id="info-message" class="auth-subtitle"></p>
+                <div style="margin-top: 2rem;">
+                    <a href="/users/dashboard/" class="btn-primary" style="display: inline-block; text-decoration: none; padding: 0.75rem 1.5rem;">
+                        {% trans "Go to Dashboard" %}
+                    </a>
+                </div>
+            </div>
+
+            <!-- Success State -->
+            <div id="success-state" style="display: none;">
+                <div class="success-icon" style="text-align: center; margin-bottom: 1rem;">
+                    <i class="fas fa-check-circle" style="font-size: 3rem; color: #48bb78;"></i>
+                </div>
+                <h2 class="auth-title">{% trans "Invitation Accepted!" %}</h2>
+                <p class="auth-subtitle">{% trans "You have successfully accepted the invitation and joined the company." %}</p>
+                <div style="margin-top: 2rem;">
+                    <p style="text-align: center; color: #666;">{% trans "Redirecting to dashboard..." %}</p>
+                </div>
+            </div>
+
+            <!-- Signup Form State -->
+            <div id="signup-state" style="display: none;">
+                <h2 class="auth-title">{% trans "Join Team" %}</h2>
+                <p class="auth-subtitle">{% trans "Create your account to accept the invitation" %}</p>
+
+                <form id="signup-form" style="margin-top: 2rem;">
+                    <div id="signup-alert-container" style="margin-bottom: 1rem;"></div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="first_name">{% trans "First Name" %}</label>
+                        <input type="text" id="first_name" name="first_name" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="last_name">{% trans "Last Name" %}</label>
+                        <input type="text" id="last_name" name="last_name" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="phone">{% trans "Phone" %}</label>
+                        <input type="tel" id="phone" name="phone" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="password">{% trans "Password" %}</label>
+                        <input type="password" id="password" name="password" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="password_confirm">{% trans "Confirm Password" %}</label>
+                        <input type="password" id="password_confirm" name="password_confirm" class="form-input" required>
+                    </div>
+
+                    <button type="submit" class="btn-primary" style="width: 100%; margin-top: 1.5rem;">
+                        {% trans "Accept Invitation & Create Account" %}
+                    </button>
+
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <p class="auth-subtitle">
+                            {% trans "Already have an account?" %}
+                            <a href="/users/login/" style="color: #3182ce; text-decoration: none;">{% trans "Sign In" %}</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include JavaScript files -->
+    {% load static %}
+    <script src="{% static 'js/config.js' %}"></script>
+    <script src="{% static 'js/api-client.js' %}"></script>
+    <script src="{% static 'js/accept-invitation.js' %}"></script>
+
+    <script>
+        // Pass translations to JavaScript
+        window.invitationTranslations = {
+            processingInvitation: "{% trans 'Processing your invitation...' %}",
+            invitationExpired: "{% trans 'Invitation Expired' %}",
+            invitationExpiredMsg: "{% trans 'This invitation has expired. Please contact the company administrator for a new invitation.' %}",
+            alreadyMember: "{% trans 'Already a Member' %}",
+            alreadyMemberMsg: "{% trans 'You are already a member of this company. Redirecting to dashboard...' %}",
+            invalidToken: "{% trans 'Invalid Invitation' %}",
+            invalidTokenMsg: "{% trans 'The invitation token is invalid or missing. Please check the link and try again.' %}",
+            acceptanceError: "{% trans 'Acceptance Error' %}",
+            acceptanceErrorMsg: "{% trans 'Failed to accept the invitation. Please try again.' %}",
+            signupError: "{% trans 'Signup Error' %}",
+            passwordMismatch: "{% trans 'Passwords do not match' %}",
+            acceptanceSuccess: "{% trans 'Invitation Accepted!' %}",
+            redirecting: "{% trans 'Redirecting to dashboard...' %}",
+            fillRequiredFields: "{% trans 'Please fill in all required fields' %}",
+            acceptingInvitation: "{% trans 'Accepting invitation...' %}"
+        };
+    </script>
+</body>
+</html>
+

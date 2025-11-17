@@ -6,6 +6,7 @@
 class StaffManager {
     constructor() {
         this.staff = [];
+        this.invitations = [];
         this.currentEditingId = null;
         this.currentDeletingId = null;
         this.translations = window.staffTranslations || {};
@@ -18,6 +19,7 @@ class StaffManager {
         try {
             this.setupEventListeners();
             await this.loadStaff();
+            await this.loadInvitations();
         } catch (error) {
             console.error('Failed to initialize staff manager:', error);
             this.hideLoading();
@@ -47,6 +49,27 @@ class StaffManager {
             console.error('Failed to load staff:', error);
             this.hideLoading();
             this.showError('Failed to load staff data');
+        }
+    }
+
+    /**
+     * Load invitations data from API
+     */
+    async loadInvitations() {
+        try {
+            const response = await window.api.getInvitations();
+
+            if (response && response.data) {
+                this.invitations = response.data;
+            } else {
+                this.invitations = [];
+            }
+
+            this.renderInvitationsTable();
+
+        } catch (error) {
+            console.error('Failed to load invitations:', error);
+            this.showError('Failed to load invitations data');
         }
     }
 
@@ -124,6 +147,58 @@ class StaffManager {
     }
 
     /**
+     * Render invitations table
+     */
+    renderInvitationsTable() {
+        const tbody = document.getElementById('invitations-tbody');
+        const tableContainer = document.getElementById('invitations-table-container');
+        const emptyState = document.getElementById('invitations-empty');
+
+        if (!tbody) return;
+
+        // Check if we have invitations
+        if (!this.invitations || this.invitations.length === 0) {
+            if (tableContainer) tableContainer.style.display = 'none';
+            if (emptyState) emptyState.style.display = 'block';
+            return;
+        }
+
+        // Show table, hide empty state
+        if (tableContainer) tableContainer.style.display = 'block';
+        if (emptyState) emptyState.style.display = 'none';
+
+        // Render invitation rows
+        tbody.innerHTML = this.invitations.map(invitation => {
+            const statusClass = `status-${invitation.status || 'pending'}`;
+            const statusText = this.translateInvitationStatus(invitation.status || 'pending');
+            const createdDate = new Date(invitation.created_at).toLocaleDateString();
+
+            return `
+                <tr data-invitation-id="${invitation.id}">
+                    <td>${invitation.email || '-'}</td>
+                    <td>${this.translateRole(invitation.role || 'staff')}</td>
+                    <td>${createdDate}</td>
+                    <td>
+                        <span class="${statusClass}">
+                            ${statusText}
+                        </span>
+                    </td>
+                    <td class="actions-cell">
+                        ${window.userData && (window.userData.role === 'owner' || window.userData.role === 'admin') ? `
+                            <button class="action-btn resend-btn" onclick="staffManager.resendInvitation('${invitation.token}')" title="${this.translations.resend || 'Resend'}" style="color: #3182ce;">
+                                <i class="fas fa-redo"></i>
+                            </button>
+                            <button class="action-btn delete-btn" onclick="staffManager.deleteInvitation('${invitation.id}')" title="${this.translations.delete}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        ` : ''}
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    /**
      * Translate role name
      */
     translateRole(role) {
@@ -136,6 +211,19 @@ class StaffManager {
      */
     capitalizeRole(role) {
         return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+    }
+
+    /**
+     * Translate invitation status
+     */
+    translateInvitationStatus(status) {
+        const statusMap = {
+            'pending': this.translations.pending || 'Pending',
+            'accepted': this.translations.accepted || 'Accepted',
+            'declined': this.translations.declined || 'Declined',
+            'expired': this.translations.expired || 'Expired'
+        };
+        return statusMap[status.toLowerCase()] || this.capitalizeRole(status);
     }
 
     /**
@@ -185,12 +273,12 @@ class StaffManager {
 
         // Reset form
         if (form) form.reset();
-        if (modalTitle) modalTitle.textContent = this.translations.addStaffMember || 'Add Staff Member';
-        if (submitBtn) submitBtn.textContent = this.translations.addStaffMember || 'Add Staff Member';
+        if (modalTitle) modalTitle.textContent = this.translations.inviteTeamMember || 'Invite team member';
+        if (submitBtn) submitBtn.textContent = this.translations.inviteTeamMember || 'Invite team member';
 
-        // Set default values
-        const isActiveCheckbox = document.getElementById('is_active');
-        if (isActiveCheckbox) isActiveCheckbox.checked = true;
+        // Set default role to 'staff'
+        const roleSelect = document.getElementById('role');
+        if (roleSelect) roleSelect.value = 'staff';
 
         this.currentEditingId = null;
         modal.style.display = 'block';
@@ -213,12 +301,8 @@ class StaffManager {
         if (!modal) return;
 
         // Populate form
-        document.getElementById('first_name').value = staff.first_name || '';
-        document.getElementById('last_name').value = staff.last_name || '';
-        document.getElementById('email').value = staff.email || '';
-        document.getElementById('phone').value = staff.phone || '';
+        document.getElementById('email').value = staff.user.email || '';
         document.getElementById('role').value = staff.role || 'staff';
-        document.getElementById('is_active').checked = staff.status !== false;
 
         if (modalTitle) modalTitle.textContent = this.translations.editStaffMember || 'Edit Staff Member';
         if (submitBtn) submitBtn.textContent = this.translations.updateStaffMember || 'Update Staff Member';
@@ -239,7 +323,7 @@ class StaffManager {
     }
 
     /**
-     * Save staff (create or update)
+     * Save staff invitation
      */
     async saveStaff() {
         try {
@@ -249,31 +333,41 @@ class StaffManager {
                 submitBtn.textContent = this.translations.saving || 'Saving...';
             }
 
-            const formData = {
-                first_name: document.getElementById('first_name').value.trim(),
-                last_name: document.getElementById('last_name').value.trim(),
-                email: document.getElementById('email').value.trim(),
-                phone: document.getElementById('phone').value.trim(),
-                role: document.getElementById('role').value,
-                is_active: document.getElementById('is_active').checked
-            };
+            // Get form elements with null checks
+            const emailInput = document.getElementById('email');
+            const roleSelect = document.getElementById('role');
 
-            // Validate required fields
-            if (!formData.first_name || !formData.last_name || !formData.email) {
-                this.showError(this.translations.fillRequiredFields || 'Please fill in all required fields');
+            if (!emailInput || !roleSelect) {
+                this.showError('Form elements not found. Please refresh the page and try again.');
                 if (submitBtn) {
                     submitBtn.disabled = false;
-                    submitBtn.textContent = this.currentEditingId ?
-                        (this.translations.updateStaffMember || 'Update Staff Member') :
-                        (this.translations.addStaffMember || 'Add Staff Member');
+                    submitBtn.textContent = this.translations.inviteTeamMember || 'Invite team member';
                 }
                 return;
             }
 
-            let response;
+            const formData = {
+                email: emailInput.value.trim(),
+                role: roleSelect.value
+            };
+
+            // Validate required fields
+            if (!formData.email) {
+                this.showError(this.translations.fillRequiredFields || 'Please fill in all required fields');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = this.translations.inviteTeamMember || 'Invite team member';
+                }
+                return;
+            }
+
+            // Only handle invitations (no updates)
             if (this.currentEditingId) {
-                // Update existing staff
-                response = await window.api.updateStaff(this.currentEditingId, formData);
+                // Update existing staff role
+                const updateData = {
+                    role: formData.role
+                };
+                const response = await window.api.updateStaff(this.currentEditingId, updateData);
 
                 if (response && response.success !== false) {
                     this.showSuccess(this.translations.staffUpdatedSuccess || 'Staff member updated successfully');
@@ -281,26 +375,28 @@ class StaffManager {
                     // Update local data
                     const index = this.staff.findIndex(s => s.id === this.currentEditingId);
                     if (index !== -1) {
-                        this.staff[index] = { ...this.staff[index], ...formData };
+                        this.staff[index].role = formData.role;
                     }
                 } else {
                     throw new Error(response?.message || (this.translations.staffUpdateFailed || 'Failed to update staff member'));
                 }
             } else {
-                // Create new staff
-                response = await window.api.createStaff(formData);
+                // Send invitation to new member
+                const response = await window.api.sendInvitation(formData);
 
-                if (response && response.data) {
-                    this.showSuccess(this.translations.staffAddedSuccess || 'Staff member added successfully');
+                if (response && response.success !== false) {
+                    this.showSuccess(this.translations.invitationSentSuccess || 'Invitation sent successfully');
 
-                    // Add to local data
-                    this.staff.push(response.data);
-                } else if (response && response.success !== false) {
-                    this.showSuccess(this.translations.staffAddedSuccess || 'Staff member added successfully');
-                    // Reload to get fresh data
+                    // Add to local data if returned
+                    if (response.data) {
+                        // Optionally add to pending invitations list
+                        console.log('Invitation created:', response.data);
+                    }
+
+                    // Reload staff to refresh list
                     await this.loadStaff();
                 } else {
-                    throw new Error(response?.message || (this.translations.staffAddFailed || 'Failed to create staff member'));
+                    throw new Error(response?.message || (this.translations.invitationFailed || 'Failed to send invitation'));
                 }
             }
 
@@ -316,7 +412,7 @@ class StaffManager {
                 submitBtn.disabled = false;
                 submitBtn.textContent = this.currentEditingId ?
                     (this.translations.updateStaffMember || 'Update Staff Member') :
-                    (this.translations.addStaffMember || 'Add Staff Member');
+                    (this.translations.inviteTeamMember || 'Invite team member');
             }
         }
     }
@@ -371,6 +467,53 @@ class StaffManager {
         } catch (error) {
             console.error('Failed to delete staff:', error);
             this.showError(error.message || (this.translations.staffDeleteFailed || 'Failed to delete staff member'));
+        }
+    }
+
+    /**
+     * Delete invitation
+     */
+    async deleteInvitation(invitationId) {
+        if (!confirm(this.translations.confirmDeleteInvitation || 'Are you sure you want to delete this invitation?')) {
+            return;
+        }
+
+        try {
+            const response = await window.api.deleteInvitation(invitationId);
+
+            if (response && response.success !== false) {
+                this.showSuccess(this.translations.invitationDeletedSuccess || 'Invitation deleted successfully');
+
+                // Remove from local data
+                this.invitations = this.invitations.filter(inv => inv.id !== invitationId);
+
+                this.renderInvitationsTable();
+            } else {
+                throw new Error(response?.message || (this.translations.invitationDeleteFailed || 'Failed to delete invitation'));
+            }
+
+        } catch (error) {
+            console.error('Failed to delete invitation:', error);
+            this.showError(error.message || (this.translations.invitationDeleteFailed || 'Failed to delete invitation'));
+        }
+    }
+
+    /**
+     * Resend invitation
+     */
+    async resendInvitation(invitationToken) {
+        try {
+            const response = await window.api.resendInvitation(invitationToken);
+
+            if (response && response.success !== false) {
+                this.showSuccess(this.translations.invitationResentSuccess || 'Invitation resent successfully');
+            } else {
+                throw new Error(response?.message || (this.translations.invitationResendFailed || 'Failed to resend invitation'));
+            }
+
+        } catch (error) {
+            console.error('Failed to resend invitation:', error);
+            this.showError(error.message || (this.translations.invitationResendFailed || 'Failed to resend invitation'));
         }
     }
 

@@ -98,6 +98,49 @@ class APIClient {
         });
     }
 
+    async sendInvitation(invitationData) {
+        return this.request('/users/api/v1/companies/invitations', {
+            method: 'POST',
+            body: JSON.stringify(invitationData)
+        });
+    }
+
+    async getInvitations() {
+        return this.request('/users/api/v1/companies/all/invitations');
+    }
+
+    async deleteInvitation(invitationId) {
+        return this.request(`/users/api/v1/companies/invitations/${invitationId}`, {
+            method: 'DELETE'
+        });
+    }
+
+    async resendInvitation(invitationToken) {
+        return this.request(`/users/api/v1/companies/invitations/${invitationToken}/resend`, {
+            method: 'POST'
+        });
+    }
+
+    async checkInvitation(invitationToken) {
+        return this.request(`/users/api/v1/companies/invitations/${invitationToken}/check-and-join`, {
+            method: 'POST'
+        });
+    }
+
+    async acceptInvitation(invitationData) {
+        return this.request('/users/api/v1/companies/invitations/accept', {
+            method: 'POST',
+            body: JSON.stringify(invitationData)
+        });
+    }
+
+    async acceptInvitationWithSignup(invitationData) {
+        return this.request('/users/api/v1/companies/invitations/accept', {
+            method: 'POST',
+            body: JSON.stringify(invitationData)
+        });
+    }
+
     async getNotifications(params = {}) {
         const queryString = new URLSearchParams(params).toString();
         const url = `/users/api/v1/notifications${queryString ? '?' + queryString : ''}`;

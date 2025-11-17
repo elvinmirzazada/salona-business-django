@@ -36,6 +36,9 @@
 
             <form id="signup-form" class="auth-form">
                 {% csrf_token %}
+                <!-- Hidden field to store invitation token -->
+                <input type="hidden" id="invitation-token" name="invitation_token" value="">
+
                 <div class="form-row">
                     <div class="form-group">
                         <label for="first-name">
@@ -116,7 +119,7 @@
                 <span>{% trans "or continue with" %}</span>
             </div>
 
-            <div class="social-auth">
+            <div class="social-auth" id="social-auth-container">
                 <button class="social-btn google-btn" type="button">
                     <i class="fab fa-google"></i>
                     {% trans "Google" %}

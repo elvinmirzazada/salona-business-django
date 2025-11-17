@@ -114,6 +114,39 @@ const Auth = (() => {
         const signupForm = document.getElementById('signup-form');
         if (!signupForm) return;
 
+        // Extract and set invitation token from URL if present
+        const urlParams = new URLSearchParams(window.location.search);
+        const invitationToken = urlParams.get('invitation_token');
+        const emailParam = urlParams.get('email');
+
+        if (invitationToken) {
+            const tokenInput = document.getElementById('invitation-token');
+            if (tokenInput) {
+                tokenInput.value = invitationToken;
+            }
+        }
+
+        // Extract and set email from URL if present
+        if (emailParam) {
+            const emailInput = document.getElementById('email');
+            if (emailInput) {
+                emailInput.value = decodeURIComponent(emailParam);
+                emailInput.disabled = true; // Disable email field when pre-filled from invitation
+            }
+        }
+
+        // Hide social auth and divider if invitation token is present
+        if (invitationToken) {
+            const socialAuthContainer = document.getElementById('social-auth-container');
+            const authDivider = document.querySelector('.auth-divider');
+            if (socialAuthContainer) {
+                socialAuthContainer.style.display = 'none';
+            }
+            if (authDivider) {
+                authDivider.style.display = 'none';
+            }
+        }
+
         signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -141,6 +174,7 @@ const Auth = (() => {
             const phone = document.getElementById('phone').value.trim();
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm-password').value;
+            const invitationTokenValue = document.getElementById('invitation-token').value;
 
             // Function to hide spinner and remove loading class
             const hideSpinner = () => {
@@ -178,6 +212,20 @@ const Auth = (() => {
                 // Get CSRF token from the form
                 const csrfToken = signupForm.querySelector('input[name="csrfmiddlewaretoken"]').value;
 
+                // Prepare signup payload
+                const signupPayload = {
+                    first_name: firstName,
+                    last_name: lastName,
+                    email: email,
+                    phone: phone,
+                    password: password
+                };
+
+                // Add invitation token if present
+                if (invitationTokenValue) {
+                    signupPayload.token = invitationTokenValue;
+                }
+
                 // Submit form data to API with credentials for HTTP-only cookies
                 const response = await fetch(`${API_BASE_URL}/api/v1/users/auth/signup`, {
                     method: 'POST',
@@ -186,13 +234,7 @@ const Auth = (() => {
                         'X-CSRFToken': csrfToken
                     },
                     credentials: 'include', // Include HTTP-only cookies
-                    body: JSON.stringify({
-                        first_name: firstName,
-                        last_name: lastName,
-                        email: email,
-                        phone: phone,
-                        password: password
-                    })
+                    body: JSON.stringify(signupPayload)
                 });
 
                 const data = await response.json();
@@ -212,9 +254,43 @@ const Auth = (() => {
                     return;
                 }
 
-                // Registration successful - redirect to check email page
-                // Get the email that was used for registration
-                window.location.href = `/users/check-email/?email=${encodeURIComponent(email)}`;
+                // If invitation token exists, handle acceptance workflow
+                if (invitationTokenValue) {
+                    try {
+                        // Accept the invitation automatically with full user details
+                        const acceptResponse = await fetch(`${API_BASE_URL}/api/v1/companies/invitations/accept`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrfToken
+                            },
+                            credentials: 'include',
+                            body: JSON.stringify({
+                                token: invitationTokenValue,
+                                first_name: firstName,
+                                last_name: lastName,
+                                phone: phone,
+                                password: password
+                            })
+                        });
+
+                        if (acceptResponse.ok) {
+                            // Invitation accepted successfully - redirect to dashboard
+                            window.location.href = '/users/dashboard/';
+                        } else {
+                            // Invitation acceptance failed but signup succeeded
+                            // Redirect to check email page
+                            window.location.href = `/users/check-email/?email=${encodeURIComponent(email)}`;
+                        }
+                    } catch (acceptError) {
+                        console.error('Failed to accept invitation after signup:', acceptError);
+                        // Still redirect to check email page even if acceptance fails
+                        window.location.href = `/users/check-email/?email=${encodeURIComponent(email)}`;
+                    }
+                } else {
+                    // No invitation token - redirect to check email page normally
+                    window.location.href = `/users/check-email/?email=${encodeURIComponent(email)}`;
+                }
 
             } catch (error) {
                 // Hide spinner in case of error

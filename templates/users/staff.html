@@ -56,7 +56,7 @@
                                 {% if user_data.role == 'owner' or user_data.role == 'admin' %}
                                     <button class="add-staff-btn" onclick="openAddModal()">
                                         <i class="fas fa-plus-circle"></i>
-                                        <span>{% trans "Add New Staff" %}</span>
+                                        <span>{% trans "Invite team member" %}</span>
                                     </button>
                                 {% endif %}
                             </div>
@@ -103,6 +103,49 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Invitations Section -->
+                <div class="staff-container" style="margin-top: 3rem;">
+                    <div class="card-header staff-header">
+                        <div class="header-content">
+                            <div class="header-text">
+                                <h2 class="staff-title">
+                                    <i class="fas fa-envelope staff-icon"></i>
+                                    {% trans "Pending Invitations" %}
+                                </h2>
+                                <p class="staff-subtitle">{% trans "Manage pending team member invitations" %}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="invitations-table-container" id="invitations-table-container">
+                            <div class="staff-table">
+                                <table id="invitations-table">
+                                    <thead>
+                                        <tr>
+                                            <th>{% trans "Email" %}</th>
+                                            <th>{% trans "Role" %}</th>
+                                            <th>{% trans "Sent Date" %}</th>
+                                            <th>{% trans "Status" %}</th>
+                                            <th>{% trans "Actions" %}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="invitations-tbody">
+                                        <!-- Invitation rows will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div id="invitations-empty" class="empty-state" style="display:none;">
+                            <div class="no-staff">
+                                <i class="fas fa-envelope-open"></i>
+                                <p>{% trans "No pending invitations. All team members have been accepted or invitations have expired." %}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -111,44 +154,26 @@
     <div id="staff-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title" id="modal-title">{% trans "Add Staff Member" %}</h3>
+                <h3 class="modal-title" id="modal-title">{% trans "Invite team member" %}</h3>
                 <span class="close" onclick="closeModal()">&times;</span>
             </div>
             <div class="modal-body">
                 <form id="staff-form">
                     <div class="form-group">
-                        <label class="form-label" for="first_name">{% trans "First Name" %}</label>
-                        <input type="text" id="first_name" name="first_name" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="last_name">{% trans "Last Name" %}</label>
-                        <input type="text" id="last_name" name="last_name" class="form-input" required>
-                    </div>
-                    <div class="form-group">
                         <label class="form-label" for="email">{% trans "Email" %}</label>
                         <input type="email" id="email" name="email" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="phone">{% trans "Phone" %}</label>
-                        <input type="tel" id="phone" name="phone" class="form-input">
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="role">{% trans "Role" %}</label>
                         <select id="role" name="role" class="form-select">
                             <option value="staff">{% trans "Staff" %}</option>
-                            <option value="manager">{% trans "Manager" %}</option>
+                            <option value="owner">{% trans "Owner" %}</option>
                             <option value="admin">{% trans "Admin" %}</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">
-                            <input type="checkbox" id="is_active" name="is_active" class="form-checkbox" checked>
-                            {% trans "Active" %}
-                        </label>
-                    </div>
                     <div class="modal-actions">
                         <button type="button" class="btn-secondary" onclick="closeModal()">{% trans "Cancel" %}</button>
-                        <button type="submit" class="btn-primary" id="submit-btn">{% trans "Add Staff Member" %}</button>
+                        <button type="submit" class="btn-primary" id="submit-btn">{% trans "Invite team member" %}</button>
                     </div>
                 </form>
             </div>
@@ -189,20 +214,33 @@
             inactive: "{% trans 'Inactive' %}",
             edit: "{% trans 'Edit' %}",
             delete: "{% trans 'Delete' %}",
+            resend: "{% trans 'Resend' %}",
             addStaffMember: "{% trans 'Add Staff Member' %}",
             editStaffMember: "{% trans 'Edit Staff Member' %}",
             updateStaffMember: "{% trans 'Update Staff Member' %}",
+            inviteTeamMember: "{% trans 'Invite team member' %}",
             saving: "{% trans 'Saving...' %}",
             fillRequiredFields: "{% trans 'Please fill in all required fields' %}",
             staffUpdatedSuccess: "{% trans 'Staff member updated successfully' %}",
             staffUpdateFailed: "{% trans 'Failed to update staff member' %}",
             staffAddedSuccess: "{% trans 'Staff member added successfully' %}",
             staffAddFailed: "{% trans 'Failed to create staff member' %}",
+            invitationSentSuccess: "{% trans 'Invitation sent successfully' %}",
+            invitationFailed: "{% trans 'Failed to send invitation' %}",
+            invitationResentSuccess: "{% trans 'Invitation resent successfully' %}",
+            invitationResendFailed: "{% trans 'Failed to resend invitation' %}",
             staffDeletedSuccess: "{% trans 'Staff member deleted successfully' %}",
             staffDeleteFailed: "{% trans 'Failed to delete staff member' %}",
             staffNotFound: "{% trans 'Staff member not found' %}",
             failedToSave: "{% trans 'Failed to save staff member' %}",
             selectStaffMember: "{% trans 'Select a staff member' %}",
+            pending: "{% trans 'Pending' %}",
+            accepted: "{% trans 'Accepted' %}",
+            declined: "{% trans 'Declined' %}",
+            expired: "{% trans 'Expired' %}",
+            confirmDeleteInvitation: "{% trans 'Are you sure you want to delete this invitation?' %}",
+            invitationDeletedSuccess: "{% trans 'Invitation deleted successfully' %}",
+            invitationDeleteFailed: "{% trans 'Failed to delete invitation' %}",
             staff: "{% trans 'Staff' %}",
             manager: "{% trans 'Manager' %}",
             admin: "{% trans 'Admin' %}",

@@ -8,6 +8,7 @@ urlpatterns = [
     path('logout/', views.LogoutView.as_view(), name='logout'),
     path('signup/', views.SignupView.as_view(), name='signup'),
     path('check-email/', views.CheckEmailView.as_view(), name='check_email'),
+    path('accept-invitation/', views.AcceptInvitationView.as_view(), name='accept_invitation'),
     path('terms-of-service/', views.TermsOfServiceView.as_view(), name='terms_of_service'),
     path('privacy-policy/', views.PrivacyPolicyView.as_view(), name='privacy_policy'),
     path('dashboard/', views.DashboardView.as_view(), name='dashboard'),

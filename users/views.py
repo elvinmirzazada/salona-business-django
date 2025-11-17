@@ -1054,3 +1054,12 @@ class CloseTabView(View):
             'message': message,
             'status': status
         })
+
+
+class AcceptInvitationView(View):
+    """View for accepting invitation links"""
+
+    def get(self, request):
+        """Render the accept invitation page"""
+        return render(request, 'users/accept_invitation.html')
+
