@@ -65,6 +65,18 @@
                         {% endfor %}
                     {% endif %}
                 </select>
+
+                <div class="view-mode-selector">
+                    <label class="filter-label">{% trans "View:" %}</label>
+                    <div class="view-mode-buttons">
+                        <button type="button" id="view-weekly" class="view-mode-btn active" data-mode="weekly">
+                            <i class="fas fa-calendar-alt"></i> {% trans "Weekly" %}
+                        </button>
+                        <button type="button" id="view-daily" class="view-mode-btn" data-mode="daily">
+                            <i class="fas fa-calendar-day"></i> {% trans "Daily" %}
+                        </button>
+                    </div>
+                </div>
             </div>
 
                   <!-- Calendar Grid -->

@@ -39,6 +39,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Initialize the calendar
                 await Calendar.init();
 
+                // Setup view mode selector
+                setupViewModeSelector();
+
             }
 
             // Ensure NotificationManager updates icon after everything is loaded
@@ -80,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (hasCompany) {
             // Show calendar elements
             calendarControls.style.display = 'flex';
-            filterSection.style.display = 'block';
+            filterSection.style.display = 'flex';
             calendarContainer.style.display = 'block';
             // Hide company creation button
             if (createCompanyContainer) {
@@ -238,6 +241,98 @@ document.addEventListener('DOMContentLoaded', function() {
                 notification.remove();
             }
         }, 5000);
+    };
+
+    // Setup view mode selector
+    const setupViewModeSelector = () => {
+        const weeklyBtn = document.getElementById('view-weekly');
+        const dailyBtn = document.getElementById('view-daily');
+
+        if (!weeklyBtn || !dailyBtn) {
+            console.error('❌ View mode buttons NOT found in DOM');
+            return;
+        }
+
+        console.log('✓ View mode buttons found, setting up event listeners');
+
+        // Load saved view mode from localStorage or default to weekly
+        const savedViewMode = localStorage.getItem('calendarViewMode') || 'weekly';
+        console.log('📦 Loaded saved view mode from cache:', savedViewMode);
+
+        // Apply the saved view mode on page load
+        applyViewMode(savedViewMode, weeklyBtn, dailyBtn);
+
+        // Weekly button click handler
+        weeklyBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            const selectedMode = 'weekly';
+            console.log('🔄 View mode changed to:', selectedMode);
+
+            try {
+                // Save to localStorage
+                localStorage.setItem('calendarViewMode', selectedMode);
+                console.log('💾 View mode saved to cache:', selectedMode);
+
+                // Update button states
+                weeklyBtn.classList.add('active');
+                dailyBtn.classList.remove('active');
+
+                // Update the calendar with the new view mode
+                Calendar.setViewMode(selectedMode);
+                console.log('✓ Calendar view mode set to:', selectedMode);
+
+                // Re-render the calendar
+                console.log('🔄 Re-rendering calendar...');
+                await Calendar.renderCalendar(Calendar.getCurrentDate());
+                console.log('✓ Calendar re-rendered successfully');
+            } catch (error) {
+                console.error('❌ Error changing view mode:', error);
+            }
+        });
+
+        // Daily button click handler
+        dailyBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            const selectedMode = 'daily';
+            console.log('🔄 View mode changed to:', selectedMode);
+
+            try {
+                // Save to localStorage
+                localStorage.setItem('calendarViewMode', selectedMode);
+                console.log('💾 View mode saved to cache:', selectedMode);
+
+                // Update button states
+                dailyBtn.classList.add('active');
+                weeklyBtn.classList.remove('active');
+
+                // Update the calendar with the new view mode
+                Calendar.setViewMode(selectedMode);
+                console.log('✓ Calendar view mode set to:', selectedMode);
+
+                // Re-render the calendar
+                console.log('🔄 Re-rendering calendar...');
+                await Calendar.renderCalendar(Calendar.getCurrentDate());
+                console.log('✓ Calendar re-rendered successfully');
+            } catch (error) {
+                console.error('❌ Error changing view mode:', error);
+            }
+        });
+
+        console.log('✓ View mode button event listeners attached');
+    };
+
+    // Helper function to apply view mode (used on page load and when switching modes)
+    const applyViewMode = (mode, weeklyBtn, dailyBtn) => {
+        if (mode === 'daily') {
+            dailyBtn.classList.add('active');
+            weeklyBtn.classList.remove('active');
+            Calendar.setViewMode('daily');
+        } else {
+            weeklyBtn.classList.add('active');
+            dailyBtn.classList.remove('active');
+            Calendar.setViewMode('weekly');
+        }
+        console.log('✓ View mode applied:', mode);
     };
 
     // Initialize dashboard

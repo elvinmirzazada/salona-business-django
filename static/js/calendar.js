@@ -2,6 +2,7 @@
 const Calendar = (() => {
     let currentDate = new Date();
     let selectedStaffIds = null;
+    let viewMode = localStorage.getItem('calendarViewMode') || 'weekly'; // 'weekly' or 'daily'
 
     // Calendar display configuration
     const calendarConfig = {
@@ -10,34 +11,56 @@ const Calendar = (() => {
         intervalMinutes: 15  // 15-minute intervals
     };
 
-    // Calculate start date (3 days before current date)
-    const getStartDate = (date) => {
+    // Calculate start date based on view mode
+    const getStartDate = (date, mode = 'weekly') => {
         const startDate = new Date(date);
-        startDate.setDate(date.getDate() - 3);
+        if (mode === 'weekly') {
+            startDate.setDate(date.getDate() - 3);
+        } else if (mode === 'daily') {
+            // For daily view, start date is the current date
+            startDate.setDate(date.getDate());
+        }
         return startDate;
     };
 
-    // Update the calendar header to show current week range
-    const updateCalendarHeader = (startDate) => {
-        const endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 6);
+    // Update the calendar header to show current week or day range
+    const updateCalendarHeader = (startDate, mode = 'weekly') => {
+        const headerElement = document.getElementById('current-week');
 
-        const startFormatted = startDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
-        const endFormatted = endDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        if (mode === 'weekly') {
+            const endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + 6);
 
-        document.getElementById('current-week').textContent = `${startFormatted} - ${endFormatted}`;
+            const startFormatted = startDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+            const endFormatted = endDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+            headerElement.textContent = `${startFormatted} - ${endFormatted}`;
+        } else if (mode === 'daily') {
+            const dayFormatted = startDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+            headerElement.textContent = dayFormatted;
+        }
     };
 
     // Render calendar with days and time slots
     const renderCalendar = async (date, forceRefresh = false) => {
-        const startDate = getStartDate(date);
-        updateCalendarHeader(startDate);
+        const startDate = getStartDate(date, viewMode);
+        updateCalendarHeader(startDate, viewMode);
 
-        // Calculate the end date (start date + 6 days = full week)
+        // Calculate the end date based on view mode
         const endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 6);
+        if (viewMode === 'weekly') {
+            endDate.setDate(startDate.getDate() + 6);
+        } else {
+            endDate.setDate(startDate.getDate());
+        }
 
         const calendarGrid = document.querySelector('.calendar-grid');
+
+        // Add view mode class to the grid BEFORE clearing innerHTML
+        calendarGrid.classList.remove('daily-view', 'weekly-view');
+        calendarGrid.classList.add(viewMode === 'daily' ? 'daily-view' : 'weekly-view');
+
+        // Now clear the grid content
         calendarGrid.innerHTML = '';
 
         // Show loading spinner
@@ -108,11 +131,14 @@ const Calendar = (() => {
 
             calendarGrid.appendChild(timeColumn);
 
+            // Determine number of day columns based on view mode
+            const numDaysToShow = viewMode === 'daily' ? 1 : 7;
+
             // Create day columns
             const today = new Date(date);
 
-            // Generate 7 day columns (3 before today, today, 3 after today)
-            for (let i = 0; i < 7; i++) {
+            // Generate day columns
+            for (let i = 0; i < numDaysToShow; i++) {
                 const currentDateInLoop = new Date(startDate);
                 currentDateInLoop.setDate(startDate.getDate() + i);
                 const isToday = currentDateInLoop.toDateString() === (new Date()).toDateString();
@@ -332,15 +358,23 @@ const Calendar = (() => {
 
     // Setup calendar navigation buttons
     const setupNavigation = () => {
-        // Previous week button
+        // Previous button
         document.getElementById('prev-week')?.addEventListener('click', async function() {
-            currentDate.setDate(currentDate.getDate() - 7);
+            if (viewMode === 'weekly') {
+                currentDate.setDate(currentDate.getDate() - 7);
+            } else if (viewMode === 'daily') {
+                currentDate.setDate(currentDate.getDate() - 1);
+            }
             await renderCalendar(currentDate);
         });
 
-        // Next week button
+        // Next button
         document.getElementById('next-week')?.addEventListener('click', async function() {
-            currentDate.setDate(currentDate.getDate() + 7);
+            if (viewMode === 'weekly') {
+                currentDate.setDate(currentDate.getDate() + 7);
+            } else if (viewMode === 'daily') {
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
             await renderCalendar(currentDate);
         });
     };
@@ -350,6 +384,12 @@ const Calendar = (() => {
         renderCalendar,
         getConfig: () => calendarConfig,
         getCurrentDate: () => currentDate,
+        setViewMode: (mode) => {
+            viewMode = mode;
+            // Reset to today when changing view mode
+            currentDate = new Date();
+        },
+        getViewMode: () => viewMode,
         refreshCalendar: async (options = {}) => {
             if (options.selectedStaffIds !== undefined) {
                 selectedStaffIds = options.selectedStaffIds;
