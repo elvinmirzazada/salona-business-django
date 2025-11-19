@@ -228,8 +228,9 @@ class GoogleAuthCallbackView(GeneralView):
         code = request.GET.get('code')
         state = request.GET.get('state')
         error = request.GET.get('error')
-
-        # If there's an error from Google, redirect to login with error message
+        stored_state = request.COOKIES.get("google_oauth_state")
+        print(f'Stored state: {stored_state}, Received state: {state}')
+        # If there's an error from Google, redirect to log in with error message
         if error:
             return redirect(f"/users/login/?error={error}")
 
@@ -248,6 +249,7 @@ class GoogleAuthCallbackView(GeneralView):
                 api_url,
                 params=query_params,
                 headers=self.get_header(),
+                cookies=request.COOKIES,
                 timeout=30,
                 allow_redirects=False
             )
@@ -277,7 +279,7 @@ class GoogleAuthCallbackView(GeneralView):
                     is_secure = not settings.DEBUG
 
                     # Set HTTP-only cookies for authentication
-                    # Use 'Lax' samesite for OAuth flow to work properly with external redirects
+                    # Use 'Lax' same site for OAuth flow to work properly with external redirects
                     redirect_response.set_cookie(
                         'access_token',
                         access_token,
