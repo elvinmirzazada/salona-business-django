@@ -228,7 +228,7 @@ class GoogleAuthCallbackView(GeneralView):
         code = request.GET.get('code')
         state = request.GET.get('state')
         error = request.GET.get('error')
-        stored_state = request.cookies.get("google_oauth_state")
+        stored_state = request.COOKIES.get("google_oauth_state")
         print(f'Received state: {state}, Stored state: {stored_state}')
         # If there's an error from Google, redirect to login with error message
         if error:
@@ -249,7 +249,7 @@ class GoogleAuthCallbackView(GeneralView):
                 api_url,
                 params=query_params,
                 headers=self.get_header(),
-                cookies=request.cookies,
+                cookies=request.COOKIES,
                 timeout=30,
                 allow_redirects=False
             )
