@@ -255,11 +255,12 @@ class GoogleAuthCallbackView(GeneralView):
             # If successful, we should get cookies from the API
             if response.status_code == 200:
                 data = response.json()
-
+                print(data)
                 # Check if we have the access token in cookies
                 access_token = response.cookies.get('access_token')
                 refresh_token = response.cookies.get('refresh_token')
-
+                print(access_token)
+                print(refresh_token)
                 if access_token:
                     # Temporarily set cookies in the request to use get_current_user
                     request.COOKIES['access_token'] = access_token
