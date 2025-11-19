@@ -7,6 +7,7 @@ urlpatterns = [
     path('login/', views.LoginView.as_view(), name='login'),
     path('logout/', views.LogoutView.as_view(), name='logout'),
     path('signup/', views.SignupView.as_view(), name='signup'),
+    path('auth/google/callback/', views.GoogleAuthCallbackView.as_view(), name='google_callback'),
     path('check-email/', views.CheckEmailView.as_view(), name='check_email'),
     path('accept-invitation/', views.AcceptInvitationView.as_view(), name='accept_invitation'),
     path('terms-of-service/', views.TermsOfServiceView.as_view(), name='terms_of_service'),

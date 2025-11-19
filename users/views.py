@@ -221,6 +221,98 @@ class SignupView(View):
         return render(request, 'users/signup.html')
 
 
+class GoogleAuthCallbackView(GeneralView):
+    """Handle Google OAuth callback and forward to API"""
+    def get(self, request):
+        # Get all query parameters from Google OAuth callback
+        code = request.GET.get('code')
+        state = request.GET.get('state')
+        error = request.GET.get('error')
+
+        # If there's an error from Google, redirect to login with error message
+        if error:
+            return redirect(f"/users/login/?error={error}")
+
+        # Prepare query parameters to forward to API
+        query_params = {}
+        if code:
+            query_params['code'] = code
+        if state:
+            query_params['state'] = state
+
+        try:
+            # Call external API callback endpoint
+            api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/users/auth/google/callback"
+
+            response = requests.get(
+                api_url,
+                params=query_params,
+                headers=self.get_header(),
+                timeout=30,
+                allow_redirects=False
+            )
+
+            # If successful, we should get cookies from the API
+            if response.status_code == 200:
+                data = response.json()
+
+                # Check if we have the access token in cookies
+                access_token = response.cookies.get('access_token')
+                refresh_token = response.cookies.get('refresh_token')
+
+                if access_token:
+                    # Temporarily set cookies in the request to use get_current_user
+                    request.COOKIES['access_token'] = access_token
+
+                    # Check if user has company
+                    user_data = self.get_current_user(request)
+
+                    # Determine redirect based on company_id
+                    if user_data and user_data.get('company_id'):
+                        redirect_response = redirect('users:dashboard')
+                    else:
+                        redirect_response = redirect('users:settings')
+
+                    # Set HTTP-only cookies for authentication
+                    redirect_response.set_cookie(
+                        'access_token',
+                        access_token,
+                        httponly=True,
+                        secure=not settings.DEBUG,
+                        samesite='Strict',
+                        max_age=3600 * 6  # 6 hours
+                    )
+
+                    if refresh_token:
+                        redirect_response.set_cookie(
+                            'refresh_token',
+                            refresh_token,
+                            httponly=True,
+                            secure=not settings.DEBUG,
+                            samesite='Strict',
+                            max_age=3600 * 24  # 1 day
+                        )
+
+                    return redirect_response
+                else:
+                    return redirect('/users/login/?error=no_token')
+
+            elif response.status_code in [301, 302, 303, 307, 308]:
+                # Handle redirect from API
+                redirect_url = response.headers.get('Location', '/users/login/')
+                return redirect(redirect_url)
+            else:
+                # Handle error response
+                data = response.json() if response.content else {}
+                error_msg = data.get('message', 'authentication_failed')
+                return redirect(f'/users/login/?error={error_msg}')
+
+        except requests.exceptions.RequestException as e:
+            return redirect('/users/login/?error=network_error')
+        except Exception as e:
+            return redirect('/users/login/?error=unexpected_error')
+
+
 class CheckEmailView(View):
     """Display check email page after successful signup"""
     def get(self, request):
