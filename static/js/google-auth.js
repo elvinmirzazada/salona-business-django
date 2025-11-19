@@ -33,7 +33,10 @@ class GoogleAuth {
             if (data.authorization_url) {
                 // Store state for verification if needed
                 if (data.state) {
+                    // Store in sessionStorage for client-side access
                     sessionStorage.setItem('google_auth_state', data.state);
+                    // Also store in cookie so Django can access it
+                    this.setCookie('google_oauth_state', data.state, 10); // 10 minutes expiry
                 }
                 
                 // Redirect to Google authorization URL
@@ -64,6 +67,16 @@ class GoogleAuth {
             }
         }
         return cookieValue;
+    }
+
+    /**
+     * Set a cookie
+     */
+    setCookie(name, value, minutes) {
+        const date = new Date();
+        date.setTime(date.getTime() + (minutes * 60 * 1000));
+        const expires = "expires=" + date.toUTCString();
+        document.cookie = name + "=" + value + ";" + expires + ";path=/;SameSite=Lax";
     }
 
     /**
@@ -110,4 +123,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Export for use in other modules
 window.GoogleAuth = GoogleAuth;
-

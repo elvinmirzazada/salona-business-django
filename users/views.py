@@ -228,8 +228,7 @@ class GoogleAuthCallbackView(GeneralView):
         code = request.GET.get('code')
         state = request.GET.get('state')
         error = request.GET.get('error')
-        stored_state = request.COOKIES.get("google_oauth_state")
-        print(f'Received state: {state}, Stored state: {stored_state}')
+
         # If there's an error from Google, redirect to login with error message
         if error:
             return redirect(f"/users/login/?error={error}")
@@ -249,20 +248,18 @@ class GoogleAuthCallbackView(GeneralView):
                 api_url,
                 params=query_params,
                 headers=self.get_header(),
-                cookies=request.COOKIES,
                 timeout=30,
                 allow_redirects=False
             )
-            print(response.status_code)
+
             # If successful, we should get cookies from the API
             if response.status_code == 200:
                 data = response.json()
-                print(data)
+
                 # Check if we have the access token in cookies
                 access_token = response.cookies.get('access_token')
                 refresh_token = response.cookies.get('refresh_token')
-                print(access_token)
-                print(refresh_token)
+
                 if access_token:
                     # Temporarily set cookies in the request to use get_current_user
                     request.COOKIES['access_token'] = access_token
@@ -299,6 +296,9 @@ class GoogleAuthCallbackView(GeneralView):
                             samesite='Lax',  # Changed from 'Strict' to 'Lax' for OAuth
                             max_age=3600 * 24  # 1 day
                         )
+
+                    # Clear the OAuth state cookie after successful authentication
+                    redirect_response.delete_cookie('google_oauth_state')
 
                     return redirect_response
                 else:
