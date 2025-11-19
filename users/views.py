@@ -249,7 +249,7 @@ class GoogleAuthCallbackView(GeneralView):
                 api_url,
                 params=query_params,
                 headers=self.get_header(),
-                cookies=request.cookies
+                cookies=request.cookies,
                 timeout=30,
                 allow_redirects=False
             )
