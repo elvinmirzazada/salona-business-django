@@ -273,13 +273,17 @@ class GoogleAuthCallbackView(GeneralView):
                     else:
                         redirect_response = redirect('users:settings')
 
+                    # Determine if we're in production (secure) mode
+                    is_secure = not settings.DEBUG
+
                     # Set HTTP-only cookies for authentication
+                    # Use 'Lax' samesite for OAuth flow to work properly with external redirects
                     redirect_response.set_cookie(
                         'access_token',
                         access_token,
                         httponly=True,
-                        secure=not settings.DEBUG,
-                        samesite='Strict',
+                        secure=is_secure,
+                        samesite='Lax',  # Changed from 'Strict' to 'Lax' for OAuth
                         max_age=3600 * 6  # 6 hours
                     )
 
@@ -288,8 +292,8 @@ class GoogleAuthCallbackView(GeneralView):
                             'refresh_token',
                             refresh_token,
                             httponly=True,
-                            secure=not settings.DEBUG,
-                            samesite='Strict',
+                            secure=is_secure,
+                            samesite='Lax',  # Changed from 'Strict' to 'Lax' for OAuth
                             max_age=3600 * 24  # 1 day
                         )
 
