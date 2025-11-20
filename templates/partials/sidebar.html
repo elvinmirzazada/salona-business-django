@@ -84,6 +84,18 @@
             </form>
         </div>
 
+        {% if request.path == '/dashboard/' or '/dashboard' in request.path %}
+        <a href="#" class="nav-item fullscreen-toggle" id="fullscreen-nav" onclick="toggleFullscreen(event)">
+            <svg class="nav-icon fullscreen-icon-expand" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+            </svg>
+            <svg class="nav-icon fullscreen-icon-collapse" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+                <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>
+            </svg>
+            <span>{% trans "Fullscreen" %}</span>
+        </a>
+        {% endif %}
+
         <a href="#" class="nav-item logout" id="logout-nav" onclick="handleLogout(event)">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
@@ -133,7 +145,64 @@
     background-color: #1a1a2e;
     color: white;
 }
+
+/* Fullscreen mode styles */
+.fullscreen-exit-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 12px 20px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.fullscreen-exit-btn:hover {
+    background: rgba(0, 0, 0, 0.95);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.fullscreen-exit-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Hide sidebar when fullscreen-active class is applied */
+.sidebar.fullscreen-hidden {
+    display: none !important;
+}
+
+/* Show exit button when visible */
+.fullscreen-exit-btn.visible {
+    display: flex !important;
+}
+
+/* Adjust main content in fullscreen mode */
+.main-content.fullscreen-expanded {
+    margin-left: 0 !important;
+    width: 100% !important;
+}
 </style>
+
+<!-- Floating Exit Fullscreen Button -->
+<button class="fullscreen-exit-btn" id="exit-fullscreen-btn" onclick="exitFullscreen()">
+    <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>
+    </svg>
+    <span>{% trans "Exit Fullscreen" %}</span>
+</button>
 
 <script>
 // Set active navigation state
@@ -173,6 +242,91 @@ function handleLogout(event) {
     if (confirm('Are you sure you want to logout?')) {
         // Redirect to logout page which will handle the API call and cleanup
         window.location.href = "{% url 'users:logout' %}";
+    }
+}
+
+// Listen for fullscreen changes
+document.addEventListener('fullscreenchange', handleFullscreenChange);
+document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+function handleFullscreenChange() {
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main-content');
+    const exitButton = document.getElementById('exit-fullscreen-btn');
+    const expandIcon = document.querySelector('.fullscreen-icon-expand');
+    const collapseIcon = document.querySelector('.fullscreen-icon-collapse');
+
+    if (document.fullscreenElement || document.webkitFullscreenElement ||
+        document.mozFullScreenElement || document.msFullscreenElement) {
+        // Entering fullscreen
+        sidebar.classList.add('fullscreen-hidden');
+        mainContent.classList.add('fullscreen-expanded');
+        exitButton.classList.add('visible');
+        if (expandIcon && collapseIcon) {
+            expandIcon.style.display = 'none';
+            collapseIcon.style.display = 'inline';
+        }
+
+        // Change time slot height for fullscreen mode
+        document.documentElement.style.setProperty('--time-slot-height', '60px');
+    } else {
+        // Exiting fullscreen
+        sidebar.classList.remove('fullscreen-hidden');
+        mainContent.classList.remove('fullscreen-expanded');
+        exitButton.classList.remove('visible');
+        if (expandIcon && collapseIcon) {
+            expandIcon.style.display = 'inline';
+            collapseIcon.style.display = 'none';
+        }
+
+        // Reset time slot height to default
+        document.documentElement.style.setProperty('--time-slot-height', '36px');
+    }
+}
+
+// Toggle fullscreen mode
+function toggleFullscreen(event) {
+    event.preventDefault();
+    const elem = document.documentElement;
+
+    if (!document.fullscreenElement && !document.webkitFullscreenElement &&
+        !document.mozFullScreenElement && !document.msFullscreenElement) {
+        // Enter fullscreen
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) {
+            elem.webkitRequestFullscreen();
+        } else if (elem.mozRequestFullScreen) {
+            elem.mozRequestFullScreen();
+        } else if (elem.msRequestFullscreen) {
+            elem.msRequestFullscreen();
+        }
+    } else {
+        // Exit fullscreen
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        }
+    }
+}
+
+// Exit fullscreen mode
+function exitFullscreen() {
+    if (document.exitFullscreen) {
+        document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+    } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+    } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
     }
 }
 </script>
