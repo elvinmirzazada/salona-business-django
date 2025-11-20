@@ -228,8 +228,7 @@ class GoogleAuthCallbackView(GeneralView):
         code = request.GET.get('code')
         state = request.GET.get('state')
         error = request.GET.get('error')
-        stored_state = request.COOKIES.get("google_oauth_state")
-        print(f'Stored state: {stored_state}, Received state: {state}')
+
         # If there's an error from Google, redirect to log in with error message
         if error:
             return redirect(f"/users/login/?error={error}")
@@ -256,8 +255,6 @@ class GoogleAuthCallbackView(GeneralView):
 
             # If successful, we should get cookies from the API
             if response.status_code == 200:
-                data = response.json()
-
                 # Check if we have the access token in cookies
                 access_token = response.cookies.get('access_token')
                 refresh_token = response.cookies.get('refresh_token')
