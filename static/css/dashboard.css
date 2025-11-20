@@ -165,7 +165,6 @@
     background-color: var(--white);
     border: 2px solid var(--primary-color);
     border-radius: 8px;
-    padding: 10px 15px;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
@@ -1517,14 +1516,17 @@ select[multiple] {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
+    justify-content: center !important;
+    align-items: center !important;
+    z-index: 10000 !important;
     animation: fadeIn 0.3s ease;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
 }
 
 .confirmation-popup.active {
-    display: flex;
+    display: flex !important;
 }
 
 @keyframes fadeIn {
@@ -1543,6 +1545,7 @@ select[multiple] {
     width: 90%;
     max-width: 450px;
     animation: slideUp 0.3s ease;
+    margin: auto;
 }
 
 @keyframes slideUp {
