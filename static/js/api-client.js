@@ -215,8 +215,13 @@ class APIClient {
 
     async confirmBooking(bookingId) {
         return this.request(`/users/api/v1/bookings/${bookingId}/confirm`, {
-            method: 'PUT',
-            body: JSON.stringify({ status: 'confirmed' })
+            method: 'PUT'
+        });
+    }
+
+    async completeBooking(bookingId) {
+        return this.request(`/users/api/v1/bookings/${bookingId}/complete`, {
+            method: 'PUT'
         });
     }
 

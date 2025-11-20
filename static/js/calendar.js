@@ -270,6 +270,7 @@ const Calendar = (() => {
         const statusClass = event.status ? `status-${event.status}` : '';
         const timeOffClass = event.isTimeOff ? 'time-off' : '';
         eventElement.className = `event ${statusClass} ${timeOffClass} ${event.color || ''}`.trim();
+        eventElement.dataset.eventId = event.id;
         eventElement.style.top = `${startPosition}px`;
         eventElement.style.height = `${height}px`;
         // Position events relative to the slots container, not the day column

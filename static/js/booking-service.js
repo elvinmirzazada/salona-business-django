@@ -136,10 +136,10 @@ const BookingService = (() => {
                 return;
             }
 
-            // Create booking data object with the new structure
+            // Create booking data object with the correct API structure
             let bookingData = {
                 start_time: startAt,
-                end_time: endAt,  // Include end time in the booking data
+                end_time: endAt,
                 notes: description || '',
                 services: []
             };
@@ -149,14 +149,13 @@ const BookingService = (() => {
                 bookingData.services.push({
                     category_service_id: checkbox.value,
                     user_id: workerId,
-                    notes: '' // Currently we don't have per-service notes
+                    notes: ''
                 });
             });
 
             // Handle customer data
             if (customerType === 'new') {
                 // This is a new customer
-                // Get customer fields, with fallback to default values if empty
                 let firstName = document.getElementById('customer-first-name').value.trim();
                 let lastName = document.getElementById('customer-last-name').value.trim();
                 let email = document.getElementById('customer-email').value.trim();
@@ -168,7 +167,7 @@ const BookingService = (() => {
                 email = email || 'unknown@unknown.com';
                 phone = phone || '0000000';
 
-                // Add customer data to booking with the new structure
+                // Add customer data to booking
                 bookingData.customer_info = {
                     first_name: firstName,
                     last_name: lastName,
@@ -176,7 +175,7 @@ const BookingService = (() => {
                     phone: phone
                 };
             } else {
-                // This is an existing customer - include their ID in the customer_info object
+                // This is an existing customer - include their ID
                 bookingData.customer_info = {
                     id: customerType
                 };
@@ -184,7 +183,7 @@ const BookingService = (() => {
 
             console.log('Creating booking with data:', bookingData);
 
-            // Use API client instead of direct fetch
+            // Use API client to create booking
             const response = await api.createBooking(bookingData);
 
             if (!response?.success) {
@@ -192,7 +191,7 @@ const BookingService = (() => {
             }
 
             // Show success message
-            Utils.showMessage('Booking created successfully!', 'success');
+            UI.showMessage('Booking created successfully', 'success');
 
             // Close the form panel
             document.getElementById('booking-form-panel').classList.remove('active');
@@ -202,7 +201,7 @@ const BookingService = (() => {
 
         } catch (error) {
             // Show error message
-            Utils.showMessage(`Failed to create booking: ${error.message}`, 'error', 8000);
+            UI.showMessage(`Failed to create booking: ${error.message}`, 'error', 8000);
             console.error('Error creating booking:', error);
         } finally {
             // Hide spinner

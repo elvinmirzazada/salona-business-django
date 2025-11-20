@@ -310,9 +310,50 @@ const UI = (() => {
                 newConfirmButton.addEventListener('click', () => {
                     showConfirmationPopup(
                         'Are you sure you want to mark this booking as confirmed?',
-                        () => {
-                            BookingService.confirmBooking(event.id);
-                            popup.style.display = 'none';
+                        async () => {
+                            try {
+                                // Show spinner
+                                const spinner = document.getElementById('booking-spinner');
+                                if (spinner) {
+                                    spinner.style.display = 'flex';
+                                }
+
+                                const response = await api.confirmBooking(event.id);
+
+                                // Check if response status is confirmed
+                                if (response && response.success === true && response.data.status === 'confirmed') {
+                                    // Find and update the booking event element in the calendar
+                                    const bookingElement = document.querySelector(`[data-event-id="${event.id}"].event`);
+                                    if (bookingElement) {
+                                        // Remove the old status class and add the new one
+                                        bookingElement.classList.remove('status-scheduled');
+                                        bookingElement.classList.add('status-confirmed');
+
+                                        // Update the status badge text
+                                        const statusBadge = bookingElement.querySelector('.event-status-badge');
+                                        if (statusBadge) {
+                                            statusBadge.textContent = 'confirmed';
+                                        }
+
+                                        const completedButton = document.querySelector(`[data-event-id="${event.id}"].event-popup`).querySelector(`.event-popup-completed-btn`);
+                                        completedButton.style.display = 'block';
+                                    }
+
+                                    // Update the event object status
+                                    event.status = 'confirmed';
+                                }
+
+                                popup.style.display = 'none';
+                            } catch (error) {
+                                console.error('Error confirming booking:', error);
+                                UI.showMessage('Failed to confirm booking', 'error');
+                            } finally {
+                                // Hide spinner
+                                const spinner = document.getElementById('booking-spinner');
+                                if (spinner) {
+                                    spinner.style.display = 'none';
+                                }
+                            }
                         }
                     );
                 });
@@ -320,6 +361,68 @@ const UI = (() => {
                 confirmButton.style.display = 'none';
             }
         }
+
+        // Setup completed button
+        const completedButton = document.getElementById('event-popup-completed');
+        if (completedButton) {
+            if (event.status === 'confirmed') {
+                completedButton.style.display = 'block';
+            }
+            const newCompletedButton = completedButton.cloneNode(true);
+            completedButton.parentNode.replaceChild(newCompletedButton, completedButton);
+
+            newCompletedButton.addEventListener('click', () => {
+                showConfirmationPopup(
+                    'Are you sure you want to mark this booking as completed?',
+                    async () => {
+                        try {
+                            // Show spinner
+                            const spinner = document.getElementById('booking-spinner');
+                            if (spinner) {
+                                spinner.style.display = 'flex';
+                            }
+
+                            const response = await api.completeBooking(event.id);
+
+                            // Check if response status is completed
+                            if (response && response.success === true && response.data.status === 'completed') {
+                                // Find and update the booking event element in the calendar
+                                const bookingElement = document.querySelector(`[data-event-id="${event.id}"].event`);
+                                if (bookingElement) {
+                                    // Remove the old status class and add the new one
+                                    bookingElement.classList.remove('status-confirmed');
+                                    bookingElement.classList.add('status-completed');
+
+                                    // Update the status badge text
+                                    const statusBadge = bookingElement.querySelector('.event-status-badge');
+                                    if (statusBadge) {
+                                        statusBadge.textContent = 'completed';
+                                    }
+                                }
+
+                                // Update the event object status
+                                event.status = 'completed';
+
+                            }
+
+                            popup.style.display = 'none';
+                        } catch (error) {
+                            console.error('Error completing booking:', error);
+                            UI.showMessage('Failed to mark booking as completed', 'error');
+                        } finally {
+                            // Hide spinner
+                            const spinner = document.getElementById('booking-spinner');
+                            if (spinner) {
+                                spinner.style.display = 'none';
+                            }
+                        }
+                    }
+                );
+            });
+        } else {
+            completedButton.style.display = 'none';
+        }
+
 
         // Setup edit button
         const editButton = document.getElementById('event-popup-edit');
@@ -346,10 +449,42 @@ const UI = (() => {
 
                 showConfirmationPopup(
                     `Are you sure you want to delete this booking for ${customerName}?`,
-                    () => {
-                        BookingService.deleteBooking(event.id);
-                        popup.style.display = 'none';
-                    }
+                    async () => {
+                            try {
+                                // Show spinner
+                                const spinner = document.getElementById('booking-spinner');
+                                if (spinner) {
+                                    spinner.style.display = 'flex';
+                                }
+
+                                const response = await api.deleteBooking(event.id);
+
+                                // Check if response status is cancelled
+                                if (response && response.success === true && response.data.status === 'cancelled') {
+                                    // Find and remove the booking event element from the calendar
+                                    const bookingElement = document.querySelector(`[data-event-id="${event.id}"].event`);
+                                    if (bookingElement) {
+                                        // Remove the element from the DOM
+                                        bookingElement.remove();
+                                    }
+
+                                    // Update the event object status
+                                    event.status = 'cancelled';
+
+                                }
+
+                                popup.style.display = 'none';
+                            } catch (error) {
+                                console.error('Error deleting booking:', error);
+                                UI.showMessage('Failed to delete booking', 'error');
+                            } finally {
+                                // Hide spinner
+                                const spinner = document.getElementById('booking-spinner');
+                                if (spinner) {
+                                    spinner.style.display = 'none';
+                                }
+                            }
+                        }
                 );
             });
         }
@@ -615,4 +750,3 @@ window.UI = UI;
 document.addEventListener('DOMContentLoaded', () => {
     UI.initResizablePanel();
 });
-
