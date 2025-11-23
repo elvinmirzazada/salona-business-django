@@ -402,7 +402,7 @@ const UI = (() => {
 
                                 // Update the event object status
                                 event.status = 'completed';
-
+                                newCompletedButton.style.display ='none'
                             }
 
                             popup.style.display = 'none';

@@ -350,8 +350,11 @@ class DashboardView(GeneralView):
             return None
 
         try:
+            # Calculate start date (3 days ago) and format it properly
+            start_date = datetime.datetime.now() - datetime.timedelta(days=3)
+
             query_params = {
-                'start_date': datetime.datetime.now() - 3 * datetime.timedelta(days=1),
+                'start_date': start_date,
                 'availability_type': 'weekly'
             }
             
@@ -413,7 +416,7 @@ class DashboardView(GeneralView):
         staff_data = self.get_staff(request)
         unread_notifications_count = self.get_unread_notifications_count(request)
         user_time_offs = self.get_user_time_offs(request)
-
+        print(len(user_time_offs))
         # Check if this is an AJAX request
         if request.headers.get('Accept') == 'application/json':
             return JsonResponse({
@@ -1160,4 +1163,3 @@ class AcceptInvitationView(View):
     def get(self, request):
         """Render the accept invitation page"""
         return render(request, 'users/accept_invitation.html')
-

@@ -643,6 +643,74 @@ const BookingService = (() => {
         }
     };
 
+    // Create time off - Opens the time off panel with pre-filled date/time
+    const createTimeOff = (date) => {
+        const panel = document.getElementById('time-off-panel');
+        if (!panel) return;
+
+        // Format date and time for input fields
+        const dateStr = Utils.formatDate(date);
+        const timeStr = Utils.formatTime(date.getHours(), date.getMinutes(), true); // 24-hour format
+
+        // Pre-fill the start date and time
+        const startDateInput = document.getElementById('time-off-start-date');
+        const startTimeInput = document.getElementById('time-off-start-time');
+        const endDateInput = document.getElementById('time-off-end-date');
+        const endTimeInput = document.getElementById('time-off-end-time');
+
+        if (startDateInput) startDateInput.value = dateStr;
+        if (startTimeInput) startTimeInput.value = timeStr;
+        if (endDateInput) endDateInput.value = dateStr;
+        
+        // Set end time to 1 hour after start time by default
+        const endDate = new Date(date);
+        endDate.setHours(date.getHours() + 1);
+        if (endTimeInput) endTimeInput.value = Utils.formatTime(endDate.getHours(), endDate.getMinutes(), true);
+
+        // Load staff members into dropdown
+        StaffManager.loadStaffMembersForTimeOff();
+
+        // Show the panel
+        panel.classList.add('active');
+    };
+
+    // Submit time off to API
+    const submitTimeOff = async (timeOffData) => {
+        try {
+            // Show spinner
+            Utils.toggleSpinner(true);
+
+            console.log('Creating time off with data:', timeOffData);
+
+            // Use API client to create time off
+            const response = await api.createTimeOff(timeOffData);
+
+            if (!response?.success) {
+                throw new Error(response?.message || 'Failed to create time off');
+            }
+
+            // Show success message
+            Utils.showMessage('Time off scheduled successfully!', 'success');
+
+            // Close the time off panel
+            document.getElementById('time-off-panel').classList.remove('active');
+
+            // Clear the form
+            TimeOffManager.clearTimeOffForm();
+
+            // Refresh the calendar to show the new time off
+            await Calendar.renderCalendar(Calendar.getCurrentDate());
+
+        } catch (error) {
+            // Show error message
+            Utils.showMessage(`Failed to create time off: ${error.message}`, 'error', 8000);
+            console.error('Error creating time off:', error);
+        } finally {
+            // Hide spinner
+            Utils.toggleSpinner(false);
+        }
+    };
+
     return {
         fetchBookings,
         convertBookingsToEvents,
@@ -652,6 +720,8 @@ const BookingService = (() => {
         updateBooking,
         handleEditBooking,
         createNewBooking,
-        deleteBooking
+        deleteBooking,
+        createTimeOff,
+        submitTimeOff
     };
 })();

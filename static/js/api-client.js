@@ -304,12 +304,17 @@ class APIClient {
     // Helper methods for common operations
     async refreshData() {
         try {
+            // Calculate start date (3 days ago) properly
+            const threeDaysAgo = new Date();
+            threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+            const startDate = threeDaysAgo.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+            
             const [user, staff, notifications, timeOffs] = await Promise.all([
                 this.getCurrentUser(),
                 this.getStaff(),
                 this.getUnreadNotificationsCount(),
                 this.getTimeOffs({
-                    start_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+                    start_date: startDate,
                     availability_type: 'weekly'
                 })
             ]);

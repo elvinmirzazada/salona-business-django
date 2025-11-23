@@ -14,7 +14,7 @@
     --border-color: #ddd;
     --event-color-1: #00A884;
     --event-color-2: #2ecc71;
-    --time-slot-height: 36px;
+    --time-slot-height: 60px;
     --hover-bg: #f5f5f5;
     --selected-bg: #e3f7f2;
     --selected-border: #00A884;
@@ -540,20 +540,46 @@
     background: linear-gradient(135deg, #e3f7ff 0%, #d1efff 100%);
     border-radius: 6px;
     color: #1a1a1a;
-    padding: 8px;
-    font-size: 12px;
+    padding: 6px 8px; /* Reduced padding for overlapping events */
+    font-size: 11px; /* Slightly smaller for better fit */
     overflow: hidden;
     z-index: 10;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
     border-left: 4px solid #3498db;
     cursor: pointer;
     transition: all 0.2s ease;
+    min-width: 60px; /* Minimum width for readability */
 }
 
 .event:hover {
-    transform: translateX(2px);
+    transform: translateX(1px) translateY(-1px); /* Subtle hover effect */
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-    z-index: 20;
+    z-index: 100; /* Bring to front on hover */
+}
+
+/* Overlapping event styles */
+.event.overlapping {
+    border-width: 2px; /* Thinner border for overlapping events */
+    padding: 4px 6px; /* Tighter padding */
+    font-size: 10px; /* Smaller font for better fit */
+}
+
+.event.overlapping .event-title {
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.event.overlapping .event-time {
+    font-size: 9px;
+}
+
+.event.overlapping .event-description {
+    display: none; /* Hide description in narrow events */
+}
+
+.event.overlapping .event-status-badge {
+    padding: 1px 4px;
+    font-size: 8px;
 }
 
 /* Event status colors */
@@ -583,6 +609,17 @@
     background: linear-gradient(135deg, #e7e7e7 0%, #d3d3d3 100%);
     border-left-color: #6c757d;
     opacity: 0.85;
+}
+
+.event.event-timeoff {
+    background: linear-gradient(135deg, #f8f4ff 0%, #e9ecef 100%);
+    border-left-color: #6c5ce7;
+    color: #495057;
+}
+
+.event.event-timeoff .event-title {
+    color: #495057;
+    font-weight: 600;
 }
 
 .event-title {
@@ -1665,4 +1702,29 @@ select[multiple] {
 
 .confirmation-popup-footer .primary-button:hover {
     background-color: #c0392b;
+}
+
+/* Time Off Form Panel - Specific styling */
+#timeoff-form-panel {
+    /* Inherits from .booking-form-panel */
+}
+
+#timeoff-form-panel .booking-form-header {
+    background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+}
+
+#timeoff-form-panel .booking-form-header h3 {
+    color: white;
+}
+
+#timeoff-form-panel .close-panel-btn {
+    color: white;
+}
+
+#timeoff-form-panel .primary-button {
+    background-color: #6c5ce7;
+}
+
+#timeoff-form-panel .primary-button:hover {
+    background-color: #5f3dc4;
 }

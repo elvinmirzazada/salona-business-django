@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 setupBookingFormSubmission();
 
                 // Initialize time off functionality
-                // TimeOffManager.initTimeOffForm();
+                TimeOffManager.initTimeOffForm();
 
                 // Initialize the calendar
                 await Calendar.init();

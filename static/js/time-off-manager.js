@@ -36,8 +36,8 @@ const TimeOffManager = (() => {
 
         // Create time off data
         const timeOffData = {
-            start_time: `${startDate}T${startTime}:00Z`,
-            end_time: `${endDate}T${endTime}:00Z`,
+            start_date: `${startDate}T${startTime}:00Z`,
+            end_date: `${endDate}T${endTime}:00Z`,
             user_id: staffId,
             reason: reason || 'Time off'
         };
