@@ -18,50 +18,172 @@ class GeneralView(View):
             'Accept': 'application/json'
         }
 
-    def get_unread_notifications_count(self, request):
-        """Get unread notifications count from external API"""
-        access_token = request.COOKIES.get('access_token')
+    def get_tokens_from_request(self, request):
+        """
+        Get tokens from request, checking for refreshed tokens first
+        Returns tuple: (access_token, refresh_token)
+        """
+        # Check if tokens were refreshed during this request
+        if hasattr(request, '_refreshed_access_token'):
+            return request._refreshed_access_token, request._refreshed_refresh_token
 
-        if not access_token:
-            return 0
+        # Otherwise get from cookies
+        return request.COOKIES.get('access_token'), request.COOKIES.get('refresh_token')
+
+    def set_refreshed_tokens(self, request, access_token, refresh_token):
+        """Store refreshed tokens in request object for reuse during this request"""
+        request._refreshed_access_token = access_token
+        request._refreshed_refresh_token = refresh_token
+        request._token_was_refreshed = True
+
+    def refresh_access_token(self, request):
+        """
+        Attempt to refresh the access token using the refresh token
+        Returns tuple: (success: bool, new_access_token: str or None, new_refresh_token: str or None)
+        """
+        # Check if we already refreshed the token during this request
+        if hasattr(request, '_token_refresh_attempted'):
+            if hasattr(request, '_refreshed_access_token'):
+                return True, request._refreshed_access_token, request._refreshed_refresh_token
+            else:
+                return False, None, None
+
+        # Mark that we're attempting to refresh
+        request._token_refresh_attempted = True
+
+        refresh_token = request.COOKIES.get('refresh_token')
+
+        if not refresh_token:
+            return False, None, None
 
         try:
-            api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/notifications/unread-count"
-            cookies = {'access_token': access_token}
+            api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/users/auth/refresh-token"
+            cookies = {'refresh_token': refresh_token}
 
-            response = requests.get(api_url, headers=self.get_header(), cookies=cookies, timeout=10)
+            response = requests.post(
+                api_url,
+                headers=self.get_header(),
+                cookies=cookies,
+                timeout=10
+            )
 
             if response.status_code == 200:
-                data = response.json()
-                return data.get('data', {}).get('unread_count', 0)
-            return 0
+                # Extract tokens from response cookies, not from response body
+                new_access_token = response.cookies.get('access_token')
+                new_refresh_token = response.cookies.get('refresh_token')
+
+                if new_access_token:
+                    # Store refreshed tokens in request for reuse
+                    self.set_refreshed_tokens(request, new_access_token, new_refresh_token)
+                    return True, new_access_token, new_refresh_token
+
+            return False, None, None
 
         except requests.exceptions.RequestException:
-            return 0
+            return False, None, None
+
+    def make_authenticated_request(self, request, url, method='GET', data=None, retry_count=0):
+        """
+        Make an authenticated API request with automatic token refresh
+        Returns tuple: (success: bool, response_data: dict or None, updated_cookies: dict or None)
+        """
+        # Get tokens (either from cookies or from refreshed tokens in this request)
+        access_token, _ = self.get_tokens_from_request(request)
+
+        if not access_token:
+            return False, None, None
+
+        try:
+            cookies = {'access_token': access_token}
+
+            if method.upper() == 'GET':
+                response = requests.get(url, headers=self.get_header(), cookies=cookies, timeout=10)
+            elif method.upper() == 'POST':
+                response = requests.post(url, headers=self.get_header(), json=data, cookies=cookies, timeout=10)
+            elif method.upper() == 'PUT':
+                response = requests.put(url, headers=self.get_header(), json=data, cookies=cookies, timeout=10)
+            else:
+                return False, None, None
+
+            # Check if access token has expired
+            if response.status_code == 401 and retry_count == 0:
+                try:
+                    response_data = response.json()
+                    detail = response_data.get('detail', '')
+
+                    # Check if the error is due to expired access token
+                    if 'Access token has expired' in detail or 'access token has expired' in detail.lower():
+                        # Attempt to refresh the token (will reuse if already refreshed in this request)
+                        success, new_access_token, new_refresh_token = self.refresh_access_token(request)
+
+                        if success and new_access_token:
+                            # Retry the request with new token
+                            cookies = {'access_token': new_access_token}
+
+                            if method.upper() == 'GET':
+                                response = requests.get(url, headers=self.get_header(), cookies=cookies, timeout=10)
+                            elif method.upper() == 'POST':
+                                response = requests.post(url, headers=self.get_header(), json=data, cookies=cookies, timeout=10)
+                            elif method.upper() == 'PUT':
+                                response = requests.put(url, headers=self.get_header(), json=data, cookies=cookies, timeout=10)
+
+                            if response.status_code == 200:
+                                # Return success with new cookies
+                                return True, response.json(), {
+                                    'access_token': new_access_token,
+                                    'refresh_token': new_refresh_token
+                                }
+
+                        # Token refresh failed
+                        return False, None, None
+                except:
+                    pass
+
+            # Normal response handling
+            if response.status_code == 200:
+                # Check if token was refreshed during this request
+                if hasattr(request, '_token_was_refreshed'):
+                    return True, response.json(), {
+                        'access_token': request._refreshed_access_token,
+                        'refresh_token': request._refreshed_refresh_token
+                    }
+                return True, response.json(), None
+
+            return False, None, None
+
+        except requests.exceptions.RequestException:
+            return False, None, None
+
+    def get_unread_notifications_count(self, request):
+        """Get unread notifications count from external API"""
+        api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/notifications/unread-count"
+
+        success, response_data, updated_cookies = self.make_authenticated_request(request, api_url)
+
+        if success and response_data:
+            return response_data.get('data', {}).get('unread_count', 0)
+        return 0
 
     def get_current_user(self, request):
         """Get current user data from external API"""
-        access_token = request.COOKIES.get('access_token')
+        api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/users/me"
 
-        if not access_token:
-            return None
+        success, response_data, updated_cookies = self.make_authenticated_request(request, api_url)
 
-        try:
-            api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/users/me"
-            cookies = {'access_token': access_token}
+        if success and response_data:
+            data = response_data
+            result = data.get('data').get('user', {})
+            result['role'] = data.get('data').get('role', 'owner')
+            result['company_id'] = data.get('data').get('company_id', None)
 
-            response = requests.get(api_url, headers=self.get_header(), cookies=cookies, timeout=10)
+            # Update cookies in request if they were refreshed
+            if updated_cookies:
+                request.COOKIES['access_token'] = updated_cookies['access_token']
+                if updated_cookies.get('refresh_token'):
+                    request.COOKIES['refresh_token'] = updated_cookies['refresh_token']
 
-            if response.status_code == 200:
-                data = response.json()
-                result = data.get('data').get('user', {})
-                result['role'] = data.get('data').get('role', 'owner')
-                result['company_id'] = data.get('data').get('company_id', None)
-                return result
-            return None
-
-        except requests.exceptions.RequestException:
-            return None
+            return result
+        return None
 
     def user_has_company(self, user_data):
         """Check if user has a company"""
@@ -70,25 +192,14 @@ class GeneralView(View):
         return user_data.get('company_id') is not None
 
     def get_staff(self, request):
-        """Get current user data from external API"""
-        access_token = request.COOKIES.get('access_token')
+        """Get staff data from external API"""
+        api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/companies/users"
 
-        if not access_token:
-            return None
+        success, response_data, updated_cookies = self.make_authenticated_request(request, api_url)
 
-        try:
-            api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/companies/users"
-            cookies = {'access_token': access_token}
-
-            response = requests.get(api_url, headers=self.get_header(), cookies=cookies, timeout=10)
-
-            if response.status_code == 200:
-                data = response.json()
-                return data.get('data')
-            return None
-
-        except requests.exceptions.RequestException:
-            return None
+        if success and response_data:
+            return response_data.get('data')
+        return None
 
 
 class LogoutView(View):

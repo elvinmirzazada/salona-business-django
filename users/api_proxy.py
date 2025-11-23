@@ -1,6 +1,6 @@
 import requests
 import json
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.utils.decorators import method_decorator
@@ -27,7 +27,97 @@ class APIProxyView(View):
             path = f"api/{path}"
         return f"{api_base}/{path}"
     
-    def forward_request(self, request, path):
+    def get_tokens_from_request(self, request):
+        """
+        Get tokens from request, checking for refreshed tokens first
+        Returns tuple: (access_token, refresh_token)
+        """
+        # Check if tokens were refreshed during this request
+        if hasattr(request, '_refreshed_access_token'):
+            return request._refreshed_access_token, request._refreshed_refresh_token
+
+        # Otherwise get from cookies
+        return request.COOKIES.get('access_token'), request.COOKIES.get('refresh_token')
+
+    def set_refreshed_tokens(self, request, access_token, refresh_token):
+        """Store refreshed tokens in request object for reuse during this request"""
+        request._refreshed_access_token = access_token
+        request._refreshed_refresh_token = refresh_token
+        request._token_was_refreshed = True
+
+    def refresh_access_token(self, request):
+        """
+        Attempt to refresh the access token using the refresh token
+        Returns tuple: (success: bool, new_access_token: str or None, new_refresh_token: str or None)
+        """
+        # Check if we already refreshed the token during this request
+        if hasattr(request, '_token_refresh_attempted'):
+            if hasattr(request, '_refreshed_access_token'):
+                return True, request._refreshed_access_token, request._refreshed_refresh_token
+            else:
+                return False, None, None
+
+        # Mark that we're attempting to refresh
+        request._token_refresh_attempted = True
+
+        refresh_token = request.COOKIES.get('refresh_token')
+
+        if not refresh_token:
+            return False, None, None
+
+        try:
+            api_url = self.get_api_url('api/v1/users/auth/refresh-token')
+            cookies = {'refresh_token': refresh_token}
+            headers = {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            }
+
+            response = requests.post(
+                api_url,
+                headers=headers,
+                cookies=cookies,
+                timeout=10
+            )
+
+            if response.status_code == 200:
+                # Extract tokens from response cookies, not from response body
+                new_access_token = response.cookies.get('access_token')
+                new_refresh_token = response.cookies.get('refresh_token')
+
+                if new_access_token:
+                    # Store refreshed tokens in request for reuse
+                    self.set_refreshed_tokens(request, new_access_token, new_refresh_token)
+                    return True, new_access_token, new_refresh_token
+
+            return False, None, None
+
+        except requests.exceptions.RequestException:
+            return False, None, None
+
+    def clear_auth_cookies(self, response):
+        """Clear all authentication cookies"""
+        response.set_cookie(
+            'access_token',
+            '',
+            max_age=0,
+            expires='Thu, 01 Jan 1970 00:00:00 GMT',
+            httponly=True,
+            secure=not settings.DEBUG,
+            samesite='Strict'
+        )
+        response.set_cookie(
+            'refresh_token',
+            '',
+            max_age=0,
+            expires='Thu, 01 Jan 1970 00:00:00 GMT',
+            httponly=True,
+            secure=not settings.DEBUG,
+            samesite='Strict'
+        )
+        return response
+
+    def forward_request(self, request, path, retry_count=0):
         """Forward the request to the external API"""
         api_url = self.get_api_url(path)
         
@@ -37,13 +127,14 @@ class APIProxyView(View):
             'Accept': 'application/json',
         }
         
-        # Get cookies from the incoming request
+        # Get cookies from the incoming request (check for refreshed tokens first)
+        access_token, refresh_token = self.get_tokens_from_request(request)
         cookies = {}
-        if 'access_token' in request.COOKIES:
-            cookies['access_token'] = request.COOKIES['access_token']
-        if 'refresh_token' in request.COOKIES:
-            cookies['refresh_token'] = request.COOKIES['refresh_token']
-        
+        if access_token:
+            cookies['access_token'] = access_token
+        if refresh_token:
+            cookies['refresh_token'] = refresh_token
+
         # Get query parameters from the request
         params = request.GET.dict() if request.GET else None
 
@@ -70,13 +161,98 @@ class APIProxyView(View):
                 timeout=30
             )
             
+            # Check if access token has expired (401 with specific message)
+            if response.status_code == 401 and retry_count == 0:
+                try:
+                    response_data = response.json()
+                    detail = response_data.get('detail', '')
+
+                    # Check if the error is due to expired access token
+                    if 'Access token has expired' in detail or 'access token has expired' in detail.lower():
+                        # Attempt to refresh the token (will reuse if already refreshed in this request)
+                        success, new_access_token, new_refresh_token = self.refresh_access_token(request)
+
+                        if success and new_access_token:
+                            # Retry the request with new token (only once to prevent infinite loop)
+                            cookies['access_token'] = new_access_token
+                            if new_refresh_token:
+                                cookies['refresh_token'] = new_refresh_token
+
+                            response = requests.request(
+                                method=request.method,
+                                url=api_url,
+                                headers=headers,
+                                json=data if data else None,
+                                params=params,
+                                cookies=cookies,
+                                timeout=30
+                            )
+
+                            # Create response with updated cookies
+                            django_response = JsonResponse(
+                                response.json() if response.content else {},
+                                status=response.status_code,
+                                safe=False
+                            )
+
+                            # Set the new tokens as HTTP-only cookies
+                            django_response.set_cookie(
+                                'access_token',
+                                new_access_token,
+                                httponly=True,
+                                secure=not settings.DEBUG,
+                                samesite='Strict',
+                                max_age=3600 * 6  # 6 hours
+                            )
+
+                            if new_refresh_token:
+                                django_response.set_cookie(
+                                    'refresh_token',
+                                    new_refresh_token,
+                                    httponly=True,
+                                    secure=not settings.DEBUG,
+                                    samesite='Strict',
+                                    max_age=3600 * 24  # 1 day
+                                )
+
+                            return django_response
+                        else:
+                            # Token refresh failed, clear cookies and return 401
+                            django_response = JsonResponse(
+                                {'success': False, 'detail': 'Authentication failed. Please log in again.'},
+                                status=401
+                            )
+                            return self.clear_auth_cookies(django_response)
+                except:
+                    pass  # If parsing fails, continue with normal flow
+
             # Create Django response
             django_response = JsonResponse(
                 response.json() if response.content else {},
                 status=response.status_code,
                 safe=False
             )
-            
+
+            # If token was refreshed during this request, set the new cookies
+            if hasattr(request, '_token_was_refreshed') and response.status_code == 200:
+                django_response.set_cookie(
+                    'access_token',
+                    request._refreshed_access_token,
+                    httponly=True,
+                    secure=not settings.DEBUG,
+                    samesite='Strict',
+                    max_age=3600 * 6  # 6 hours
+                )
+                if request._refreshed_refresh_token:
+                    django_response.set_cookie(
+                        'refresh_token',
+                        request._refreshed_refresh_token,
+                        httponly=True,
+                        secure=not settings.DEBUG,
+                        samesite='Strict',
+                        max_age=3600 * 24  # 1 day
+                    )
+
             # If this is a login request and successful, extract tokens from response
             if path == 'api/v1/users/auth/login' and response.status_code == 200:
                 try:

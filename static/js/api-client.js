@@ -10,10 +10,73 @@ class APIClient {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
         };
+        this.isRefreshing = false;
+        this.refreshSubscribers = [];
     }
 
     /**
-     * Make a request with proper error handling
+     * Add request to queue while token is being refreshed
+     */
+    subscribeTokenRefresh(callback) {
+        this.refreshSubscribers.push(callback);
+    }
+
+    /**
+     * Execute all queued requests after token refresh
+     */
+    onTokenRefreshed() {
+        this.refreshSubscribers.forEach(callback => callback());
+        this.refreshSubscribers = [];
+    }
+
+    /**
+     * Attempt to refresh the access token
+     */
+    async refreshToken() {
+        try {
+            const response = await fetch('/users/api/v1/users/auth/refresh-token', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    return true;
+                }
+            }
+
+            return false;
+        } catch (error) {
+            console.error('Token refresh failed:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Logout and clear all cookies
+     */
+    async performLogout() {
+        try {
+            // Call logout endpoint to clear cookies on server side
+            await fetch('/users/logout/', {
+                method: 'GET',
+                credentials: 'include'
+            });
+        } catch (error) {
+            console.error('Logout request failed:', error);
+        }
+
+        // Redirect to login page
+        window.location.href = '/users/login/';
+    }
+
+    /**
+     * Make a request with proper error handling and token refresh
      */
     async request(url, options = {}) {
         const config = {
@@ -30,26 +93,84 @@ class APIClient {
             
             // Handle authentication errors
             if (response.status === 401) {
-                window.location.href = '/users/login/';
-                return null;
+                // Try to get the response body to check for token expiration
+                let shouldRefresh = false;
+                try {
+                    const errorData = await response.clone().json();
+                    const detail = errorData.detail || '';
+
+                    // Check if the error is due to expired access token
+                    if (detail.includes('Access token has expired') ||
+                        detail.toLowerCase().includes('access token has expired')) {
+                        shouldRefresh = true;
+                    }
+                } catch (e) {
+                    // If we can't parse the response, assume it's an auth error
+                    shouldRefresh = true;
+                }
+
+                if (shouldRefresh) {
+                    // If already refreshing, wait for it to complete
+                    if (this.isRefreshing) {
+                        return new Promise((resolve) => {
+                            this.subscribeTokenRefresh(async () => {
+                                // Retry the original request after token refresh
+                                const retryResponse = await fetch(url, config);
+                                resolve(this.handleResponse(retryResponse));
+                            });
+                        });
+                    }
+
+                    // Set refreshing flag
+                    this.isRefreshing = true;
+
+                    // Attempt to refresh the token
+                    const refreshSuccess = await this.refreshToken();
+
+                    if (refreshSuccess) {
+                        // Token refreshed successfully, retry the original request
+                        this.isRefreshing = false;
+                        this.onTokenRefreshed();
+
+                        const retryResponse = await fetch(url, config);
+                        return this.handleResponse(retryResponse);
+                    } else {
+                        // Token refresh failed, logout
+                        this.isRefreshing = false;
+                        this.onTokenRefreshed();
+                        await this.performLogout();
+                        return null;
+                    }
+                } else {
+                    // Not a token expiration error, just redirect to login
+                    window.location.href = '/users/login/';
+                    return null;
+                }
             }
 
-            // Handle other errors
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            // Try to parse JSON, fall back to text
-            const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-                return await response.json();
-            } else {
-                return await response.text();
-            }
+            return this.handleResponse(response);
 
         } catch (error) {
             console.error('API Request failed:', error);
             throw error;
+        }
+    }
+
+    /**
+     * Handle response parsing
+     */
+    async handleResponse(response) {
+        // Handle other errors
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // Try to parse JSON, fall back to text
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            return await response.json();
+        } else {
+            return await response.text();
         }
     }
 
