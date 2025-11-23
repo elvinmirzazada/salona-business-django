@@ -44,6 +44,9 @@ class APIProxyView(View):
         if 'refresh_token' in request.COOKIES:
             cookies['refresh_token'] = request.COOKIES['refresh_token']
         
+        # Get query parameters from the request
+        params = request.GET.dict() if request.GET else None
+
         # Prepare request data
         data = None
         if request.method in ['POST', 'PUT', 'PATCH']:
@@ -62,6 +65,7 @@ class APIProxyView(View):
                 url=api_url,
                 headers=headers,
                 json=data if data else None,
+                params=params,
                 cookies=cookies,
                 timeout=30
             )

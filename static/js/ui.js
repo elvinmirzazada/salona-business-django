@@ -505,7 +505,7 @@ const UI = (() => {
      * Show booking details popup - Main refactored function
      * @param {Object} event - Event data object
      * @param {number} x - X coordinate for positioning
-     * @param {number} y - Y coordinate for positioning
+     * @param {number} y - Y Coordinate for positioning
      */
     const showBookingDetails = (event, x, y) => {
         const popup = document.getElementById('event-popup');
@@ -621,6 +621,23 @@ const UI = (() => {
 
             newCloseButton.addEventListener('click', () => {
                 popup.style.display = 'none';
+            });
+        }
+
+        // Setup delete button
+        const deleteButton = document.getElementById('time-off-delete-btn');
+        if (deleteButton) {
+            const newDeleteButton = deleteButton.cloneNode(true);
+            deleteButton.parentNode.replaceChild(newDeleteButton, deleteButton);
+
+            newDeleteButton.addEventListener('click', () => {
+                // Hide the popup first
+                popup.style.display = 'none';
+
+                // Show confirmation popup
+                showConfirmationPopup('Are you sure you want to delete this time off?', () => {
+                    BookingService.deleteTimeOff(event.id);
+                });
             });
         }
 

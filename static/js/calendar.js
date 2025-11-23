@@ -41,6 +41,68 @@ const Calendar = (() => {
         }
     };
 
+    // Detect overlapping events and calculate their positions
+    const detectOverlaps = (events) => {
+        // Sort events by start time, then by duration (longer events first)
+        const sortedEvents = [...events].sort((a, b) => {
+            const timeDiff = a.start.getTime() - b.start.getTime();
+            if (timeDiff !== 0) return timeDiff;
+            // If same start time, longer events come first
+            return (b.end.getTime() - b.start.getTime()) - (a.end.getTime() - a.start.getTime());
+        });
+
+        // Track columns and their occupied time ranges
+        const columns = [];
+
+        sortedEvents.forEach(event => {
+            // Find the first column where this event can fit
+            let columnIndex = 0;
+            let placed = false;
+
+            for (let i = 0; i < columns.length; i++) {
+                const column = columns[i];
+                // Check if this event overlaps with any event in this column
+                const hasOverlap = column.some(existingEvent => {
+                    return event.start < existingEvent.end && event.end > existingEvent.start;
+                });
+
+                if (!hasOverlap) {
+                    // Found a free column
+                    columnIndex = i;
+                    column.push(event);
+                    placed = true;
+                    break;
+                }
+            }
+
+            if (!placed) {
+                // Need a new column
+                columnIndex = columns.length;
+                columns.push([event]);
+            }
+
+            // Store column info on the event
+            event.columnIndex = columnIndex;
+        });
+
+        // Calculate width and position for each event
+        sortedEvents.forEach(event => {
+            // Find all events that overlap with this one
+            const overlappingEvents = sortedEvents.filter(otherEvent => {
+                return event.start < otherEvent.end && event.end > otherEvent.start;
+            });
+
+            // Find the maximum column index among overlapping events
+            const maxColumn = Math.max(...overlappingEvents.map(e => e.columnIndex));
+            const totalColumns = maxColumn + 1;
+
+            event.totalColumns = totalColumns;
+            event.isOverlapping = totalColumns > 1;
+        });
+
+        return sortedEvents;
+    };
+
     // Render calendar with days and time slots
     const renderCalendar = async (date, forceRefresh = false) => {
         const startDate = getStartDate(date, viewMode);
@@ -72,8 +134,8 @@ const Calendar = (() => {
 
             // Always fetch fresh booking data for the new date range
             const bookings = await BookingService.fetchBookings(startDate, endDate);
-            // Get time off data from Django context (no API call needed)
-            const timeOffs = BookingService.getTimeOffs();
+            // Fetch fresh time off data with the current view mode as availability type
+            const timeOffs = await BookingService.fetchTimeOffs(startDate, viewMode);
 
 
             // Apply staff filtering client-side if needed
@@ -211,11 +273,32 @@ const Calendar = (() => {
                     return event.start.toDateString() === currentDateInLoop.toDateString();
                 });
 
-                // Add events to the day column
-                dayEvents.forEach(event => {
+                // Detect overlaps for this day's events
+                const eventsWithOverlapInfo = detectOverlaps(dayEvents);
+
+                // Add events to the day column with overlap positioning
+                eventsWithOverlapInfo.forEach(event => {
                     const eventElement = createEventElement(event, currentDateInLoop);
                     if (eventElement) {
-                        // Add the event to the slots container instead of the day column
+                        // Apply overlap styling if needed
+                        if (event.isOverlapping) {
+                            eventElement.classList.add('overlapping');
+                        }
+
+                        // Adjust width and position based on overlap information
+                        const columnIndex = event.columnIndex || 0;
+                        const totalColumns = event.totalColumns || 1;
+
+                        if (totalColumns > 1) {
+                            // Calculate width as a percentage of available space
+                            const eventWidth = 100 / totalColumns;
+                            const leftPosition = columnIndex * eventWidth;
+
+                            eventElement.style.width = `calc(${eventWidth}% - 8px)`;
+                            eventElement.style.left = `calc(${leftPosition}% + 4px)`;
+                        }
+
+                        // Add the event to the slots container
                         slotsContainer.appendChild(eventElement);
                     }
                 });

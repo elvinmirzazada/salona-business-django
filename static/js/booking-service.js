@@ -74,6 +74,34 @@ const BookingService = (() => {
         return window.userTimeOffs || [];
     };
 
+    // Fetch time offs from API with date range parameters
+    const fetchTimeOffs = async (startDate, availabilityType = 'weekly') => {
+        try {
+            // Format dates for API request
+            const formattedStartDate = Utils.formatDate(startDate);
+
+            console.log(`Fetching time offs from ${formattedStartDate} as ${availabilityType}`);
+
+            // Build query parameters
+            const params = {
+                start_date: formattedStartDate,
+                availability_type: availabilityType
+            };
+
+            const response = await api.getTimeOffs(params);
+
+            // Update the global window.userTimeOffs with fresh data
+            if (response?.success) {
+                window.userTimeOffs = response.data;
+                return response.data;
+            }
+            return [];
+        } catch (error) {
+            console.error('Error fetching time offs:', error);
+            return [];
+        }
+    };
+
     // Convert API time-offs to calendar events
     const convertTimeOffsToEvents = (timeOffs) => {
         return timeOffs.map(timeOff => {
@@ -711,10 +739,45 @@ const BookingService = (() => {
         }
     };
 
+    // Delete a time off
+    const deleteTimeOff = async (timeOffId) => {
+        try {
+            // Show spinner
+            Utils.toggleSpinner(true);
+
+            console.log('Deleting time off with ID:', timeOffId);
+
+            // Use API client to delete time off
+            const response = await api.deleteTimeOff(timeOffId);
+
+            if (!response?.success) {
+                throw new Error(response?.message || 'Failed to delete time off');
+            }
+
+            // Show success message
+            Utils.showMessage('Time off deleted successfully!', 'success');
+
+            // Remove the time off event element from the calendar DOM
+            const timeOffElement = document.querySelector(`.event[data-event-id="${timeOffId}"]`);
+            if (timeOffElement) {
+                timeOffElement.remove();
+            }
+
+        } catch (error) {
+            // Show error message
+            Utils.showMessage(`Failed to delete time off: ${error.message}`, 'error', 8000);
+            console.error('Error deleting time off:', error);
+        } finally {
+            // Hide spinner
+            Utils.toggleSpinner(false);
+        }
+    };
+
     return {
         fetchBookings,
         convertBookingsToEvents,
         getTimeOffs,
+        fetchTimeOffs,
         convertTimeOffsToEvents,
         submitBooking,
         updateBooking,
@@ -722,6 +785,7 @@ const BookingService = (() => {
         createNewBooking,
         deleteBooking,
         createTimeOff,
-        submitTimeOff
+        submitTimeOff,
+        deleteTimeOff
     };
 })();
