@@ -9,123 +9,216 @@
     <link rel="stylesheet" href="{% static 'css/booking.css' %}">
 </head>
 <body>
-    <!-- Company Header -->
-    <div class="booking-header">
-        <h1 class="company-name">{{ company_name }}</h1>
-        <p class="booking-header-subtitle">Book Your Appointment</p>
+    <!-- Progress Indicator -->
+    <div class="progress-container">
+        <div class="progress-wrapper">
+            <div class="progress-steps">
+                <div class="progress-line">
+                    <div class="progress-line-fill" id="progress-line-fill"></div>
+                </div>
+                <div class="progress-step active" data-step="1">
+                    <div class="progress-step-circle">1</div>
+                    <div class="progress-step-label">Services</div>
+                </div>
+                <div class="progress-step" data-step="2">
+                    <div class="progress-step-circle">2</div>
+                    <div class="progress-step-label">Professional</div>
+                </div>
+                <div class="progress-step" data-step="3">
+                    <div class="progress-step-circle">3</div>
+                    <div class="progress-step-label">Date & Time</div>
+                </div>
+                <div class="progress-step" data-step="4">
+                    <div class="progress-step-circle">4</div>
+                    <div class="progress-step-label">Your Details</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="booking-container">
         <!-- Main Content -->
         <div class="booking-main">
-            <!-- Services Section -->
-            <div class="booking-section" id="services-section">
-                <div class="section-header">
-                    <div class="section-number">1</div>
-                    <h2 class="section-title">Choose Services</h2>
-                </div>
-                <p class="section-subtitle">Select one or more services you'd like to book</p>
+            <!-- Step 1: Services -->
+            <div class="step-container active" id="step-1">
+                <div class="booking-section">
+                    <div class="section-header">
+                        <div class="section-number">1</div>
+                        <h2 class="section-title">Choose Services</h2>
+                    </div>
+                    <p class="section-subtitle">Select one or more services you'd like to book</p>
 
-                <div class="service-tabs">
-                    <button class="service-tab active" data-category="all">All Services</button>
-                    <button class="service-tab" data-category="men">Men</button>
-                    <button class="service-tab" data-category="women">Women</button>
-                </div>
+                    <div class="service-tabs">
+{#                        <button class="service-tab active" data-category="all">All Services</button>#}
+                        <div class="loading">Loading categories...</div>
+{#                        <button class="service-tab" data-category="men">Men</button>#}
+{#                        <button class="service-tab" data-category="women">Women</button>#}
+                    </div>
 
-                <div class="services-grid" id="services-grid">
-                    <div class="loading">Loading services...</div>
+                    <div class="step-content">
+                        <div class="services-grid" id="services-grid">
+                            <div class="loading">Loading services...</div>
+                        </div>
+                        <div id="services-selection-count" style="display: none;" class="selection-count">
+                            <span class="selection-count-badge" id="services-count">0</span>
+                            <span id="services-count-text">services selected</span>
+                        </div>
+                    </div>
+
+                    <div class="step-navigation">
+                        <button class="nav-button" disabled>
+                            <span class="nav-button-icon">←</span>
+                            <span>Previous</span>
+                        </button>
+                        <button class="nav-button primary" id="next-step-1" disabled>
+                            <span>Next: Choose Professional</span>
+                            <span class="nav-button-icon">→</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Staff Section -->
-            <div class="booking-section" id="staff-section">
-                <div class="section-header">
-                    <div class="section-number inactive" id="staff-number">2</div>
-                    <h2 class="section-title">Select Professional</h2>
-                </div>
-                <p class="section-subtitle">Choose your preferred professional or any available</p>
+            <!-- Step 2: Staff -->
+            <div class="step-container" id="step-2">
+                <div class="booking-section">
+                    <div class="section-header">
+                        <div class="section-number">2</div>
+                        <h2 class="section-title">Select Professional</h2>
+                    </div>
+                    <p class="section-subtitle">Choose your preferred professional or any available</p>
 
-                <div class="staff-grid" id="staff-grid">
-                    <div class="loading">Select a service first</div>
+                    <div class="step-content">
+                        <div class="staff-grid" id="staff-grid">
+                            <div class="loading">Loading professionals...</div>
+                        </div>
+                    </div>
+
+                    <div class="step-navigation">
+                        <button class="nav-button" id="prev-step-2">
+                            <span class="nav-button-icon">←</span>
+                            <span>Previous</span>
+                        </button>
+                        <button class="nav-button primary" id="next-step-2" disabled>
+                            <span>Next: Pick Date & Time</span>
+                            <span class="nav-button-icon">→</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Date & Time Section -->
-            <div class="booking-section" id="datetime-section">
-                <div class="section-header">
-                    <div class="section-number inactive" id="datetime-number">3</div>
-                    <h2 class="section-title">Pick Date & Time</h2>
-                </div>
-                <p class="section-subtitle">Choose when you'd like your appointment</p>
+            <!-- Step 3: Date & Time -->
+            <div class="step-container" id="step-3">
+                <div class="booking-section">
+                    <div class="section-header">
+                        <div class="section-number">3</div>
+                        <h2 class="section-title">Pick Date & Time</h2>
+                    </div>
+                    <p class="section-subtitle">Choose when you'd like your appointment</p>
 
-                <div class="datetime-container">
-                    <div class="date-picker">
-                        <div class="calendar-header">
-                            <div class="calendar-month" id="calendar-month">December 2024</div>
-                            <div class="calendar-nav">
-                                <button class="nav-btn" id="prev-month">←</button>
-                                <button class="nav-btn" id="next-month">→</button>
+                    <div class="step-content">
+                        <div class="datetime-container">
+                            <div class="date-picker">
+                                <div class="calendar-header">
+                                    <div class="calendar-month" id="calendar-month">December 2024</div>
+                                    <div class="calendar-nav">
+                                        <button class="nav-btn" id="prev-month">←</button>
+                                        <button class="nav-btn" id="next-month">→</button>
+                                    </div>
+                                </div>
+                                <div class="calendar-grid" id="calendar-grid">
+                                    <div class="calendar-day-header">Sun</div>
+                                    <div class="calendar-day-header">Mon</div>
+                                    <div class="calendar-day-header">Tue</div>
+                                    <div class="calendar-day-header">Wed</div>
+                                    <div class="calendar-day-header">Thu</div>
+                                    <div class="calendar-day-header">Fri</div>
+                                    <div class="calendar-day-header">Sat</div>
+                                </div>
+                            </div>
+
+                            <div class="time-slots-container">
+                                <div class="calendar-month" style="margin-bottom: 15px;">Available Times</div>
+                                <div class="time-slots-grid" id="time-slots-grid">
+                                    <div class="empty-state">
+                                        <div class="empty-state-icon">🕐</div>
+                                        <div>Select a date to view available times</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="calendar-grid" id="calendar-grid">
-                            <div class="calendar-day-header">Sun</div>
-                            <div class="calendar-day-header">Mon</div>
-                            <div class="calendar-day-header">Tue</div>
-                            <div class="calendar-day-header">Wed</div>
-                            <div class="calendar-day-header">Thu</div>
-                            <div class="calendar-day-header">Fri</div>
-                            <div class="calendar-day-header">Sat</div>
-                        </div>
                     </div>
 
-                    <div class="time-slots-container">
-                        <div class="calendar-month" style="margin-bottom: 15px;">Available Times</div>
-                        <div class="time-slots-grid" id="time-slots-grid">
-                            <div class="empty-state">
-                                <div class="empty-state-icon">🕐</div>
-                                <div>Select a date to view available times</div>
-                            </div>
-                        </div>
+                    <div class="step-navigation">
+                        <button class="nav-button" id="prev-step-3">
+                            <span class="nav-button-icon">←</span>
+                            <span>Previous</span>
+                        </button>
+                        <button class="nav-button primary" id="next-step-3" disabled>
+                            <span>Next: Your Details</span>
+                            <span class="nav-button-icon">→</span>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Customer Information Section -->
-            <div class="booking-section" id="customer-section">
-                <div class="section-header">
-                    <div class="section-number inactive" id="customer-number">4</div>
-                    <h2 class="section-title">Your Information</h2>
-                </div>
-                <p class="section-subtitle">We'll use this to confirm your booking</p>
+            <!-- Step 4: Customer Information -->
+            <div class="step-container" id="step-4">
+                <div class="booking-section">
+                    <div class="section-header">
+                        <div class="section-number">4</div>
+                        <h2 class="section-title">Your Information</h2>
+                    </div>
+                    <p class="section-subtitle">We'll use this to confirm your booking</p>
 
-                <form class="customer-form" id="customer-form">
-                    <div class="form-group">
-                        <label class="form-label" for="first-name">First Name *</label>
-                        <input type="text" id="first-name" class="form-input" required>
+                    <div class="step-content">
+                        <form class="customer-form" id="customer-form">
+                            <div class="form-group">
+                                <label class="form-label" for="first-name">First Name *</label>
+                                <input type="text" class="form-input" id="first-name" placeholder="John" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="last-name">Last Name *</label>
+                                <input type="text" class="form-input" id="last-name" placeholder="Doe" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="email">Email *</label>
+                                <input type="email" class="form-input" id="email" placeholder="john.doe@example.com" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="phone">Phone Number *</label>
+                                <input type="tel" class="form-input" id="phone" placeholder="+1 (555) 123-4567" required>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label class="form-label" for="notes">Additional Notes (Optional)</label>
+                                <textarea class="form-input" id="notes" placeholder="Any special requests or information we should know..."></textarea>
+                            </div>
+                        </form>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label" for="last-name">Last Name *</label>
-                        <input type="text" id="last-name" class="form-input" required>
+
+                    <div class="step-navigation">
+                        <button class="nav-button" id="prev-step-4">
+                            <span class="nav-button-icon">←</span>
+                            <span>Previous</span>
+                        </button>
+                        <button class="nav-button primary" id="book-button" disabled>
+                            <span>Complete Booking</span>
+                            <span class="nav-button-icon">✓</span>
+                        </button>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label" for="email">Email *</label>
-                        <input type="email" id="email" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="phone">Phone Number *</label>
-                        <input type="tel" id="phone" class="form-input" required>
-                    </div>
-                    <div class="form-group full-width">
-                        <label class="form-label" for="notes">Additional Notes (Optional)</label>
-                        <textarea id="notes" class="form-input" placeholder="Any special requests or preferences..."></textarea>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
 
-        <!-- Summary Sidebar -->
-        <div class="booking-summary">
-            <h3 class="summary-title">Booking Summary</h3>
+        <!-- Booking Summary Sidebar -->
+        <div class="booking-summary" id="booking-summary">
+            <div class="summary-toggle" id="summary-toggle">
+                <h3 class="summary-title">Booking Summary</h3>
+                <span class="summary-toggle-icon">▲</span>
+            </div>
 
             <div class="summary-section">
                 <div class="summary-label">Services</div>
@@ -152,8 +245,6 @@
                 <div class="summary-total-label">Total</div>
                 <div class="summary-total-price" id="summary-total">€0</div>
             </div>
-
-            <button class="book-button" id="book-button" disabled>Complete Booking</button>
         </div>
     </div>
 
@@ -161,6 +252,7 @@
         // Inject company_id into the booking state
         const bookingState = {
             companyId: '{{ company_id }}',
+            currentStep: 1,
             services: [],
             selectedServices: new Set(),
             selectedStaff: null,

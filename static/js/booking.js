@@ -1,6 +1,8 @@
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     initializeBooking();
+    setupStepNavigation();
+    setupSummaryToggle();
 });
 
 async function initializeBooking() {
@@ -8,6 +10,162 @@ async function initializeBooking() {
     renderCalendar();
     setupEventListeners();
 }
+
+// ========================================
+// Multi-Step Navigation
+// ========================================
+
+function setupStepNavigation() {
+    // Next buttons
+    document.getElementById('next-step-1').addEventListener('click', () => goToStep(2));
+    document.getElementById('next-step-2').addEventListener('click', () => goToStep(3));
+    document.getElementById('next-step-3').addEventListener('click', () => goToStep(4));
+
+    // Previous buttons
+    document.getElementById('prev-step-2').addEventListener('click', () => goToStep(1));
+    document.getElementById('prev-step-3').addEventListener('click', () => goToStep(2));
+    document.getElementById('prev-step-4').addEventListener('click', () => goToStep(3));
+
+    // Progress step navigation (click on progress circles)
+    document.querySelectorAll('.progress-step').forEach(step => {
+        step.addEventListener('click', function() {
+            const targetStep = parseInt(this.dataset.step);
+            if (canNavigateToStep(targetStep)) {
+                goToStep(targetStep);
+            }
+        });
+    });
+}
+
+function canNavigateToStep(step) {
+    // Can always go back to previous steps
+    if (step <= bookingState.currentStep) return true;
+
+    // Check requirements for forward navigation
+    if (step === 2) return bookingState.selectedServices.size > 0;
+    if (step === 3) return bookingState.selectedStaff !== null;
+    if (step === 4) return bookingState.selectedDate && bookingState.selectedTime;
+
+    return false;
+}
+
+function goToStep(stepNumber) {
+    const currentStepEl = document.getElementById(`step-${bookingState.currentStep}`);
+    const nextStepEl = document.getElementById(`step-${stepNumber}`);
+
+    if (!nextStepEl) return;
+
+    // Add sliding out animation
+    currentStepEl.classList.add('sliding-out');
+
+    setTimeout(() => {
+        // Hide current step
+        currentStepEl.classList.remove('active', 'sliding-out');
+
+        // Show next step
+        nextStepEl.classList.add('active');
+
+        // Update state
+        bookingState.currentStep = stepNumber;
+
+        // Update progress indicator
+        updateProgressIndicator();
+
+        // Scroll to top smoothly
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Load data for the step if needed
+        if (stepNumber === 2) {
+            renderStaff();
+        }
+        if (stepNumber === 3 && bookingState.selectedDate) {
+            fetchAvailableSlots();
+        }
+    }, 300);
+}
+
+function updateProgressIndicator() {
+    const steps = document.querySelectorAll('.progress-step');
+    const progressFill = document.getElementById('progress-line-fill');
+
+    steps.forEach((step, index) => {
+        const stepNum = index + 1;
+
+        if (stepNum < bookingState.currentStep) {
+            step.classList.add('completed');
+            step.classList.remove('active');
+        } else if (stepNum === bookingState.currentStep) {
+            step.classList.add('active');
+            step.classList.remove('completed');
+        } else {
+            step.classList.remove('active', 'completed');
+        }
+    });
+
+    // Update progress line fill
+    const progress = ((bookingState.currentStep - 1) / 3) * 100;
+    progressFill.style.width = `${progress}%`;
+}
+
+function updateStepButtons() {
+    // Step 1: Enable next if services selected
+    const nextBtn1 = document.getElementById('next-step-1');
+    if (nextBtn1) {
+        nextBtn1.disabled = bookingState.selectedServices.size === 0;
+    }
+
+    // Step 2: Enable next if staff selected
+    const nextBtn2 = document.getElementById('next-step-2');
+    if (nextBtn2) {
+        nextBtn2.disabled = !bookingState.selectedStaff;
+    }
+
+    // Step 3: Enable next if date and time selected
+    const nextBtn3 = document.getElementById('next-step-3');
+    if (nextBtn3) {
+        nextBtn3.disabled = !bookingState.selectedDate || !bookingState.selectedTime;
+    }
+
+    // Step 4: Enable book button if form is valid
+    updateBookButton();
+}
+
+function updateBookButton() {
+    const bookButton = document.getElementById('book-button');
+    if (!bookButton) return;
+
+    const firstName = document.getElementById('first-name')?.value.trim() || '';
+    const lastName = document.getElementById('last-name')?.value.trim() || '';
+    const email = document.getElementById('email')?.value.trim() || '';
+    const phone = document.getElementById('phone')?.value.trim() || '';
+
+    const canBook = bookingState.services.length > 0 &&
+                   bookingState.selectedStaff &&
+                   bookingState.selectedDate &&
+                   bookingState.selectedTime &&
+                   firstName && lastName && email && phone;
+
+    bookButton.disabled = !canBook;
+}
+
+// ========================================
+// Summary Toggle (Mobile)
+// ========================================
+
+function setupSummaryToggle() {
+    const summary = document.getElementById('booking-summary');
+    const toggle = document.getElementById('summary-toggle');
+
+    if (toggle) {
+        toggle.addEventListener('click', () => {
+            summary.classList.toggle('expanded');
+        });
+    }
+}
+
+// ========================================
+// Service Selection
+// ========================================
 
 // Fetch services from API
 async function fetchServices() {
@@ -17,6 +175,7 @@ async function fetchServices() {
 
         if (data.success && data.data) {
             bookingState.allServices = data.data;
+            renderCategories();
             renderServices('all');
         }
     } catch (error) {
@@ -26,22 +185,43 @@ async function fetchServices() {
                 <div class="empty-state-icon">⚠️</div>
                 <div>Failed to load services</div>
             </div>`;
+        document.querySelector('.service-tabs').innerHTML = `
+            <div class="empty-state">Failed to load categories</div>`;
     }
 }
 
-// Fetch staff from API
-async function fetchStaff() {
-    try {
-        const response = await fetch(`http://127.0.0.1:8000/api/v1/services/companies/${bookingState.companyId}/users`);
-        const data = await response.json();
+// Render categories dynamically
+function renderCategories() {
+    const tabsContainer = document.querySelector('.service-tabs');
+    tabsContainer.innerHTML = '';
 
-        if (data.success && data.data) {
-            bookingState.allStaff = data.data;
-            renderStaff();
+    // Add "All Services" tab
+    const allTab = document.createElement('button');
+    allTab.className = 'service-tab active';
+    allTab.dataset.category = 'all';
+    allTab.textContent = 'All Services';
+    tabsContainer.appendChild(allTab);
+
+    // Add category tabs from API data
+    bookingState.allServices.forEach(category => {
+        if (category.services && category.services.length > 0) {
+            const tab = document.createElement('button');
+            tab.className = 'service-tab';
+            tab.dataset.category = category.id;
+            tab.dataset.categoryName = category.name;
+            tab.textContent = category.name;
+            tabsContainer.appendChild(tab);
         }
-    } catch (error) {
-        console.error('Error fetching staff:', error);
-    }
+    });
+
+    // Setup click handlers for tabs
+    tabsContainer.querySelectorAll('.service-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            tabsContainer.querySelectorAll('.service-tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            renderServices(this.dataset.category);
+        });
+    });
 }
 
 // Render services
@@ -49,12 +229,17 @@ function renderServices(category) {
     const grid = document.getElementById('services-grid');
     grid.innerHTML = '';
 
+    let hasServices = false;
+
     bookingState.allServices.forEach(cat => {
         if (cat.services && cat.services.length > 0) {
-            cat.services.forEach(service => {
-                if (service.status === 'active') {
-                    const shouldShow = category === 'all' || cat.name.toLowerCase() === category;
-                    if (shouldShow) {
+            // Filter by category: show all or match the selected category
+            const shouldShowCategory = category === 'all' || cat.id === category;
+
+            if (shouldShowCategory) {
+                cat.services.forEach(service => {
+                    if (service.status === 'active') {
+                        hasServices = true;
                         const price = service.discount_price || service.price;
                         const isSelected = bookingState.selectedServices.has(service.id);
 
@@ -76,48 +261,19 @@ function renderServices(category) {
                         card.addEventListener('click', () => toggleService(service.id, service.name, price, service.duration));
                         grid.appendChild(card);
                     }
-                }
-            });
+                });
+            }
         }
     });
-}
 
-// Render staff
-function renderStaff() {
-    const grid = document.getElementById('staff-grid');
-    grid.innerHTML = '';
-
-    // Add "Any Professional" option
-    const anyCard = document.createElement('div');
-    anyCard.className = 'staff-card';
-    anyCard.dataset.id = 'any';
-    anyCard.innerHTML = `
-        <div class="staff-avatar">👤</div>
-        <div class="staff-name">Any Available</div>
-        <div class="staff-role">No preference</div>
-    `;
-    anyCard.addEventListener('click', () => selectStaff('any', 'Any Available Professional'));
-    grid.appendChild(anyCard);
-
-    // Add staff members
-    bookingState.allStaff.forEach(item => {
-        if (item.user) {
-            const user = item.user;
-            const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
-            const initials = (user.first_name?.[0] || '') + (user.last_name?.[0] || '');
-
-            const card = document.createElement('div');
-            card.className = 'staff-card';
-            card.dataset.id = user.id;
-            card.innerHTML = `
-                <div class="staff-avatar">${initials || '👤'}</div>
-                <div class="staff-name">${fullName || 'Professional'}</div>
-                <div class="staff-role">Specialist</div>
-            `;
-            card.addEventListener('click', () => selectStaff(user.id, fullName));
-            grid.appendChild(card);
-        }
-    });
+    // Show empty state if no services found
+    if (!hasServices) {
+        grid.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">📋</div>
+                <div>No services available in this category</div>
+            </div>`;
+    }
 }
 
 // Toggle service selection
@@ -138,14 +294,107 @@ function toggleService(id, name, price, duration) {
         card.classList.toggle('selected');
     }
 
-    updateSummary();
+    // Debug logging
+    console.log('Service toggled:', {
+        id,
+        name,
+        totalSelected: bookingState.selectedServices.size
+    });
 
-    // Load staff if first service selected
-    if (bookingState.selectedServices.size === 1 && !bookingState.allStaff.length) {
-        fetchStaff();
-        document.getElementById('staff-number').classList.remove('inactive');
-    } else if (bookingState.selectedServices.size === 0) {
-        document.getElementById('staff-number').classList.add('inactive');
+    // Update selection count
+    updateServiceSelectionCount();
+    updateSummary();
+    updateStepButtons();
+
+    // Debug: Check button state
+    const nextBtn = document.getElementById('next-step-1');
+    console.log('Next button state:', {
+        exists: !!nextBtn,
+        disabled: nextBtn?.disabled,
+        selectedCount: bookingState.selectedServices.size
+    });
+}
+
+function updateServiceSelectionCount() {
+    const count = bookingState.selectedServices.size;
+    const countEl = document.getElementById('services-selection-count');
+    const badgeEl = document.getElementById('services-count');
+    const textEl = document.getElementById('services-count-text');
+
+    if (count > 0) {
+        countEl.style.display = 'inline-flex';
+        badgeEl.textContent = count;
+        textEl.textContent = count === 1 ? 'service selected' : 'services selected';
+    } else {
+        countEl.style.display = 'none';
+    }
+}
+
+// ========================================
+// Staff Selection
+// ========================================
+
+// Render staff based on selected services
+function renderStaff() {
+    const grid = document.getElementById('staff-grid');
+    grid.innerHTML = '';
+
+    // Collect unique staff from selected services
+    const staffMap = new Map();
+
+    bookingState.allServices.forEach(category => {
+        if (category.services) {
+            category.services.forEach(service => {
+                // Only consider staff from selected services
+                if (bookingState.selectedServices.has(service.id) && service.assigned_staff) {
+                    service.assigned_staff.forEach(staff => {
+                        if (!staffMap.has(staff.id)) {
+                            staffMap.set(staff.id, staff);
+                        }
+                    });
+                }
+            });
+        }
+    });
+
+    // Add "Any Professional" option
+    const anyCard = document.createElement('div');
+    anyCard.className = 'staff-card';
+    anyCard.dataset.id = 'any';
+    anyCard.innerHTML = `
+        <div class="staff-avatar">👤</div>
+        <div class="staff-name">Any Available</div>
+        <div class="staff-role">No preference</div>
+    `;
+    anyCard.addEventListener('click', () => selectStaff('any', 'Any Available Professional'));
+    grid.appendChild(anyCard);
+
+    // Add unique staff members from selected services
+    staffMap.forEach(staff => {
+        const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim();
+        const initials = (staff.first_name?.[0] || '') + (staff.last_name?.[0] || '');
+
+        const card = document.createElement('div');
+        card.className = 'staff-card';
+        card.dataset.id = staff.id;
+        card.innerHTML = `
+            <div class="staff-avatar">${initials || '👤'}</div>
+            <div class="staff-name">${fullName || 'Professional'}</div>
+            <div class="staff-role">Specialist</div>
+        `;
+        card.addEventListener('click', () => selectStaff(staff.id, fullName));
+        grid.appendChild(card);
+    });
+
+    // Show message if no staff available
+    if (staffMap.size === 0) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'empty-state';
+        messageDiv.innerHTML = `
+            <div class="empty-state-icon">ℹ️</div>
+            <div>Any available professional can provide the selected services</div>
+        `;
+        grid.appendChild(messageDiv);
     }
 }
 
@@ -159,14 +408,18 @@ function selectStaff(id, name) {
     });
     document.querySelector(`.staff-card[data-id="${id}"]`).classList.add('selected');
 
-    document.getElementById('datetime-number').classList.remove('inactive');
     updateSummary();
+    updateStepButtons();
 
     // Fetch available slots if date is selected
     if (bookingState.selectedDate) {
         fetchAvailableSlots();
     }
 }
+
+// ========================================
+// Calendar & Date Selection
+// ========================================
 
 // Calendar rendering
 function renderCalendar() {
@@ -228,16 +481,23 @@ function selectDate(date) {
     document.querySelectorAll('.calendar-day').forEach(day => {
         day.classList.remove('selected');
     });
-    document.querySelector(`.calendar-day[data-date="${date}"]`).classList.add('selected');
+    const selectedDay = document.querySelector(`.calendar-day[data-date="${date}"]`);
+    if (selectedDay) {
+        selectedDay.classList.add('selected');
+    }
 
-    document.getElementById('customer-number').classList.remove('inactive');
     updateSummary();
+    updateStepButtons();
 
     // Fetch available time slots
     if (bookingState.selectedStaff) {
         fetchAvailableSlots();
     }
 }
+
+// ========================================
+// Time Slot Selection
+// ========================================
 
 // Fetch available time slots
 async function fetchAvailableSlots() {
@@ -304,6 +564,7 @@ function selectTime(time) {
     event.target.classList.add('selected');
 
     updateSummary();
+    updateStepButtons();
 }
 
 // Format time to 12h format
@@ -314,6 +575,10 @@ function formatTime12h(time24) {
     const hour12 = hour % 12 || 12;
     return `${hour12}:${minutes} ${ampm}`;
 }
+
+// ========================================
+// Summary Updates
+// ========================================
 
 // Update summary
 function updateSummary() {
@@ -364,27 +629,13 @@ function updateSummary() {
     // Total
     const total = bookingState.services.reduce((sum, service) => sum + parseFloat(service.price), 0);
     document.getElementById('summary-total').textContent = `€${total.toFixed(2)}`;
-
-    // Enable/disable book button
-    const bookButton = document.getElementById('book-button');
-    const canBook = bookingState.services.length > 0 &&
-                   bookingState.selectedStaff &&
-                   bookingState.selectedDate &&
-                   bookingState.selectedTime;
-    bookButton.disabled = !canBook;
 }
 
-// Setup event listeners
-function setupEventListeners() {
-    // Service tabs
-    document.querySelectorAll('.service-tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-            document.querySelectorAll('.service-tab').forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-            renderServices(this.dataset.category);
-        });
-    });
+// ========================================
+// Event Listeners
+// ========================================
 
+function setupEventListeners() {
     // Calendar navigation
     document.getElementById('prev-month').addEventListener('click', () => {
         bookingState.currentMonth.setMonth(bookingState.currentMonth.getMonth() - 1);
@@ -398,9 +649,18 @@ function setupEventListeners() {
 
     // Book button
     document.getElementById('book-button').addEventListener('click', submitBooking);
+
+    // Form validation
+    const formInputs = document.querySelectorAll('#customer-form .form-input');
+    formInputs.forEach(input => {
+        input.addEventListener('input', updateBookButton);
+    });
 }
 
-// Submit booking
+// ========================================
+// Submit Booking
+// ========================================
+
 async function submitBooking() {
     const firstName = document.getElementById('first-name').value;
     const lastName = document.getElementById('last-name').value;
@@ -430,9 +690,30 @@ async function submitBooking() {
 
     console.log('Booking data:', bookingData);
 
-    // In production, send to API
-    alert('Booking submitted successfully! (Demo mode)');
+    // Show loading state
+    const bookButton = document.getElementById('book-button');
+    const originalText = bookButton.innerHTML;
+    bookButton.innerHTML = '<span>Processing...</span>';
+    bookButton.disabled = true;
 
-    // Redirect to confirmation page
-    // window.location.href = `/customers/booking/${bookingState.companyId}/confirmation`;
+    try {
+        // In production, send to API
+        // const response = await fetch('/api/bookings/create', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify(bookingData)
+        // });
+        // const result = await response.json();
+
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Redirect to confirmation page
+        window.location.href = `/customers/booking/${bookingState.companyId}/confirmation`;
+    } catch (error) {
+        console.error('Booking error:', error);
+        alert('Something went wrong. Please try again.');
+        bookButton.innerHTML = originalText;
+        bookButton.disabled = false;
+    }
 }

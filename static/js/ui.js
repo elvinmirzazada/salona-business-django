@@ -633,7 +633,7 @@ const UI = (() => {
             newDeleteButton.addEventListener('click', () => {
                 // Hide the popup first
                 popup.style.display = 'none';
-
+                
                 // Show confirmation popup
                 showConfirmationPopup('Are you sure you want to delete this time off?', () => {
                     BookingService.deleteTimeOff(event.id);

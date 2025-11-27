@@ -26,7 +26,7 @@ class GeneralView(View):
         # Check if tokens were refreshed during this request
         if hasattr(request, '_refreshed_access_token'):
             return request._refreshed_access_token, request._refreshed_refresh_token
-
+        
         # Otherwise get from cookies
         return request.COOKIES.get('access_token'), request.COOKIES.get('refresh_token')
 
@@ -47,10 +47,10 @@ class GeneralView(View):
                 return True, request._refreshed_access_token, request._refreshed_refresh_token
             else:
                 return False, None, None
-
+        
         # Mark that we're attempting to refresh
         request._token_refresh_attempted = True
-
+        
         refresh_token = request.COOKIES.get('refresh_token')
 
         if not refresh_token:
