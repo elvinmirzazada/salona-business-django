@@ -170,7 +170,7 @@ function setupSummaryToggle() {
 // Fetch services from API
 async function fetchServices() {
     try {
-        const apiUrl = window.EXTERNAL_API_URL || 'http://localhost:8000';
+        const apiUrl = window.API_BASE_URL;
         const response = await fetch(`${apiUrl}/api/v1/services/companies/${bookingState.companyId}/services`);
         const data = await response.json();
 

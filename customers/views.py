@@ -227,6 +227,7 @@ def booking(request, company_id):
     return render(request, 'customers/booking.html', {
         'company_id': company_id,
         'company_name': company_name,
+        'API_BASE_URL': getattr(settings, 'API_BASE_URL', 'https://api.salona.me')
     })
 
 
