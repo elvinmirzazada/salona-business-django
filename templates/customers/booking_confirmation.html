@@ -28,7 +28,7 @@
             <h1 class="confirmation-title">🎉 Booking Scheduled!</h1>
             <p class="confirmation-subtitle">
                 Thank you for choosing us! We're excited to see you soon.<br>
-                A confirmation email has been sent to <strong>{{ customer_email }}</strong>
+                A confirmation email has been sent to <strong id="customer-email">Loading...</strong>
             </p>
 
             <!-- Booking Details -->
@@ -39,23 +39,18 @@
                         Services
                     </div>
                     <div class="detail-value">
-                        <ul class="service-list">
-                            {% for service in services %}
-                            <li class="service-item">
-                                <div class="service-name">{{ service.name }}</div>
-                                <div class="service-meta">{{ service.duration }} min • €{{ service.price }}</div>
-                            </li>
-                            {% endfor %}
+                        <ul class="service-list" id="services-list">
+                            <li class="service-item">Loading...</li>
                         </ul>
                     </div>
                 </div>
 
-                <div class="detail-row">
+                <div class="detail-row" id="professional-row" style="display: none;">
                     <div class="detail-label">
                         <span class="detail-label-icon">👤</span>
                         Professional
                     </div>
-                    <div class="detail-value">{{ professional_name }}</div>
+                    <div class="detail-value" id="professional-name">Loading...</div>
                 </div>
 
                 <div class="detail-row">
@@ -63,9 +58,8 @@
                         <span class="detail-label-icon">📅</span>
                         Date & Time
                     </div>
-                    <div class="detail-value">
-                        {{ booking_date|date:"l, F j, Y" }}<br>
-                        <span style="font-size: 1.125rem; color: var(--primary-color);">{{ booking_time }}</span>
+                    <div class="detail-value" id="datetime-info">
+                        Loading...
                     </div>
                 </div>
 
@@ -74,8 +68,8 @@
                         <span class="detail-label-icon">💰</span>
                         Total
                     </div>
-                    <div class="detail-value" style="font-size: 1.5rem; color: var(--primary-color);">
-                        €{{ total_price }}
+                    <div class="detail-value" style="font-size: 1.5rem; color: var(--primary-color);" id="total-price">
+                        €0.00
                     </div>
                 </div>
             </div>
@@ -91,10 +85,12 @@
                         <span class="address-icon">🏢</span>
                         <strong>{{ company_name }}</strong>
                     </div>
+                    {% if venue_address %}
                     <div class="venue-address-line">
                         <span class="address-icon">📍</span>
-                        {{ venue_address|default:"Address not available" }}
+                        {{ venue_address }}
                     </div>
+                    {% endif %}
                     {% if venue_city and venue_postal_code %}
                     <div class="venue-address-line">
                         <span class="address-icon">🗺️</span>
@@ -145,6 +141,148 @@
     </div>
 
     <script>
+        const API_BASE_URL = '{{ API_BASE_URL }}';
+        const BOOKING_ID = '{{ booking_id }}';
+
+        // Fetch booking data from API
+        async function fetchBookingData() {
+            if (!BOOKING_ID || BOOKING_ID === 'None') {
+                console.error('No booking ID provided');
+                showError('Booking ID not found');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/v1/bookings/${BOOKING_ID}`);
+                const result = await response.json();
+
+                console.log('Booking data fetched:', result);
+
+                if (result.success && result.data) {
+                    displayBookingData(result.data);
+
+                    // Trigger confetti animation
+                    setTimeout(createConfetti, 500);
+                } else {
+                    throw new Error(result.message || 'Failed to fetch booking data');
+                }
+            } catch (error) {
+                console.error('Error fetching booking data:', error);
+                showError('Failed to load booking details. Please contact us for confirmation.');
+            }
+        }
+
+        // Display booking data on the page
+        function displayBookingData(bookingData) {
+            // Update customer email
+            const customerEmail = bookingData.customer?.email || 'your email';
+            const customerName = `${bookingData.customer?.first_name || ''} ${bookingData.customer?.last_name || ''}`.trim();
+            document.getElementById('customer-email').textContent = customerEmail;
+
+            // Update services list
+            const servicesList = document.getElementById('services-list');
+            if (bookingData.booking_services && bookingData.booking_services.length > 0) {
+                servicesList.innerHTML = bookingData.booking_services.map(bookingService => {
+                    const service = bookingService.category_service;
+                    const price = service.discount_price || service.price || 0;
+                    return `
+                        <li class="service-item">
+                            <div class="service-name">${service.name}</div>
+                            <div class="service-meta">${service.duration} min • €${parseFloat(price).toFixed(2)}</div>
+                        </li>
+                    `;
+                }).join('');
+            } else {
+                servicesList.innerHTML = '<li class="service-item">No services found</li>';
+            }
+
+            // Update professional name if available
+            const professionalRow = document.getElementById('professional-row');
+            const professionalName = document.getElementById('professional-name');
+
+            if (bookingData.booking_services && bookingData.booking_services.length > 0) {
+                // Collect unique professionals from all booking services
+                const professionals = new Set();
+
+                bookingData.booking_services.forEach(bookingService => {
+                    if (bookingService.assigned_staff) {
+                        const staff = bookingService.assigned_staff;
+                        const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim();
+                        if (fullName) {
+                            professionals.add(fullName);
+                        }
+                    }
+                });
+
+                if (professionals.size > 0) {
+                    professionalRow.style.display = 'flex';
+                    // Display all unique professionals
+                    professionalName.textContent = Array.from(professionals).join(', ');
+                } else {
+                    professionalRow.style.display = 'none';
+                }
+            } else {
+                professionalRow.style.display = 'none';
+            }
+
+            // Update date and time
+            const datetimeInfo = document.getElementById('datetime-info');
+            if (bookingData.start_at) {
+                const startDate = new Date(bookingData.start_at);
+                const endDate = bookingData.end_at ? new Date(bookingData.end_at) : null;
+
+                // Format date
+                const dateStr = startDate.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+
+                // Format time
+                const timeStr = startDate.toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+
+                const endTimeStr = endDate ? endDate.toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                }) : '';
+
+                datetimeInfo.innerHTML = `
+                    ${dateStr}<br>
+                    <span style="font-size: 1.125rem; color: var(--primary-color);">
+                        ${timeStr}${endTimeStr ? ' - ' + endTimeStr : ''}
+                    </span>
+                `;
+            } else {
+                datetimeInfo.textContent = 'Date not available';
+            }
+
+            // Update total price
+            const totalPrice = document.getElementById('total-price');
+            if (bookingData.total_price !== undefined) {
+                totalPrice.textContent = `€${parseFloat(bookingData.total_price).toFixed(2)}`;
+            } else {
+                totalPrice.textContent = '€0.00';
+            }
+
+            // Update booking status badge (optional - you can add this to the HTML if needed)
+            const status = bookingData.status || 'scheduled';
+            console.log('Booking status:', status);
+        }
+
+        // Show error message
+        function showError(message) {
+            document.querySelector('.confirmation-subtitle').innerHTML = `
+                <span style="color: var(--error-color);">⚠️ ${message}</span>
+            `;
+            document.getElementById('customer-email').textContent = '';
+        }
+
         // Confetti animation
         function createConfetti() {
             const container = document.getElementById('confetti-container');
@@ -169,9 +307,9 @@
             }
         }
 
-        // Trigger confetti on page load
+        // Load booking data when page loads
         window.addEventListener('load', () => {
-            setTimeout(createConfetti, 500);
+            fetchBookingData();
         });
     </script>
 </body>

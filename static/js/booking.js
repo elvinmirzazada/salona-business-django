@@ -358,18 +358,19 @@ function renderStaff() {
         }
     });
 
-    // Add "Any Professional" option
-    const anyCard = document.createElement('div');
-    anyCard.className = 'staff-card';
-    anyCard.dataset.id = 'any';
-    anyCard.innerHTML = `
+    if (staffMap.size === 0) {
+        // Add "Any Professional" option
+        const anyCard = document.createElement('div');
+        anyCard.className = 'staff-card';
+        anyCard.dataset.id = 'any';
+        anyCard.innerHTML = `
         <div class="staff-avatar">👤</div>
         <div class="staff-name">Any Available</div>
         <div class="staff-role">No preference</div>
     `;
-    anyCard.addEventListener('click', () => selectStaff('any', 'Any Available Professional'));
-    grid.appendChild(anyCard);
-
+        anyCard.addEventListener('click', () => selectStaff('any', 'Any Available Professional'));
+        grid.appendChild(anyCard);
+    }
     // Add unique staff members from selected services
     staffMap.forEach(staff => {
         const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim();
@@ -456,7 +457,9 @@ function renderCalendar() {
         const dayElement = document.createElement('div');
         dayElement.className = 'calendar-day';
         dayElement.textContent = day;
-        dayElement.dataset.date = date.toISOString().split('T')[0];
+        // Format date manually to avoid timezone issues
+        const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        dayElement.dataset.date = dateString;
 
         if (date < today) {
             dayElement.classList.add('disabled');
@@ -506,10 +509,87 @@ async function fetchAvailableSlots() {
     slotsGrid.innerHTML = '<div class="loading">Loading available times...</div>';
 
     try {
-        // Generate sample time slots (in production, fetch from API)
-        const slots = generateTimeSlots();
-        bookingState.availableTimeSlots = slots;
-        renderTimeSlots(slots);
+        const apiUrl = window.API_BASE_URL;
+        const staffId = bookingState.selectedStaff.id;
+        const dateFrom = bookingState.selectedDate;
+
+        let url, response, data;
+
+        // Call different endpoint based on staff selection
+        if (staffId === 'any') {
+            // Call company-level availabilities endpoint for "any" staff
+            url = `${apiUrl}/api/v1/companies/${bookingState.companyId}/availabilities?date_from=${dateFrom}&availability_type=daily`;
+        } else {
+            // Call user-specific availability endpoint
+            url = `${apiUrl}/api/v1/companies/${bookingState.companyId}/users/${staffId}/availability?date_from=${dateFrom}&availability_type=daily`;
+        }
+
+        console.log('Fetching availability from:', url);
+        response = await fetch(url);
+        data = await response.json();
+        console.log('Availability response:', data);
+
+        if (data.success && data.data) {
+            let allTimeSlots = [];
+
+            // Handle different response structures
+            if (staffId === 'any') {
+                // For "any" staff, data is an array of user availabilities
+                console.log('Processing array of availabilities for "any" staff');
+
+                if (Array.isArray(data.data) && data.data.length > 0) {
+                    // Merge all time slots from all available staff
+                    data.data.forEach(userAvailability => {
+                        if (userAvailability.daily && userAvailability.daily.time_slots) {
+                            allTimeSlots.push(...userAvailability.daily.time_slots);
+                        }
+                    });
+                    console.log('Merged time slots from all staff:', allTimeSlots);
+                } else {
+                    console.log('No staff availabilities found in array');
+                }
+            } else {
+                // For specific staff, data is a single object
+                console.log('Processing single staff availability');
+                const dailyData = data.data.daily;
+
+                if (dailyData && dailyData.time_slots) {
+                    allTimeSlots = dailyData.time_slots;
+                }
+            }
+
+            console.log('All time slots:', allTimeSlots);
+
+            // Check if we have any time slots
+            if (allTimeSlots.length === 0) {
+                console.log('No time slots available');
+                slotsGrid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📅</div>
+                        <div>No times available for this date</div>
+                        <div style="font-size: 14px; color: #6B7280; margin-top: 8px;">Please select a different date</div>
+                    </div>`;
+            } else {
+                // Convert time ranges to 30-minute slots
+                const slots = convertTimeRangesToSlots(allTimeSlots);
+                console.log('Converted slots:', slots);
+                bookingState.availableTimeSlots = slots;
+
+                if (slots.length === 0) {
+                    slotsGrid.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📅</div>
+                            <div>No times available for this date</div>
+                            <div style="font-size: 14px; color: #6B7280; margin-top: 8px;">Please select a different date</div>
+                        </div>`;
+                } else {
+                    renderTimeSlots(slots);
+                }
+            }
+        } else {
+            console.error('Invalid response format:', data);
+            throw new Error('Invalid response format');
+        }
     } catch (error) {
         console.error('Error fetching time slots:', error);
         slotsGrid.innerHTML = `
@@ -520,18 +600,30 @@ async function fetchAvailableSlots() {
     }
 }
 
-// Generate time slots (mock data)
-function generateTimeSlots() {
+// Convert API time ranges into 30-minute slots
+function convertTimeRangesToSlots(timeRanges) {
     const slots = [];
-    const startHour = 9;
-    const endHour = 18;
 
-    for (let hour = startHour; hour < endHour; hour++) {
-        for (let min of [0, 30]) {
+    timeRanges.forEach(range => {
+        if (!range.is_available) return;
+
+        const [startHour, startMin] = range.start_time.split(':').map(Number);
+        const [endHour, endMin] = range.end_time.split(':').map(Number);
+
+        // Convert to minutes for easier calculation
+        let currentMinutes = startHour * 60 + startMin;
+        const endMinutes = endHour * 60 + endMin;
+
+        // Generate 30-minute slots
+        while (currentMinutes < endMinutes) {
+            const hour = Math.floor(currentMinutes / 60);
+            const min = currentMinutes % 60;
             const time = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
-            slots.push({ time, available: Math.random() > 0.3 });
+
+            slots.push({ time, available: true });
+            currentMinutes += 30; // 30-minute intervals
         }
-    }
+    });
 
     return slots;
 }
@@ -540,6 +632,17 @@ function generateTimeSlots() {
 function renderTimeSlots(slots) {
     const grid = document.getElementById('time-slots-grid');
     grid.innerHTML = '';
+
+    // Check if slots array is empty
+    if (!slots || slots.length === 0) {
+        grid.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">📅</div>
+                <div>No times available for this date</div>
+                <div style="font-size: 14px; color: #6B7280; margin-top: 8px;">Please select a different date</div>
+            </div>`;
+        return;
+    }
 
     slots.forEach(slot => {
         const slotElement = document.createElement('div');
@@ -610,14 +713,18 @@ function updateSummary() {
     // Date & Time
     const datetimeContainer = document.getElementById('summary-datetime');
     if (bookingState.selectedDate && bookingState.selectedTime) {
-        const date = new Date(bookingState.selectedDate);
+        // Parse date correctly to avoid timezone issues
+        const [year, month, day] = bookingState.selectedDate.split('-').map(Number);
+        const date = new Date(year, month - 1, day);
         const dateStr = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
         datetimeContainer.innerHTML = `
             <div>${dateStr}</div>
             <div class="summary-item-details">${formatTime12h(bookingState.selectedTime)}</div>
         `;
     } else if (bookingState.selectedDate) {
-        const date = new Date(bookingState.selectedDate);
+        // Parse date correctly to avoid timezone issues
+        const [year, month, day] = bookingState.selectedDate.split('-').map(Number);
+        const date = new Date(year, month - 1, day);
         const dateStr = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
         datetimeContainer.innerHTML = `
             <div>${dateStr}</div>
@@ -674,22 +781,32 @@ async function submitBooking() {
         return;
     }
 
+    // Combine date and time into ISO datetime format
+    const startDateTime = new Date(`${bookingState.selectedDate}T${bookingState.selectedTime}:00`);
+    const startTimeISO = startDateTime.toISOString();
+
+    // Format services array with required structure
+    const servicesArray = bookingState.services.map(service => ({
+        category_service_id: service.id,
+        user_id: bookingState.selectedStaff.id === 'any' ? null : bookingState.selectedStaff.id,
+        notes: notes || ""
+    }));
+
     const bookingData = {
         company_id: bookingState.companyId,
-        services: Array.from(bookingState.selectedServices),
-        professional_id: bookingState.selectedStaff.id,
-        date: bookingState.selectedDate,
-        time: bookingState.selectedTime,
-        customer: {
+        start_time: startTimeISO,
+        services: servicesArray,
+        notes: notes || "",
+        customer_info: {
+            id: null, // Set to null for new customers, or use existing customer ID if available
             first_name: firstName,
             last_name: lastName,
             email: email,
-            phone: phone,
-            notes: notes
+            phone: phone
         }
     };
 
-    console.log('Booking data:', bookingData);
+    console.log('Booking data to be sent:', bookingData);
 
     // Show loading state
     const bookButton = document.getElementById('book-button');
@@ -698,22 +815,29 @@ async function submitBooking() {
     bookButton.disabled = true;
 
     try {
-        // In production, send to API
-        // const response = await fetch('/api/bookings/create', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(bookingData)
-        // });
-        // const result = await response.json();
+        const apiUrl = window.API_BASE_URL;
+        const response = await fetch(`${apiUrl}/api/v1/bookings`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(bookingData)
+        });
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        const result = await response.json();
+        console.log('Booking response:', result);
 
-        // Redirect to confirmation page
-        window.location.href = `/customers/booking/${bookingState.companyId}/confirmation`;
+        if (response.ok && result.success && result.data) {
+            // Successful booking - redirect to confirmation page with booking ID
+            // The confirmation page will fetch the booking data from the API
+            window.location.href = `/customers/booking/${bookingState.companyId}/confirmation?booking_id=${result.data.id}`;
+        } else {
+            // Handle API error
+            throw new Error(result.message || 'Failed to create booking');
+        }
     } catch (error) {
         console.error('Booking error:', error);
-        alert('Something went wrong. Please try again.');
+        alert(error.message || 'Something went wrong. Please try again.');
         bookButton.innerHTML = originalText;
         bookButton.disabled = false;
     }

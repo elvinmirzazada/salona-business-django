@@ -68,6 +68,22 @@ def fetch_company_details(company_id):
         logger.error(f"Error fetching company details: {e}")
     return None
 
+def fetch_company_address(company_id):
+    """Fetch company address from API"""
+    try:
+        api_url = get_api_url(f"companies/{company_id}/address")
+        response = requests.get(api_url, timeout=10)
+
+        if response.ok:
+            data = response.json()
+            if data.get('success') and data.get('data'):
+                return data['data']
+        else:
+            logger.error(f"Failed to fetch company address: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error fetching company address: {e}")
+    return None
+
 
 def get_professional_name(company_id, professional_id):
     """Get professional name by ID"""
@@ -261,54 +277,44 @@ def booking_confirmation(request, company_id):
 
     company_name = company.get('name', 'Salon')
 
-    # Get booking data from session or query parameters
-    # In production, this would come from the database after booking creation
-    booking_data = {
-        'customer_email': request.session.get('customer_email', 'customer@example.com'),
-        'services': request.session.get('booking_services', [
-            {'name': 'Sample Service', 'duration': 60, 'price': '50.00'}
-        ]),
-        'professional_name': request.session.get('professional_name', 'Any Available Professional'),
-        'booking_date': request.session.get('booking_date', datetime.now().strftime('%Y-%m-%d')),
-        'booking_time': request.session.get('booking_time', '10:00 AM'),
-        'total_price': request.session.get('total_price', '50.00'),
-    }
+    # Get booking_id from query parameters
+    booking_id = request.GET.get('booking_id')
 
-    # Parse booking date if it's a string
-    try:
-        if isinstance(booking_data['booking_date'], str):
-            booking_date_obj = datetime.strptime(booking_data['booking_date'], '%Y-%m-%d')
-        else:
-            booking_date_obj = booking_data['booking_date']
-    except:
-        booking_date_obj = datetime.now()
+    # Fetch company address from dedicated address endpoint
+    address_data = fetch_company_address(company_id)
 
-    # Get venue information from company data
-    venue_address = company.get('address', '')
-    venue_city = company.get('city', '')
-    venue_postal_code = company.get('postal_code', '')
-    venue_phone = company.get('phone', '')
+    # Get venue information from address data
+    venue_address = ''
+    venue_city = ''
+    venue_postal_code = ''
+    venue_country = ''
+    venue_phone = company.get('phone', '')  # Phone comes from company details
+
+    if address_data:
+        venue_address = address_data.get('address', '')
+        venue_city = address_data.get('city', '')
+        venue_postal_code = address_data.get('zip', '')  # API uses 'zip' field
+        venue_country = address_data.get('country', '')
 
     # Generate Google Maps link if address exists
     venue_maps_link = None
     if venue_address:
         full_address = f"{venue_address}, {venue_postal_code} {venue_city}".strip(', ')
+        if venue_country:
+            full_address += f", {venue_country}"
         venue_maps_link = f"https://www.google.com/maps/search/?api=1&query={full_address.replace(' ', '+')}"
 
     context = {
         'company_id': company_id,
         'company_name': company_name,
-        'customer_email': booking_data['customer_email'],
-        'services': booking_data['services'],
-        'professional_name': booking_data['professional_name'],
-        'booking_date': booking_date_obj,
-        'booking_time': booking_data['booking_time'],
-        'total_price': booking_data['total_price'],
+        'booking_id': booking_id,
         'venue_address': venue_address,
         'venue_city': venue_city,
         'venue_postal_code': venue_postal_code,
+        'venue_country': venue_country,
         'venue_phone': venue_phone,
         'venue_maps_link': venue_maps_link,
+        'API_BASE_URL': getattr(settings, 'API_BASE_URL', 'https://api.salona.me')
     }
 
     return render(request, 'customers/booking_confirmation.html', context)
