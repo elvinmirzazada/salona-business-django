@@ -143,16 +143,24 @@ const Calendar = (() => {
                 // Filter bookings by staff ID
                 const filteredBookings = bookings.filter(booking => {
                     // Check if booking has user_ids field (array of staff IDs)
-                    if (booking.user_ids && Array.isArray(booking.user_ids)) {
+                    if (booking.user_ids && Array.isArray(booking.user_ids) && booking.user_ids.length > 0) {
                         return booking.user_ids.some(userId =>
                             selectedStaffIds.includes(userId.toString())
                         );
                     }
-                    // Fallback to booking_services check
-                    else if (booking.booking_services) {
-                        return booking.booking_services.some(service =>
-                            selectedStaffIds.includes(service.user_id.toString())
-                        );
+                    // Check booking_services for assigned_staff
+                    else if (booking.booking_services && Array.isArray(booking.booking_services)) {
+                        return booking.booking_services.some(service => {
+                            // Check assigned_staff object
+                            if (service.assigned_staff && service.assigned_staff.id) {
+                                return selectedStaffIds.includes(service.assigned_staff.id.toString());
+                            }
+                            // Fallback to user_id if assigned_staff is not present
+                            if (service.user_id) {
+                                return selectedStaffIds.includes(service.user_id.toString());
+                            }
+                            return false;
+                        });
                     }
                     return false;
                 });

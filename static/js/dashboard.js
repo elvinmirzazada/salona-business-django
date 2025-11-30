@@ -42,6 +42,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Setup view mode selector
                 setupViewModeSelector();
 
+                // Setup staff filter
+                setupStaffFilter();
+
             }
 
             // Ensure NotificationManager updates icon after everything is loaded
@@ -333,6 +336,56 @@ document.addEventListener('DOMContentLoaded', function() {
             Calendar.setViewMode('weekly');
         }
         console.log('✓ View mode applied:', mode);
+    };
+
+    // Setup staff filter dropdown
+    const setupStaffFilter = () => {
+        const staffFilter = document.getElementById('staff-filter');
+
+        if (!staffFilter) {
+            console.error('❌ Staff filter dropdown not found');
+            return;
+        }
+
+        console.log('✓ Staff filter dropdown found, setting up event listener');
+
+        // Add change event listener
+        staffFilter.addEventListener('change', async function(e) {
+            const selectedValue = e.target.value;
+            console.log('🔄 Staff filter changed to:', selectedValue);
+            console.log('📋 Selected value type:', typeof selectedValue);
+            console.log('📋 Staff filter element:', staffFilter);
+
+            try {
+                let selectedStaffIds = null;
+
+                // If "all" is selected, show all staff bookings
+                if (selectedValue && selectedValue !== '' && selectedValue !== 'all') {
+                    // Filter by specific staff member
+                    selectedStaffIds = [selectedValue];
+                    console.log('📋 Filtering calendar for staff IDs:', selectedStaffIds);
+                } else {
+                    console.log('📋 Showing all staff bookings (no filter)');
+                }
+
+                // Show loading indicator
+                Utils.toggleSpinner(true);
+
+                // Refresh the calendar with the selected staff filter
+                console.log('🔄 Calling Calendar.refreshCalendar with:', { selectedStaffIds });
+                await Calendar.refreshCalendar({ selectedStaffIds });
+                console.log('✓ Calendar refreshed with staff filter');
+
+                // Hide loading indicator
+                Utils.toggleSpinner(false);
+
+            } catch (error) {
+                console.error('❌ Error applying staff filter:', error);
+                Utils.toggleSpinner(false);
+            }
+        });
+
+        console.log('✓ Staff filter event listener attached');
     };
 
     // Initialize dashboard

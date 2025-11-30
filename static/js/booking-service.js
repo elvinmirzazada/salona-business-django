@@ -1,13 +1,56 @@
 // Booking service - handles all booking related operations
 const BookingService = (() => {
+    // Cache for booking data with 1-minute expiration
+    const bookingCache = {
+        data: null,
+        timestamp: null,
+        cacheKey: null,
+        expirationTime: 60000 // 1 minute in milliseconds
+    };
+
+    // Generate cache key based on date range and staff filter
+    const generateCacheKey = (startDate, endDate, staffIds = null) => {
+        const formattedStart = Utils.formatDate(startDate);
+        const formattedEnd = Utils.formatDate(endDate);
+        const staffKey = staffIds ? staffIds.sort().join(',') : 'all';
+        return `${formattedStart}_${formattedEnd}_${staffKey}`;
+    };
+
+    // Check if cache is valid
+    const isCacheValid = (cacheKey) => {
+        if (!bookingCache.data || !bookingCache.timestamp || bookingCache.cacheKey !== cacheKey) {
+            return false;
+        }
+        const now = Date.now();
+        const elapsed = now - bookingCache.timestamp;
+        return elapsed < bookingCache.expirationTime;
+    };
+
+    // Clear cache (useful for when bookings are created/updated)
+    const clearCache = () => {
+        bookingCache.data = null;
+        bookingCache.timestamp = null;
+        bookingCache.cacheKey = null;
+        console.log('📦 Booking cache cleared');
+    };
+
     // Fetch bookings from API with date range parameters
     const fetchBookings = async (startDate, endDate, staffIds = null) => {
         try {
+            // Generate cache key
+            const cacheKey = generateCacheKey(startDate, endDate, staffIds);
+
+            // Check if we have valid cached data
+            if (isCacheValid(cacheKey)) {
+                console.log('📦 Using cached booking data (cache hit)');
+                return bookingCache.data;
+            }
+
             // Format dates for API request
             const formattedStartDate = Utils.formatDate(startDate);
             const formattedEndDate = Utils.formatDate(endDate);
 
-            console.log(`Fetching bookings from ${formattedStartDate} to ${formattedEndDate}`);
+            console.log(`🔄 Fetching bookings from API from ${formattedStartDate} to ${formattedEndDate} (cache miss)`);
 
             // Build query parameters
             const params = {
@@ -24,7 +67,15 @@ const BookingService = (() => {
             }
 
             const response = await api.getBookings(params);
-            return response?.success ? response.data : [];
+            const bookings = response?.success ? response.data : [];
+
+            // Cache the result
+            bookingCache.data = bookings;
+            bookingCache.timestamp = Date.now();
+            bookingCache.cacheKey = cacheKey;
+            console.log('💾 Booking data cached successfully');
+
+            return bookings;
         } catch (error) {
             console.error('Error fetching bookings:', error);
             return [];
@@ -221,6 +272,9 @@ const BookingService = (() => {
             // Show success message
             UI.showMessage('Booking created successfully', 'success');
 
+            // Clear the booking cache to ensure fresh data on next fetch
+            clearCache();
+
             // Close the form panel
             document.getElementById('booking-form-panel').classList.remove('active');
 
@@ -335,6 +389,9 @@ const BookingService = (() => {
 
             // Show success message
             Utils.showMessage('Booking updated successfully!', 'success');
+
+            // Clear the booking cache to ensure fresh data on next fetch
+            clearCache();
 
             // Close the form panel and reset it to create mode
             formPanel.classList.remove('active');
@@ -658,6 +715,9 @@ const BookingService = (() => {
             // Show success message
             Utils.showMessage('Booking deleted successfully!', 'success');
 
+            // Clear the booking cache to ensure fresh data on next fetch
+            clearCache();
+
             // Refresh the calendar to remove the deleted booking
             await Calendar.renderCalendar(Calendar.getCurrentDate());
 
@@ -786,6 +846,7 @@ const BookingService = (() => {
         deleteBooking,
         createTimeOff,
         submitTimeOff,
-        deleteTimeOff
+        deleteTimeOff,
+        clearCache // Expose clearCache method for external calls
     };
 })();

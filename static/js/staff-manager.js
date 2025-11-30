@@ -9,7 +9,49 @@ class StaffManager {
         this.invitations = [];
         this.currentEditingId = null;
         this.currentDeletingId = null;
-        this.translations = window.staffTranslations || {};
+    }
+
+    /**
+     * Get translations with fallback defaults
+     */
+    get translations() {
+        return window.staffTranslations || {
+            active: 'Active',
+            inactive: 'Inactive',
+            edit: 'Edit',
+            delete: 'Delete',
+            resend: 'Resend',
+            addStaffMember: 'Add Staff Member',
+            editStaffMember: 'Edit Staff Member',
+            updateStaffMember: 'Update Staff Member',
+            inviteTeamMember: 'Invite team member',
+            saving: 'Saving...',
+            fillRequiredFields: 'Please fill in all required fields',
+            staffUpdatedSuccess: 'Staff member updated successfully',
+            staffUpdateFailed: 'Failed to update staff member',
+            staffAddedSuccess: 'Staff member added successfully',
+            staffAddFailed: 'Failed to create staff member',
+            invitationSentSuccess: 'Invitation sent successfully',
+            invitationFailed: 'Failed to send invitation',
+            invitationResentSuccess: 'Invitation resent successfully',
+            invitationResendFailed: 'Failed to resend invitation',
+            staffDeletedSuccess: 'Staff member deleted successfully',
+            staffDeleteFailed: 'Failed to delete staff member',
+            staffNotFound: 'Staff member not found',
+            failedToSave: 'Failed to save staff member',
+            selectStaffMember: 'Select a staff member',
+            pending: 'Pending',
+            accepted: 'Accepted',
+            declined: 'Declined',
+            expired: 'Expired',
+            confirmDeleteInvitation: 'Are you sure you want to delete this invitation?',
+            invitationDeletedSuccess: 'Invitation deleted successfully',
+            invitationDeleteFailed: 'Failed to delete invitation',
+            staff: 'Staff',
+            manager: 'Manager',
+            admin: 'Admin',
+            owner: 'Owner'
+        };
     }
 
     /**
@@ -117,8 +159,8 @@ class StaffManager {
 
         // Render staff rows
         tbody.innerHTML = this.staff.map(staff => {
-            const statusClass = staff.status ? 'status-active' : 'status-inactive';
-            const statusText = staff.status ? this.translations.active : this.translations.inactive;
+            const statusClass = staff.status === 'active' ? 'status-active' : 'status-inactive';
+            const statusText = staff.status === 'active' ? this.translations.active : this.translations.inactive;
 
             return `
                 <tr data-staff-id="${staff.user.id}">
