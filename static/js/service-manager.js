@@ -41,18 +41,22 @@ class ServiceManager {
             this.showLoading('services');
             this.showLoading('categories');
 
-            // Load data in parallel
-            const [categorizedResponse, staffResponse] = await Promise.all([
+            // Load data in parallel - categories and services separately
+            const [categorizedResponse, categoriesResponse, staffResponse] = await Promise.all([
                 window.api.getCompanyServices().catch(err => ({ data: [] })),
+                window.api.getCategories().catch(err => ({ data: [] })),
                 window.api.getStaff().catch(err => ({ data: [] }))
             ]);
 
-            // Process categorized response - categories already contain their services
-            this.categories = categorizedResponse?.data || [];
+            // Process categories from dedicated endpoint
+            this.categories = categoriesResponse?.data || [];
 
-            // Flatten services from categories for easier access
+            // Process categorized response for services
+            const serviceCategories = categorizedResponse?.data || [];
+
+            // Flatten services from the services endpoint
             this.services = [];
-            this.categories.forEach(category => {
+            serviceCategories.forEach(category => {
                 if (category.services && Array.isArray(category.services)) {
                     category.services.forEach(service => {
                         this.services.push({
@@ -128,11 +132,15 @@ class ServiceManager {
             const category = this.categories.find(c => c.id === service.category_id);
             const categoryName = category ? category.name : (this.translations.uncategorized || 'Uncategorized');
 
-            // Get staff assigned to this service
-            const serviceStaff = service.staff_ids || [];
-            const staffNames = serviceStaff.map(staffId => {
-                const staffMember = this.staff.find(s => s.id === staffId);
-                return staffMember ? `${staffMember.first_name} ${staffMember.last_name}` : '';
+            // Get staff assigned to this service from service_staff array
+            const serviceStaff = service.service_staff || [];
+            const staffNames = serviceStaff.map(staffObj => {
+                // Extract user from service_staff object
+                const user = staffObj.user;
+                if (user && user.first_name && user.last_name) {
+                    return `${user.first_name} ${user.last_name}`;
+                }
+                return '';
             }).filter(name => name).join(', ') || (this.translations.noStaffAssigned || 'No staff assigned');
 
             return `
@@ -189,8 +197,10 @@ class ServiceManager {
                     <td class="text-center">${serviceCount}</td>
                     <td class="actions-cell">
                         ${window.userData && (window.userData.role === 'owner' || window.userData.role === 'admin') ? `
+                            <button class="btn-icon btn-edit" onclick="serviceManager.editCategory('${category.id}')" title="${this.translations.edit || 'Edit'}">
                                 <i class="fas fa-edit"></i>
                             </button>
+                            <button class="btn-icon btn-delete" onclick="serviceManager.confirmDeleteCategory('${category.id}')" title="${this.translations.delete || 'Delete'}">
                                 <i class="fas fa-trash"></i>
                             </button>
                         ` : ''}
@@ -395,21 +405,53 @@ class ServiceManager {
                 this.categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
         }
 
-        // Populate staff checkboxes
+        // Populate staff checkboxes with improved design
         const staffSelection = document.getElementById('staff-selection');
         if (staffSelection) {
-            staffSelection.innerHTML = this.staff.map(staff => `
-                <label class="checkbox-label">
-                    <input type="checkbox" name="staff" value="${staff.id}">
-                    <span>${staff.first_name} ${staff.last_name}</span>
-                </label>
-            `).join('');
+            if (this.staff.length === 0) {
+                staffSelection.innerHTML = `
+                    <div class="no-staff-message">
+                        <i class="fas fa-info-circle"></i>
+                        <p>${this.translations.noStaffAvailable || 'No staff members available. Please add staff members first.'}</p>
+                    </div>
+                `;
+            } else {
+                staffSelection.innerHTML = this.staff.map(staff => {
+                    // Handle nested user object structure
+                    const firstName = staff.user?.first_name || staff.first_name || '';
+                    const lastName = staff.user?.last_name || staff.last_name || '';
+                    const fullName = `${firstName} ${lastName}`.trim() || 'Unknown Staff';
+                    const email = staff.user?.email || staff.email || '';
+                    const role = staff.role || 'staff';
+
+                    return `
+                        <label class="staff-checkbox-item">
+                            <input type="checkbox" name="staff" value="${staff.user_id}" class="staff-checkbox-input">
+                            <div class="staff-checkbox-content">
+                                <div class="staff-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="staff-info">
+                                    <div class="staff-name">${fullName}</div>
+                                    ${email ? `<div class="staff-email">${email}</div>` : ''}
+                                </div>
+                                <div class="staff-role-badge ${role}">
+                                    ${role}
+                                </div>
+                                <div class="checkbox-indicator">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                            </div>
+                        </label>
+                    `;
+                }).join('');
+            }
         }
 
         if (serviceId) {
             // Edit mode
             this.currentService = this.services.find(s => s.id === serviceId);
-            if (modalTitle) modalTitle.textContent = 'Edit Service';
+            if (modalTitle) modalTitle.textContent = this.translations.editService || 'Edit Service';
 
             if (this.currentService && form) {
                 document.getElementById('service-id').value = this.currentService.id;
@@ -434,7 +476,7 @@ class ServiceManager {
         } else {
             // Create mode
             this.currentService = null;
-            if (modalTitle) modalTitle.textContent = 'Add Service';
+            if (modalTitle) modalTitle.textContent = this.translations.addService || 'Add Service';
             if (form) form.reset();
             document.getElementById('service-id').value = '';
         }
@@ -465,25 +507,25 @@ class ServiceManager {
         const price = parseFloat(document.getElementById('service-price').value);
 
         const discountPriceInput = document.getElementById('service-discount-price');
-        const discountPrice = discountPriceInput?.value ? parseFloat(discountPriceInput.value) : null;
+        const discountPrice = discountPriceInput?.value ? parseFloat(discountPriceInput.value) : 0;
 
         // Get selected staff
         const staffCheckboxes = document.querySelectorAll('#staff-selection input[type="checkbox"]:checked');
-        const staffIds = Array.from(staffCheckboxes).map(cb => parseInt(cb.value));
+        const staffIds = Array.from(staffCheckboxes).map(cb => cb.value);
 
+        // Build service data according to API specification
         const serviceData = {
-            name,
-            description,
+            name: name,
+            duration: duration,
+            price: price,
+            discount_price: discountPrice,
+            additional_info: description || "",
+            status: 'active',
+            buffer_before: 0,
+            buffer_after: 0,
             category_id: categoryId,
-            duration,
-            price,
-            staff_ids: staffIds,
-            status: 'active'
+            staff_ids: staffIds
         };
-
-        if (discountPrice !== null && !isNaN(discountPrice)) {
-            serviceData.discount_price = discountPrice;
-        }
 
         try {
             if (serviceId) {

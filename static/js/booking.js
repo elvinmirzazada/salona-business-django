@@ -347,10 +347,10 @@ function renderStaff() {
         if (category.services) {
             category.services.forEach(service => {
                 // Only consider staff from selected services
-                if (bookingState.selectedServices.has(service.id) && service.assigned_staff) {
-                    service.assigned_staff.forEach(staff => {
-                        if (!staffMap.has(staff.id)) {
-                            staffMap.set(staff.id, staff);
+                if (bookingState.selectedServices.has(service.id) && service.service_staff) {
+                    service.service_staff.forEach(staff => {
+                        if (!staffMap.has(staff.user_id)) {
+                            staffMap.set(staff.user_id, staff.user);
                         }
                     });
                 }

@@ -386,14 +386,14 @@ class APIClient {
     }
 
     async updateCategory(categoryId, categoryData) {
-        return this.request(`/users/api/v1/categories/${categoryId}`, {
+        return this.request(`/users/api/v1/services/categories/${categoryId}`, {
             method: 'PUT',
             body: JSON.stringify(categoryData)
         });
     }
 
     async deleteCategory(categoryId) {
-        return this.request(`/users/api/v1/categories/${categoryId}`, {
+        return this.request(`/users/api/v1/services/categories/${categoryId}`, {
             method: 'DELETE'
         });
     }

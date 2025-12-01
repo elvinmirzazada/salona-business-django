@@ -810,3 +810,263 @@
     transform: translateX(-2px);
 }
 
+/* ========================================
+   Staff Selection - Modern Card Design
+   ======================================== */
+
+/* Container for staff checkboxes */
+#staff-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 4px;
+}
+
+/* Custom scrollbar for staff selection */
+#staff-selection::-webkit-scrollbar {
+    width: 8px;
+}
+
+#staff-selection::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+}
+
+#staff-selection::-webkit-scrollbar-thumb {
+    background: rgba(79, 70, 229, 0.3);
+    border-radius: 4px;
+}
+
+#staff-selection::-webkit-scrollbar-thumb:hover {
+    background: rgba(79, 70, 229, 0.5);
+}
+
+/* Individual staff checkbox item */
+.staff-checkbox-item {
+    display: block;
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+    position: relative;
+}
+
+/* Hide the default checkbox */
+.staff-checkbox-input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* Staff card content */
+.staff-checkbox-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: #ffffff;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Hover effect */
+.staff-checkbox-item:hover .staff-checkbox-content {
+    border-color: #4F46E5;
+    background: #f8f9ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+}
+
+/* Checked state */
+.staff-checkbox-input:checked + .staff-checkbox-content {
+    background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+    border-color: #4F46E5;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+}
+
+/* Staff avatar circle */
+.staff-avatar {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    transition: all 0.3s ease;
+}
+
+.staff-checkbox-input:checked + .staff-checkbox-content .staff-avatar {
+    background: linear-gradient(135deg, #4F46E5 0%, #6366f1 100%);
+    transform: scale(1.1);
+}
+
+/* Staff information */
+.staff-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.staff-name {
+    font-weight: 600;
+    font-size: 15px;
+    color: #1f2937;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.staff-email {
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Role badge */
+.staff-role-badge {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.staff-role-badge.owner {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    color: #78350f;
+}
+
+.staff-role-badge.admin {
+    background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+    color: #4c1d95;
+}
+
+.staff-role-badge.staff {
+    background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%);
+    color: #1e3a8a;
+}
+
+/* Checkbox indicator (checkmark) */
+.checkbox-indicator {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    border: 2px solid #d1d5db;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.checkbox-indicator i {
+    font-size: 14px;
+    color: white;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s ease;
+}
+
+.staff-checkbox-input:checked + .staff-checkbox-content .checkbox-indicator {
+    background: #4F46E5;
+    border-color: #4F46E5;
+}
+
+.staff-checkbox-input:checked + .staff-checkbox-content .checkbox-indicator i {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Hover state for checkbox indicator */
+.staff-checkbox-item:hover .checkbox-indicator {
+    border-color: #4F46E5;
+    background: #f8f9ff;
+}
+
+/* No staff message */
+.no-staff-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-radius: 12px;
+    border: 2px dashed #f59e0b;
+}
+
+.no-staff-message i {
+    font-size: 48px;
+    color: #f59e0b;
+    margin-bottom: 16px;
+}
+
+.no-staff-message p {
+    margin: 0;
+    color: #78350f;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.6;
+}
+
+/* Animation for checked state */
+@keyframes checkPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.staff-checkbox-input:checked + .staff-checkbox-content {
+    animation: checkPulse 0.3s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .staff-checkbox-content {
+        gap: 12px;
+        padding: 14px;
+    }
+
+    .staff-avatar {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        font-size: 18px;
+    }
+
+    .staff-name {
+        font-size: 14px;
+    }
+
+    .staff-email {
+        font-size: 12px;
+    }
+
+    .staff-role-badge {
+        padding: 4px 10px;
+        font-size: 11px;
+    }
+}
