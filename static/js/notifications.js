@@ -280,7 +280,7 @@ const NotificationManager = {
         console.log('Notification icon clicked - redirecting to notifications page');
 
         // Redirect to notifications page
-        window.location.href = '/notifications/';
+        window.location.href = '/users/notifications/';
     },
 
     // Get unread notifications count

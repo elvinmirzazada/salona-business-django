@@ -47,13 +47,46 @@
                 <!-- Settings Tabs Navigation -->
                 <div class="settings-tabs">
                     <div class="tab-nav">
-                        <button class="tab-btn active" data-tab="company">{% trans "Company Information" %}</button>
+                        <button class="tab-btn active" data-tab="profile">{% trans "Profile" %}</button>
+                        <button class="tab-btn" data-tab="company">{% trans "Company Settings" %}</button>
                     </div>
 
                     <!-- Tab Content -->
                     <div class="tab-content">
-                        <!-- Company Information Tab -->
-                        <div class="tab-pane active" id="company-tab">
+                        <!-- Profile Tab -->
+                        <div class="tab-pane active" id="profile-tab">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2>{% trans "Profile Information" %}</h2>
+                                </div>
+                                <div class="card-body">
+                                    <form id="profile-form">
+                                        <div class="form-group">
+                                            <label for="profile-first-name">{% trans "First Name" %}</label>
+                                            <input type="text" id="profile-first-name" name="first-name" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="profile-last-name">{% trans "Last Name" %}</label>
+                                            <input type="text" id="profile-last-name" name="last-name" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="profile-email">{% trans "Email" %}</label>
+                                            <input type="email" id="profile-email" name="email" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="profile-phone">{% trans "Phone Number" %}</label>
+                                            <input type="tel" id="profile-phone" name="phone">
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn-primary">{% trans "Save Profile" %}</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Company Settings Tab -->
+                        <div class="tab-pane" id="company-tab">
                             <!-- Create Company Section - Only show if no company exists -->
                             {% if not company_id or company_id == '' %}
                             <div class="card mb-4">

@@ -76,6 +76,12 @@ const Settings = (() => {
     const init = async () => {
         console.log('Initializing settings page');
 
+        // Setup tab switching
+        setupTabSwitching();
+
+        // Setup profile form
+        setupProfileForm();
+
         // Setup company information functionality
         setupCompanyForm();
 
@@ -84,6 +90,9 @@ const Settings = (() => {
 
         // Setup collapsible sections
         setupCollapsibleSections();
+
+        // Load user profile data
+        loadUserProfile();
 
         // Check if user has a company before loading company data
         // Get company_id from the Django template context
@@ -109,6 +118,113 @@ const Settings = (() => {
             if (createCompanyForm) {
                 createCompanyForm.style.display = 'block';
             }
+        }
+    };
+
+    // Setup tab switching functionality
+    const setupTabSwitching = () => {
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        tabButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const tabName = e.currentTarget.dataset.tab;
+                switchTab(tabName);
+            });
+        });
+    };
+
+    // Switch between tabs
+    const switchTab = (tabName) => {
+        // Update button states
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === tabName);
+        });
+
+        // Update tab content
+        document.querySelectorAll('.tab-pane').forEach(pane => {
+            pane.classList.toggle('active', pane.id === `${tabName}-tab`);
+        });
+    };
+
+    // Load user profile data
+    const loadUserProfile = () => {
+        const userData = window.userData;
+        if (!userData) return;
+
+        // Populate profile form fields
+        const firstNameInput = document.getElementById('profile-first-name');
+        const lastNameInput = document.getElementById('profile-last-name');
+        const emailInput = document.getElementById('profile-email');
+        const phoneInput = document.getElementById('profile-phone');
+
+        if (firstNameInput) firstNameInput.value = userData.first_name || '';
+        if (lastNameInput) lastNameInput.value = userData.last_name || '';
+        if (emailInput) emailInput.value = userData.email || '';
+        if (phoneInput) phoneInput.value = userData.phone || '';
+    };
+
+    // Setup profile form submission
+    const setupProfileForm = () => {
+        const profileForm = document.getElementById('profile-form');
+        if (!profileForm) return;
+
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = {
+                first_name: document.getElementById('profile-first-name').value.trim(),
+                last_name: document.getElementById('profile-last-name').value.trim(),
+                email: document.getElementById('profile-email').value.trim(),
+                phone: document.getElementById('profile-phone').value.trim()
+            };
+
+            try {
+                const result = await updateUserProfile(formData);
+
+                if (result.success) {
+                    showToast('Profile updated successfully!', 'success');
+
+                    // Update the window.userData object
+                    window.userData = { ...window.userData, ...formData };
+
+                    // Update the welcome message if it exists
+                    const welcomeMessage = document.querySelector('.user-name');
+                    if (welcomeMessage) {
+                        welcomeMessage.textContent = `Welcome, ${formData.first_name}!`;
+                    }
+                } else {
+                    showToast(result.message || 'Error updating profile', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                showToast('Error updating profile', 'error');
+            }
+        });
+    };
+
+    // Update user profile
+    const updateUserProfile = async (profileData) => {
+        try {
+            const apiUrl = `/users/api/v1/users/me`;
+
+            const response = await api.request(apiUrl, {
+                method: 'PUT',
+                body: JSON.stringify(profileData)
+            });
+
+            if (!response.success) {
+                return {
+                    success: false,
+                    message: response.message || 'Failed to update profile'
+                };
+            }
+
+            return response;
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            return {
+                success: false,
+                message: error.message
+            };
         }
     };
 
@@ -569,7 +685,7 @@ const Settings = (() => {
     const loadCompanyEmails = async () => {
         try {
             // Fetch company emails from the API
-            const result = await api.request('/users/api/v1/companies/emails');
+            const result = await api.request('/users/api/v1/companies/all/emails');
             console.log("Company emails:", result);
 
             // Save the emails in the module state
@@ -637,7 +753,7 @@ const Settings = (() => {
     const loadCompanyPhones = async () => {
         try {
             // Fetch company phones from the API
-            const result = await api.request(`/users/api/v1/companies/phones`);
+            const result = await api.request(`/users/api/v1/companies/all/phones`);
             console.log("Company phones:", result);
 
             // Save the phones in the module state

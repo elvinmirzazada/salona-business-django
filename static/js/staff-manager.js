@@ -175,10 +175,10 @@ class StaffManager {
                     </td>
                     <td class="actions-cell">
                         ${window.userData && (window.userData.role === 'owner' || window.userData.role === 'admin') ? `
-                            <button class="action-btn edit-btn" onclick="staffManager.openEditModal('${staff.user.id}')" title="${this.translations.edit}">
+                            <button class="action-btn edit-btn" onclick="staffManager.openEditModal('${staff.id}')" title="${this.translations.edit}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="action-btn delete-btn" onclick="staffManager.openDeleteModal('${staff.user.id}')" title="${this.translations.delete}">
+                            <button class="action-btn delete-btn" onclick="staffManager.openDeleteModal('${staff.id}')" title="${this.translations.delete}">
                                 <i class="fas fa-trash"></i>
                             </button>
                         ` : ''}
