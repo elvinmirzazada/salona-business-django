@@ -737,6 +737,12 @@ function updateSummary() {
     // Total
     const total = bookingState.services.reduce((sum, service) => sum + parseFloat(service.price), 0);
     document.getElementById('summary-total').textContent = `€${total.toFixed(2)}`;
+
+    // Update summary title data attribute for collapsed view on mobile
+    const summaryTitle = document.querySelector('.summary-title');
+    if (summaryTitle) {
+        summaryTitle.setAttribute('data-total', `€${total.toFixed(2)}`);
+    }
 }
 
 // ========================================

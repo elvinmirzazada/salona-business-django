@@ -721,61 +721,223 @@ body {
 
     .hero-image {
         order: -1;
+        margin-bottom: 30px;
     }
 
     .features-grid {
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+
+    .section-title {
+        font-size: 2.2rem;
+    }
+
+    .about-title {
+        font-size: 2.2rem;
+    }
+
+    .footer-content {
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
     }
 }
 
 @media (max-width: 768px) {
-    .nav-links {
-        position: fixed;
-        top: 70px;
-        right: -100%;
-        width: 80%;
-        height: calc(100vh - 70px);
-        background: white;
-        flex-direction: column;
-        justify-content: flex-start;
+    .container {
+        padding: 0 20px;
+    }
+
+    .hero-container {
+        padding: 80px 20px 40px;
+    }
+
+    .hero {
+        min-height: auto;
         padding: 40px 0;
-        box-shadow: var(--shadow-xl);
-        transition: right 0.3s ease;
-        z-index: 999;
     }
 
-    .nav-links.mobile-active {
-        right: 0;
+    .hero-content {
+        padding: 0;
     }
 
-    .nav-link {
-        padding: 16px 30px;
+    .hero-text {
         width: 100%;
-        text-align: center;
-        border-bottom: 1px solid var(--border-light);
-    }
-
-    .mobile-menu-btn {
-        display: block;
+        max-width: 100%;
+        padding: 0;
     }
 
     .hero-title {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
+        margin-bottom: 20px;
+    }
+
+    .hero-subtitle {
+        font-size: 1rem;
+        margin-bottom: 30px;
     }
 
     .hero-buttons {
         flex-direction: column;
-        align-items: stretch;
+        gap: 12px;
+        margin-bottom: 40px;
+        width: 100%;
+        padding: 0;
+    }
+
+    .btn {
+        width: 100%;
+        max-width: 100%;
+        justify-content: center;
+        padding: 14px 16px;
+        font-size: 0.9rem;
+        box-sizing: border-box;
+        text-align: center;
+    }
+
+    .btn i {
+        flex-shrink: 0;
+        font-size: 0.9rem;
     }
 
     .hero-stats {
-        flex-direction: column;
-        gap: 20px;
-        text-align: center;
+        flex-wrap: wrap;
+        gap: 30px;
+        justify-content: center;
+    }
+
+    .stat {
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+    }
+
+    .salon-dashboard {
+        width: 100%;
+        padding: 20px;
+    }
+
+    .floating-notification {
+        position: static;
+        margin-top: 20px;
+        font-size: 0.85rem;
+        padding: 10px 16px;
+    }
+
+    .stats-card {
+        position: static;
+        margin-top: 20px;
+        width: 100%;
+    }
+
+    .hero-shape-1,
+    .hero-shape-2,
+    .hero-shape-3 {
+        opacity: 0.05;
+    }
+
+    /* Features Section */
+    .features {
+        padding: 60px 0;
+    }
+
+    .section-header {
+        margin-bottom: 50px;
+    }
+
+    .section-title {
+        font-size: 1.8rem;
+    }
+
+    .section-subtitle {
+        font-size: 1rem;
     }
 
     .features-grid {
         grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .feature-card {
+        padding: 30px 24px;
+    }
+
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+    }
+
+    .feature-icon i {
+        font-size: 1.5rem;
+    }
+
+    .feature-title {
+        font-size: 1.3rem;
+    }
+
+    /* About Section */
+    .about {
+        padding: 60px 0;
+    }
+
+    .about-content {
+        gap: 40px;
+    }
+
+    .about-title {
+        font-size: 1.8rem;
+    }
+
+    .about-description {
+        font-size: 1rem;
+        margin-bottom: 30px;
+    }
+
+    .about-features {
+        margin-bottom: 30px;
+    }
+
+    .about-feature {
+        margin-bottom: 12px;
+    }
+
+    .mockup-content {
+        padding: 20px;
+    }
+
+    .client-profile {
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+    }
+
+    /* CTA Section */
+    .cta {
+        padding: 60px 0;
+    }
+
+    .cta-title {
+        font-size: 1.8rem;
+    }
+
+    .cta-subtitle {
+        font-size: 1rem;
+        margin-bottom: 30px;
+    }
+
+    .cta-note {
+        font-size: 0.85rem;
+        text-align: center;
+    }
+
+    /* Footer */
+    .footer {
+        padding: 60px 0 30px;
     }
 
     .footer-content {
@@ -784,40 +946,88 @@ body {
         text-align: center;
     }
 
-    .salon-dashboard {
-        width: 100%;
+    .footer-logo {
+        justify-content: center;
+        font-size: 1.5rem;
     }
 
-    .floating-notification {
-        position: static;
-        margin-top: 20px;
+    .social-links {
+        justify-content: center;
     }
 
-    .stats-card {
-        position: static;
-        margin-top: 20px;
-        width: 100%;
+    .footer-links {
+        text-align: center;
     }
 }
 
 @media (max-width: 480px) {
-    .container {
-        padding: 0 16px;
-    }
-
     .hero-container {
-        padding: 80px 16px 0;
+        padding: 70px 12px 30px;
     }
 
     .hero-title {
-        font-size: 2rem;
+        font-size: 1.75rem;
+        line-height: 1.3;
+    }
+
+    .hero-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .hero-stats {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .stat {
+        width: 100%;
     }
 
     .section-title {
-        font-size: 2rem;
+        font-size: 1.5rem;
     }
 
     .cta-title {
-        font-size: 2rem;
+        font-size: 1.5rem;
+    }
+
+    .about-title {
+        font-size: 1.5rem;
+    }
+
+    .btn {
+        font-size: 0.95rem;
+        padding: 12px 20px;
+    }
+
+    .btn-large {
+        font-size: 1rem;
+        padding: 14px 24px;
+    }
+
+    .feature-card {
+        padding: 24px 16px;
+    }
+
+    .appointment-item {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .appointment-time {
+        min-width: auto;
+    }
+
+    .appointment-status {
+        margin-left: 76px;
+    }
+
+    .footer-logo {
+        font-size: 1.3rem;
+    }
+
+    .footer-logo-icon {
+        width: 28px;
+        height: 28px;
     }
 }
