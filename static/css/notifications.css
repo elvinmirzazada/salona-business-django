@@ -56,7 +56,7 @@
     border-radius: 12px;
     min-width: 20px;
     height: 20px;
-    display: none;
+    display: flex;
     align-items: center;
     justify-content: center;
     font-size: 11px;
@@ -66,6 +66,31 @@
     border: 2px solid rgba(0, 0, 0, 0.1);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     animation: badge-bounce 0.5s ease-out;
+}
+
+.nav-item .notification-badge {
+    position: relative;
+    top: -8px;
+    right: -8px;
+    background: #ef4444;
+    color: white;
+    border-radius: 12px;
+    min-width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    padding: 0 6px;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    animation: badge-bounce 0.5s ease-out;
+}
+
+.notification-badge:empty {
+    display: none;
 }
 
 /* Notification Toast System */

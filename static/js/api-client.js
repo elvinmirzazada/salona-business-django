@@ -273,8 +273,8 @@ class APIClient {
     }
 
     async markNotificationAsRead(notificationId) {
-        return this.request(`/users/api/v1/notifications/${notificationId}/read`, {
-            method: 'PUT'
+        return this.request(`/users/api/v1/notifications/mark-as-read/${notificationId}`, {
+            method: 'POST'
         });
     }
 

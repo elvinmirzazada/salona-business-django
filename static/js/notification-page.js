@@ -389,10 +389,8 @@ const NotificationPage = {
                     notification.status = 'read';
                 }
 
-                // Update NotificationManager if available
-                if (window.NotificationManager) {
-                    window.NotificationManager.fetchNotifications();
-                }
+                // Refetch unread count from API to update sidebar badge correctly
+                await this.fetchUnreadCount();
 
                 this.renderNotifications();
                 this.updateStats();
@@ -431,10 +429,8 @@ const NotificationPage = {
                 // Remove from local notifications
                 this.notifications = this.notifications.filter(n => n.id !== notificationId);
 
-                // Update NotificationManager if available
-                if (window.NotificationManager) {
-                    window.NotificationManager.fetchNotifications();
-                }
+                // Refetch unread count from API to update sidebar badge correctly
+                await this.fetchUnreadCount();
 
                 this.renderNotifications();
                 this.updateStats();
@@ -460,7 +456,7 @@ const NotificationPage = {
 
         this.showConfirmationDialog(
             t.markAllAsReadTitle || 'Mark All as Read',
-            `${t.markAllAsReadMessage || 'Are you sure you want to mark all'} ${unreadNotifications.length} ${t.unreadNotificationsAsRead || 'unread notifications as read?'}`,
+            `${t.markAllAsReadMessage || 'Are you sure you want to mark all unread notifications as read?'}`,
             () => this.markAllAsRead()
         );
     },
@@ -470,8 +466,8 @@ const NotificationPage = {
         const t = this.translations;
         try {
             // Use API client instead of direct fetch with localStorage
-            const response = await api.request('/users/api/v1/notifications/mark-all-read', {
-                method: 'POST'
+            const response = await api.request('/users/api/v1/notifications/mark-all/as-read', {
+                method: 'PATCH'
             });
 
             if (response?.success) {
@@ -480,11 +476,6 @@ const NotificationPage = {
                     notification.read = true;
                     notification.status = 'read';
                 });
-
-                // Update NotificationManager if available
-                if (window.NotificationManager) {
-                    window.NotificationManager.fetchNotifications();
-                }
 
                 this.renderNotifications();
                 this.updateStats();
@@ -517,6 +508,37 @@ const NotificationPage = {
             // Enable/disable mark all read button
             if (markAllReadBtn) {
                 markAllReadBtn.disabled = unread === 0;
+            }
+        }
+
+        // Update sidebar badge
+        this.updateSidebarBadge();
+    },
+
+    // Update sidebar notification badge
+    updateSidebarBadge() {
+        const sidebarBadge = document.getElementById('notification-count');
+        const headerBadge = document.getElementById('notification-badge');
+        if (sidebarBadge) {
+            // Use the total unread count from API, not just current page
+            const unread = this.unreadCount || 0;
+            if (unread > 0) {
+                sidebarBadge.textContent = unread;
+                sidebarBadge.style.display = 'flex';
+            } else {
+                sidebarBadge.textContent = '';
+                sidebarBadge.style.display = 'none';
+            }
+        }
+        if (headerBadge) {
+            // Use the total unread count from API, not just current page
+            const unread = this.unreadCount || 0;
+            if (unread > 0) {
+                headerBadge.textContent = unread;
+                headerBadge.style.display = 'flex';
+            } else {
+                headerBadge.textContent = '';
+                headerBadge.style.display = 'none';
             }
         }
     },
