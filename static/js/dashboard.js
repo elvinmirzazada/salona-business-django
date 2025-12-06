@@ -313,9 +313,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         console.log('✓ View mode buttons found, setting up event listeners');
 
-        // Load saved view mode from localStorage or default to weekly
-        const savedViewMode = localStorage.getItem('calendarViewMode') || 'weekly';
+        // Check if device is mobile
+        const isMobile = window.innerWidth <= 768;
+
+        // Load saved view mode from localStorage or default based on device type
+        const defaultViewMode = isMobile ? 'daily' : 'weekly';
+        const savedViewMode = localStorage.getItem('calendarViewMode') || defaultViewMode;
         console.log('📦 Loaded saved view mode from cache:', savedViewMode);
+        console.log('📱 Device type:', isMobile ? 'Mobile' : 'Desktop', '- Default view:', defaultViewMode);
 
         // Apply the saved view mode on page load
         applyViewMode(savedViewMode, weeklyBtn, dailyBtn);
