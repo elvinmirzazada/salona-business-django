@@ -78,7 +78,7 @@
     background: none;
     border: none;
     z-index: 1001;
-    padding: 8px;
+    padding-right: 20px;
 }
 
 /* Mobile Navigation Responsive Styles */
