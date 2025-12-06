@@ -1,6 +1,61 @@
 // Main dashboard initialization and coordination
 document.addEventListener('DOMContentLoaded', function() {
 
+    // Mobile sidebar toggle functionality
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+    if (mobileMenuToggle && sidebar && sidebarOverlay) {
+        // Toggle sidebar on mobile menu button click
+        mobileMenuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
+
+            // Reposition toggle button when sidebar is active
+            if (sidebar.classList.contains('active')) {
+                mobileMenuToggle.style.left = '295px'; // 280px sidebar + 15px spacing
+            } else {
+                mobileMenuToggle.style.left = '15px';
+            }
+        });
+
+        // Close sidebar when clicking overlay
+        sidebarOverlay.addEventListener('click', function() {
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+            mobileMenuToggle.style.left = '15px'; // Reset position
+        });
+
+        // Close sidebar when clicking any nav item on mobile
+        const navItems = sidebar.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                    mobileMenuToggle.style.left = '15px'; // Reset position
+                }
+            });
+        });
+    }
+
+    // Force daily view on mobile devices
+    function handleViewModeForMobile() {
+        if (window.innerWidth <= 768) {
+            const weeklyBtn = document.getElementById('view-weekly');
+            const dailyBtn = document.getElementById('view-daily');
+
+            if (dailyBtn && !dailyBtn.classList.contains('active')) {
+                dailyBtn.click();
+            }
+        }
+    }
+
+    // Call on load and resize
+    handleViewModeForMobile();
+    window.addEventListener('resize', handleViewModeForMobile);
+
     // Authentication check is now handled by Auth.init() which uses API calls
     // instead of localStorage checks
 

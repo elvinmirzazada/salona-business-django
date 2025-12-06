@@ -148,17 +148,20 @@
     color: var(--white);
 }
 
-/* Calendar Controls - Enhanced styling */
+/* Calendar Controls - Enhanced styling - make horizontal */
 .calendar-controls {
-    display: flex;
-    justify-content: space-between;
+    display: inline-flex;
+    justify-content: center;
     align-items: center;
-    margin-bottom: 25px;
-    padding: 15px 20px;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    width:100%;
+    gap: 15px;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    width: auto;
+    margin-bottom: 0;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
 }
 
 .nav-button {
@@ -167,10 +170,14 @@
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     color: var(--primary-color);
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    padding: 0;
 }
 
 .nav-button:hover {
@@ -186,10 +193,15 @@
 }
 
 .date-range {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     color: var(--text-dark);
     letter-spacing: 0.5px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 200px;
+    text-align: center;
+    display: inline-block;
 }
 
 /* Filter Section - Modern redesign */
@@ -201,8 +213,8 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     display: flex;
     align-items: center;
-    gap: 15px;
-    flex-wrap: nowrap;
+    gap: 20px;
+    flex-wrap: wrap;
     min-height: 50px;
 }
 
@@ -221,17 +233,7 @@
     font-size: 14px;
     cursor: pointer;
     transition: all 0.3s ease;
-    min-width: 250px;
-}
-
-.staff-select:hover {
-    border-color: var(--primary-color);
-}
-
-.staff-select:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(0, 168, 132, 0.1);
+    min-width: 200px;
 }
 
 /* View Mode Selector */
@@ -1738,4 +1740,447 @@ select[multiple] {
 
 #timeoff-form-panel .primary-button:hover {
     background-color: #5f3dc4;
+}
+/* ========================================
+   RESPONSIVE STYLES FOR DASHBOARD
+   ======================================== */
+/* Tablet styles */
+@media (max-width: 1024px) {
+  .filter-section {
+    padding: 15px 20px;
+    gap: 12px;
+  }
+  .staff-select {
+    min-width: 200px;
+  }
+  .calendar-controls {
+    padding: 15px 20px;
+  }
+  .view-mode-selector {
+    padding-left: 15px;
+  }
+  .calendar-grid {
+    min-width: 850px;
+  }
+  .event-popup {
+    max-width: 85vw;
+  }
+  .booking-form-panel {
+    width: 400px;
+  }
+}
+/* Mobile styles - Tablet Portrait */
+@media (max-width: 768px) {
+  /* Header adjustments - make it horizontal and compact */
+  .header {
+    flex-direction: row !important;
+    gap: 10px;
+    padding: 12px 16px 12px 60px !important; /* Left padding for menu toggle */
+    margin-bottom: 16px;
+    min-height: auto;
+    height: auto;
+    align-items: center;
+  }
+
+  .page-title {
+    font-size: 18px !important;
+    text-align: left !important;
+    flex: 1;
+    margin: 0;
+  }
+
+  .header-actions {
+    flex-direction: row !important;
+    width: auto !important;
+    gap: 12px !important;
+    align-items: center;
+  }
+
+  .welcome-message {
+  /* Filter section responsive */
+  .filter-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 16px;
+  }
+  .filter-label {
+    text-align: left;
+  }
+  .staff-select {
+    width: 100%;
+    min-width: auto;
+  }
+  /* Calendar controls responsive */
+  .calendar-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px;
+  }
+  .nav-button {
+    width: 44px;
+    height: 44px;
+  }
+  .date-range {
+    width: 100%;
+    text-align: center;
+    order: -1;
+    font-size: 16px;
+    min-width: auto;
+  }
+  /* View mode selector responsive */
+  .view-mode-selector {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    padding-left: 0;
+    border-left: none;
+    border-top: 2px solid rgba(255, 255, 255, 0.2);
+    padding-top: 12px;
+    margin-top: 12px;
+  }
+  .view-mode-buttons {
+    width: 100%;
+  }
+  .view-mode-btn {
+    flex: 1;
+    justify-content: center;
+    padding: 10px 14px;
+  }
+  /* Hide entire view mode selector on mobile since only daily view is available */
+  .view-mode-selector {
+    display: none !important;
+  }
+  }
+  /* Calendar container responsive */
+  .calendar-container {
+    padding: 12px 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Force single column (daily view) on mobile */
+  .calendar-grid {
+    grid-template-columns: 50px 1fr !important;
+    min-width: 100%;
+    gap: 0;
+  }
+  .calendar-grid.weekly-view {
+    grid-template-columns: 50px 1fr !important;
+  }
+  /* Time column mobile styles */
+  .time-column {
+    grid-column: 1;
+  }
+  .time-header {
+    height: 50px;
+    font-size: 11px;
+  }
+  .time-slot {
+    height: 50px;
+    font-size: 10px;
+    padding-right: 6px;
+  }
+  /* Day column mobile styles */
+  .day-column {
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+  }
+  .day-header {
+    height: 50px;
+    padding: 6px 8px;
+    gap: 2px;
+  }
+  .day-name {
+    font-size: 11px;
+  }
+  .day-date {
+    font-size: 13px;
+  }
+  .today-badge {
+    font-size: 8px;
+    padding: 2px 5px;
+  }
+  .slots-container {
+    height: 600px;
+  }
+  /* Event styles for mobile */
+  .event {
+    padding: 6px 8px;
+    border-radius: 6px;
+    left: 3px;
+    right: 3px;
+  }
+  .event-title {
+    font-size: 11px;
+    margin-bottom: 2px;
+  }
+  .event-time {
+    font-size: 10px;
+  }
+  .event-description {
+    font-size: 9px;
+    display: none; /* Hide on mobile for space */
+  }
+  .event-status-badge {
+    padding: 1px 4px;
+    font-size: 8px;
+  }
+  .event.overlapping {
+    padding: 5px 6px;
+    font-size: 9px;
+  }
+  /* Event popup responsive */
+  .event-popup {
+    width: 90%;
+    max-width: 350px;
+    padding: 0;
+  }
+  .event-popup-header {
+    padding: 14px 16px;
+  }
+  .event-popup-title {
+    font-size: 16px;
+  }
+  .event-popup-actions {
+    gap: 4px;
+  }
+  .event-popup-confirm-btn,
+  .event-popup-delete-btn,
+  .event-popup-edit-btn,
+  .event-popup-completed-btn,
+  .event-popup-close {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+  .event-popup-body {
+    padding: 16px;
+  }
+  .event-popup-time,
+  .event-popup-status,
+  .event-popup-price {
+    padding: 8px;
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+  .event-popup-customer,
+  .event-popup-services {
+    padding: 12px;
+  }
+  .event-popup-section-title {
+    font-size: 13px;
+  }
+  .event-popup-customer-detail {
+    font-size: 12px;
+  }
+  .service-item-detail {
+    padding: 10px;
+  }
+  .service-item-name {
+    font-size: 13px;
+  }
+  .service-item-staff {
+    font-size: 12px;
+  }
+  /* Slot action popup responsive */
+  .slot-action-popup {
+    width: 90%;
+    max-width: 300px;
+  }
+  /* Booking form panel responsive */
+  .booking-form-panel {
+    width: 100% !important;
+    min-width: 100%;
+    right: -100%;
+  }
+  .booking-form-panel.active {
+    right: 0;
+  }
+  .booking-form-panel .resize-handle {
+    display: none; /* No resizing on mobile */
+  }
+  .booking-form-header {
+    padding: 14px 16px;
+  }
+  .booking-form-header h3 {
+    font-size: 16px;
+  }
+  .booking-form-content {
+    padding: 16px;
+  }
+  .booking-steps {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .booking-step {
+    padding: 8px 12px;
+  }
+  .step-number {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+  .step-name {
+    font-size: 11px;
+  }
+  .form-group {
+    margin-bottom: 14px;
+  }
+  .form-group label {
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 9px 12px;
+    font-size: 14px;
+  }
+  .time-inputs {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .time-inputs > div {
+    width: 100%;
+  }
+  .custom-service-list {
+    max-height: 250px;
+  }
+  .services-summary {
+    padding: 12px;
+  }
+  .services-summary h4 {
+    font-size: 14px;
+  }
+  .selected-service-item {
+    padding: 10px;
+  }
+  .form-actions {
+    gap: 10px;
+    flex-direction: column-reverse;
+  }
+  .primary-button,
+  .secondary-button {
+    width: 100%;
+    padding: 12px 16px;
+  }
+  /* Confirmation popup responsive */
+  .confirmation-popup-content {
+    width: 90%;
+    max-width: 350px;
+    margin: 20px;
+  }
+  .confirmation-popup-header h3 {
+    font-size: 16px;
+  }
+  .confirmation-popup-body {
+    padding: 16px;
+  }
+  .confirmation-popup-footer {
+    padding: 12px 16px;
+    gap: 10px;
+    flex-direction: column-reverse;
+  }
+  .confirmation-popup-footer button {
+    width: 100%;
+  }
+}
+/* Small mobile styles */
+@media (max-width: 480px) {
+  .filter-section,
+  .calendar-controls {
+    padding: 12px;
+  }
+  .calendar-container {
+    padding: 10px 4px;
+  }
+  .calendar-grid {
+    grid-template-columns: 45px 1fr !important;
+  }
+  .time-header,
+  .day-header {
+    height: 45px;
+  }
+  .time-slot {
+    height: 45px;
+    font-size: 9px;
+    padding-right: 4px;
+  }
+  .time-quarter-slot {
+    height: 11.25px;
+  }
+  .day-name {
+    font-size: 10px;
+  }
+  .day-date {
+    font-size: 12px;
+  }
+  .slots-container {
+    height: 540px;
+  }
+  .event {
+    padding: 5px 6px;
+  }
+  .event-title {
+    font-size: 10px;
+  }
+  .event-time {
+    font-size: 9px;
+  }
+  .nav-button {
+    width: 40px;
+    height: 40px;
+  }
+  .date-range {
+    font-size: 14px;
+  }
+  .view-mode-btn {
+    padding: 9px 12px;
+    font-size: 11px;
+  }
+  .event-popup {
+    width: 95%;
+  }
+  .booking-form-content {
+    padding: 12px;
+  }
+  /* Update CSS variable for mobile */
+  :root {
+    --time-slot-height: 45px;
+  }
+}
+/* Landscape mode for mobile devices */
+@media (max-width: 768px) and (orientation: landscape) {
+  .calendar-container {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  .slots-container {
+    height: 450px;
+  }
+  .booking-form-panel {
+    max-height: 100vh;
+  }
+}
+/* Very small screens */
+@media (max-width: 360px) {
+  .calendar-grid {
+    grid-template-columns: 40px 1fr !important;
+  }
+  .time-slot {
+    font-size: 8px;
+    padding-right: 2px;
+  }
+  .day-header {
+    padding: 4px 6px;
+  }
+  .event {
+    padding: 4px 5px;
+  }
+  .event-title {
+    font-size: 9px;
+  }
+  .event-time {
+    font-size: 8px;
+  }
 }
