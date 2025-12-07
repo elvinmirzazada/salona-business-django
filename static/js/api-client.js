@@ -292,9 +292,11 @@ class APIClient {
     }
 
     async updateTimeOff(timeOffId, timeOffData) {
+        // Ensure all time parameters are in UTC format
+        const utcData = window.Utils ? window.Utils.convertTimeParamsToUTC(timeOffData) : timeOffData;
         return this.request(`/users/api/v1/users/time-offs/${timeOffId}`, {
             method: 'PUT',
-            body: JSON.stringify(timeOffData)
+            body: JSON.stringify(utcData)
         });
     }
 
@@ -315,16 +317,20 @@ class APIClient {
     }
 
     async createBooking(bookingData) {
+        // Ensure all time parameters are in UTC format
+        const utcData = window.Utils ? window.Utils.convertTimeParamsToUTC(bookingData) : bookingData;
         return this.request('/users/api/v1/bookings/users/create_booking', {
             method: 'POST',
-            body: JSON.stringify(bookingData)
+            body: JSON.stringify(utcData)
         });
     }
 
     async updateBooking(bookingId, bookingData) {
+        // Ensure all time parameters are in UTC format
+        const utcData = window.Utils ? window.Utils.convertTimeParamsToUTC(bookingData) : bookingData;
         return this.request(`/users/api/v1/bookings/${bookingId}`, {
             method: 'PUT',
-            body: JSON.stringify(bookingData)
+            body: JSON.stringify(utcData)
         });
     }
 
@@ -400,26 +406,32 @@ class APIClient {
 
     async getCustomers(params = {}) {
         const queryString = new URLSearchParams(params).toString();
-        const url = `/users/api/v1/companies/customers${queryString ? '?' + queryString : ''}`;
+        const url = `/users/api/v1/customers${queryString ? '?' + queryString : ''}`;
         return this.request(url);
     }
 
-    async updateUserProfile(userData) {
-        return this.request('/users/api/v1/users/profile', {
-            method: 'PUT',
-            body: JSON.stringify(userData)
-        });
+    async getCustomerById(customerId) {
+        return this.request(`/users/api/v1/customers/${customerId}`);
     }
 
-    async addTelegramBot(data) {
-        return this.request('/customers/api/v1/integrations/telegram', {
+    async createCustomer(customerData) {
+        return this.request('/users/api/v1/customers', {
             method: 'POST',
-            body: JSON.stringify(data)
+            body: JSON.stringify(customerData)
         });
     }
 
-    async getTelegramBot() {
-        return this.request('/customers/api/v1/integrations/telegram');
+    async updateCustomer(customerId, customerData) {
+        return this.request(`/users/api/v1/customers/${customerId}`, {
+            method: 'PUT',
+            body: JSON.stringify(customerData)
+        });
+    }
+
+    async deleteCustomer(customerId) {
+        return this.request(`/users/api/v1/customers/${customerId}`, {
+            method: 'DELETE'
+        });
     }
 
     // Helper methods for common operations
@@ -455,6 +467,7 @@ class APIClient {
 
 // Create global instance
 window.api = new APIClient();
+console.log('API Client initialized and available as window.api');
 
 // Export for module systems
 if (typeof module !== 'undefined' && module.exports) {

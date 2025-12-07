@@ -531,7 +531,7 @@
     font-size: 18px;
     font-weight: bold;
     z-index: 100;
-    box-shadow: 0 2px 8px rgba(0, 168, 132, 0.4);
+    box-shadow: 0 2px 8px rgba(0,168,132,0.4);
 }
 
 /* Event Cards - Modern redesign */
@@ -1654,16 +1654,6 @@ select[multiple] {
     color: #95a5a6;
     cursor: pointer;
     padding: 0;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.2s ease;
-}
-
-.confirmation-popup-close:hover {
-    color: #2c3e50;
 }
 
 .confirmation-popup-body {
@@ -1741,6 +1731,286 @@ select[multiple] {
 #timeoff-form-panel .primary-button:hover {
     background-color: #5f3dc4;
 }
+
+/* FullCalendar Custom Styling */
+#fullcalendar {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.fc {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Staff filter dropdown styling in FullCalendar toolbar */
+.fc-staff-dropdown {
+    padding: 6px 12px;
+    border: 1px solid var(--primary-color);
+    border-radius: 4px;
+    background-color: white;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 150px;
+    outline: none;
+}
+
+.fc-staff-dropdown:hover {
+    background-color: rgba(0, 168, 132, 0.05);
+    border-color: var(--primary-color);
+}
+
+.fc-staff-dropdown:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(0, 168, 132, 0.2);
+}
+
+.fc-staff-dropdown option {
+    padding: 8px;
+}
+
+.fc-staffFilter-button {
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+}
+
+.fc-staffFilter-button:hover {
+    background: transparent !important;
+}
+
+/* Staff color indicators on events */
+.staff-color-indicators {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 6px;
+    position: relative;
+}
+
+.staff-color-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+/* Multiple staff dots overlap slightly */
+.staff-color-indicators .staff-color-dot:not(:first-child) {
+    margin-left: -4px;
+}
+
+/* Date picker styling in FullCalendar toolbar */
+.fc-date-picker {
+    padding: 6px 12px;
+    border: 1px solid var(--primary-color);
+    border-radius: 4px;
+    background-color: white;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 150px;
+    outline: none;
+}
+
+.fc-date-picker:hover {
+    background-color: rgba(0, 168, 132, 0.05);
+    border-color: var(--primary-color);
+}
+
+.fc-date-picker:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(0, 168, 132, 0.2);
+}
+
+.fc-datePicker-button {
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+}
+
+.fc-datePicker-button:hover {
+    background: transparent !important;
+}
+
+/* Set time slot height to 30px */
+.fc .fc-timegrid-slot {
+    height: 10px !important;
+    border-color: #e9ecef;
+}
+
+.fc .fc-timegrid-slot-label {
+    border-color: var(--border-color);
+    vertical-align: middle;
+    font-size: 11px;
+    color: var(--text-light);
+}
+
+/* Adjust scrollable area for smaller slots */
+.fc-timegrid-body {
+    min-height: auto;
+}
+
+.fc .fc-toolbar-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.fc .fc-button {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    text-transform: capitalize;
+    padding: 8px 16px;
+    transition: all 0.2s ease;
+}
+
+.fc .fc-button:hover {
+    background-color: #008f6f;
+    border-color: #008f6f;
+}
+
+.fc .fc-button:disabled {
+    opacity: 0.5;
+}
+
+.fc .fc-button-active {
+    background-color: #008f6f !important;
+    border-color: #008f6f !important;
+}
+
+.fc-theme-standard .fc-scrollgrid {
+    border-color: var(--border-color);
+}
+
+.fc .fc-col-header-cell {
+    background-color: #f8f9fa;
+    border-color: var(--border-color);
+    padding: 12px 8px;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.fc .fc-timegrid-axis {
+    background-color: #fafafa;
+}
+
+.fc .fc-day-today {
+    background-color: rgba(0, 168, 132, 0.05) !important;
+}
+
+.fc .fc-day-today .fc-col-header-cell-cushion {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.fc-event {
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 13px;
+    cursor: pointer;
+    border-top: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.fc-event:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transform: translateY(-1px);
+}
+
+.fc-event-title {
+    font-weight: 600;
+}
+
+.fc-event-time {
+    font-size: 11px;
+    opacity: 0.9;
+}
+
+.fc .fc-timegrid-now-indicator-line {
+    border-color: #e74c3c;
+    border-width: 2px;
+}
+
+.fc .fc-timegrid-now-indicator-arrow {
+    border-color: #e74c3c;
+}
+
+/* Calendar container adjustments */
+.calendar-container {
+    margin: 20px 0;
+}
+
+/* Make sure time slots are clickable */
+.fc-timegrid-slot {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.fc-timegrid-slot:hover {
+    background-color: rgba(0, 168, 132, 0.05);
+}
+
+/* Mobile responsiveness for FullCalendar */
+@media (max-width: 768px) {
+    #fullcalendar {
+        padding: 10px;
+    }
+
+    .fc .fc-toolbar {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .fc .fc-toolbar-title {
+        font-size: 1.2rem;
+    }
+
+    .fc .fc-button {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    .fc-event {
+        font-size: 11px;
+        padding: 2px 6px;
+    }
+
+    /* Smaller slot height on mobile */
+    .fc .fc-timegrid-slot {
+        height: 25px !important;
+    }
+}
+
+/* Status-based event colors (already handled in JS, but backup CSS) */
+.fc-event.status-confirmed {
+    background-color: #3498db !important;
+}
+
+.fc-event.status-completed {
+    background-color: #27ae60 !important;
+}
+
+.fc-event.status-cancelled {
+    background-color: #e74c3c !important;
+}
+
+.fc-event.time-off {
+    background-color: #95a5a6 !important;
+    opacity: 0.8;
+}
+
 /* ========================================
    RESPONSIVE STYLES FOR DASHBOARD
    ======================================== */

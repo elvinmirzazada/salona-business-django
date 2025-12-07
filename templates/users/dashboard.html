@@ -10,9 +10,11 @@
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
     <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
     <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
-{#    <link rel="stylesheet" href="{% static 'css/fixes.css' %}">#}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- FullCalendar CSS -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
 </head>
 <body>
 
@@ -45,58 +47,9 @@
                     </div>
                 </div>
             </header>
-
-
-                  <!-- Filter -->
-            <div class="filter-section">
-                <label for="staffFilter" class="filter-label">{% trans "Filter by staff:" %}</label>
-                <select id="staff-filter" class="staff-select">
-                    <option value="all">{% trans "All Staff" %}</option>
-                    {% if staff_data and staff_data %}
-                        {% for staff in staff_data %}
-                            <option value="{{ staff.user.id }}">{{ staff.user.first_name }} {{ staff.user.last_name }}</option>
-                        {% endfor %}
-                    {% endif %}
-                </select>
-
-                <!-- Calendar Controls -->
-                <div class="calendar-controls">
-                    <button class="nav-button" id="prev-week">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                      </svg>
-                    </button>
-
-                    <div class="date-range" id="current-week"></div>
-
-                    <button class="nav-button" id="next-week">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                      </svg>
-                    </button>
-                </div>
-                    <div class="view-mode-selector">
-                        <label class="filter-label">{% trans "View:" %}</label>
-                        <div class="view-mode-buttons">
-                            <button type="button" id="view-weekly" class="view-mode-btn active" data-mode="weekly">
-                                <i class="fas fa-calendar-alt"></i> {% trans "Weekly" %}
-                            </button>
-                            <button type="button" id="view-daily" class="view-mode-btn" data-mode="daily">
-                                <i class="fas fa-calendar-day"></i> {% trans "Daily" %}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
                   <!-- Calendar Grid -->
             <div class="calendar-container">
-                <div class="calendar-grid">
-                    <!-- Time Column -->
-                    <div class="time-column">
-                    </div>
-
-
-                </div>
+                <div id="fullcalendar"></div>
             </div>
 
             <div id="booking-message" style="display:none;margin-bottom:16px;padding:10px 20px;border-radius:4px;font-weight:bold;font-size:1.1em;"></div>
@@ -554,15 +507,14 @@
         window.userData = {{ user_data_json|safe }};
         window.staff_data = {{ staff_data_json|safe }};
         window.userTimeOffs = {{ user_time_offs_json|safe }};
-        {#window.bookings = {{ bookings_json|safe }};#}
         window.unread_notifications_count = {{ unread_notifications_count }};
         localStorage.setItem("unreadNotificationCount", window.unread_notifications_count);
     </script>
     <script src="{% static 'js/utils.js' %}"></script>
-    <script src="{% static 'js/script.js' %}"></script>
-    <script src="{% static 'js/calendar.js' %}"></script>
-    <script src="{% static 'js/auth.js' %}"></script>
     <script src="{% static 'js/api-client.js' %}"></script>
+    <script src="{% static 'js/script.js' %}"></script>
+    <script src="{% static 'js/auth.js' %}"></script>
+    <script src="{% static 'js/calendar.js' %}"></script>
     <script src="{% static 'js/staff-manager.js' %}"></script>
     <script src="{% static 'js/customer-manager.js' %}"></script>
     <script src="{% static 'js/service-manager.js' %}"></script>
@@ -571,5 +523,6 @@
     <script src="{% static 'js/notifications.js' %}"></script>
     <script src="{% static 'js/dashboard.js' %}"></script>
     <script src="{% static 'js/time-off-manager.js' %}"></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
 </body>
 </html>

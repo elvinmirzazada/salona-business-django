@@ -56,23 +56,13 @@ document.addEventListener('DOMContentLoaded', function() {
     handleViewModeForMobile();
     window.addEventListener('resize', handleViewModeForMobile);
 
-    // Authentication check is now handled by Auth.init() which uses API calls
-    // instead of localStorage checks
-
     // Initialize all modules
     const initDashboard = async () => {
         try {
-            // No need to initialize Auth.init() here as it's already called globally
-            // and we rely on server-side authentication
-
             // Initialize UI components
             UI.setupBookingFormNavigation();
 
-            // Initialize live notifications WebSocket
-            // setupLiveNotifications();
-
             // Check if user has company data from the user data passed from Django
-            // The userData is already available from the template context
             const hasUserData = window.userData && typeof window.userData === 'object';
 
             if (!hasUserData) {
@@ -93,13 +83,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Initialize the calendar
                 await Calendar.init();
-
-                // Setup view mode selector
-                setupViewModeSelector();
-
-                // Setup staff filter
-                setupStaffFilter();
-
             }
 
             // Ensure NotificationManager updates icon after everything is loaded
@@ -133,15 +116,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Toggle between calendar view and company creation view
     const toggleDashboardView = (hasCompany) => {
         // Elements to toggle
-        const calendarControls = document.querySelector('.calendar-controls');
-        const filterSection = document.querySelector('.filter-section');
         const calendarContainer = document.querySelector('.calendar-container');
         const createCompanyContainer = document.getElementById('create-company-container');
 
         if (hasCompany) {
             // Show calendar elements
-            calendarControls.style.display = 'flex';
-            filterSection.style.display = 'flex';
             calendarContainer.style.display = 'block';
             // Hide company creation button
             if (createCompanyContainer) {
@@ -149,8 +128,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } else {
             // Hide calendar elements
-            calendarControls.style.display = 'none';
-            filterSection.style.display = 'none';
             calendarContainer.style.display = 'none';
             // Show company creation button
             if (createCompanyContainer) {
@@ -212,240 +189,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
-    };
-
-    // Setup live notifications WebSocket connection
-    const setupLiveNotifications = () => {
-        const wsPath = 'ws://localhost:8000/live-ws';
-        let ws = new WebSocket(wsPath);
-        let reconnectAttempts = 0;
-        const maxReconnectAttempts = 5;
-        const reconnectDelay = 3000; // 3 seconds
-
-        ws.onopen = function(event) {
-            console.log('Live notifications WebSocket connected');
-            reconnectAttempts = 0; // Reset reconnection attempts on successful connection
-        };
-
-        ws.onmessage = function(event) {
-            try {
-                const data = JSON.parse(event.data);
-                console.log('Live notification received:', data);
-
-                // Use the NotificationManager to handle the notification
-                if (window.NotificationManager) {
-                    window.NotificationManager.handleNewNotification(data);
-                } else {
-                    // Fallback if NotificationManager is not loaded yet
-                    console.log('NotificationManager not available, showing basic notification');
-                    showBasicNotification(data);
-                }
-            } catch (error) {
-                console.error('Error parsing notification data:', error);
-            }
-        };
-
-        ws.onclose = function(event) {
-            // Only attempt to reconnect if it wasn't a normal closure and we haven't exceeded max attempts
-            if (event.code !== 1000 && reconnectAttempts < maxReconnectAttempts) {
-                reconnectAttempts++;
-                console.warn(`Live notifications WebSocket closed (attempt ${reconnectAttempts}/${maxReconnectAttempts}). Reconnecting in ${reconnectDelay/1000}s...`);
-
-                setTimeout(() => {
-                    setupLiveNotifications();
-                }, reconnectDelay);
-            } else if (reconnectAttempts >= maxReconnectAttempts) {
-                console.error('Max WebSocket reconnection attempts reached. Please refresh the page.');
-            } else {
-                console.log('WebSocket connection closed normally');
-            }
-        };
-
-        ws.onerror = function(error) {
-            console.error('Live notifications WebSocket error:', error);
-        };
-
-        // Store reference for potential cleanup
-        window.notificationWebSocket = ws;
-    };
-
-    // Fallback notification display if NotificationManager is not available
-    const showBasicNotification = (data) => {
-        // Create a simple toast notification
-        const notification = document.createElement('div');
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 9999;
-            max-width: 300px;
-        `;
-
-        notification.innerHTML = `
-            <div style="font-weight: bold; margin-bottom: 5px;">${data.title || 'Notification'}</div>
-            <div style="font-size: 14px; color: #666;">${data.message || data.info || 'New notification received'}</div>
-        `;
-
-        document.body.appendChild(notification);
-
-        // Remove after 5 seconds
-        setTimeout(() => {
-            if (notification.parentElement) {
-                notification.remove();
-            }
-        }, 5000);
-    };
-
-    // Setup view mode selector
-    const setupViewModeSelector = () => {
-        const weeklyBtn = document.getElementById('view-weekly');
-        const dailyBtn = document.getElementById('view-daily');
-
-        if (!weeklyBtn || !dailyBtn) {
-            console.error('❌ View mode buttons NOT found in DOM');
-            return;
-        }
-
-        console.log('✓ View mode buttons found, setting up event listeners');
-
-        // Check if device is mobile
-        const isMobile = window.innerWidth <= 768;
-
-        // Load saved view mode from localStorage or default based on device type
-        const defaultViewMode = isMobile ? 'daily' : 'weekly';
-        const savedViewMode = localStorage.getItem('calendarViewMode') || defaultViewMode;
-        console.log('📦 Loaded saved view mode from cache:', savedViewMode);
-        console.log('📱 Device type:', isMobile ? 'Mobile' : 'Desktop', '- Default view:', defaultViewMode);
-
-        // Apply the saved view mode on page load
-        applyViewMode(savedViewMode, weeklyBtn, dailyBtn);
-
-        // Weekly button click handler
-        weeklyBtn.addEventListener('click', async function(e) {
-            e.preventDefault();
-            const selectedMode = 'weekly';
-            console.log('🔄 View mode changed to:', selectedMode);
-
-            try {
-                // Save to localStorage
-                localStorage.setItem('calendarViewMode', selectedMode);
-                console.log('💾 View mode saved to cache:', selectedMode);
-
-                // Update button states
-                weeklyBtn.classList.add('active');
-                dailyBtn.classList.remove('active');
-
-                // Update the calendar with the new view mode
-                Calendar.setViewMode(selectedMode);
-                console.log('✓ Calendar view mode set to:', selectedMode);
-
-                // Re-render the calendar
-                console.log('🔄 Re-rendering calendar...');
-                await Calendar.renderCalendar(Calendar.getCurrentDate());
-                console.log('✓ Calendar re-rendered successfully');
-            } catch (error) {
-                console.error('❌ Error changing view mode:', error);
-            }
-        });
-
-        // Daily button click handler
-        dailyBtn.addEventListener('click', async function(e) {
-            e.preventDefault();
-            const selectedMode = 'daily';
-            console.log('🔄 View mode changed to:', selectedMode);
-
-            try {
-                // Save to localStorage
-                localStorage.setItem('calendarViewMode', selectedMode);
-                console.log('💾 View mode saved to cache:', selectedMode);
-
-                // Update button states
-                dailyBtn.classList.add('active');
-                weeklyBtn.classList.remove('active');
-
-                // Update the calendar with the new view mode
-                Calendar.setViewMode(selectedMode);
-                console.log('✓ Calendar view mode set to:', selectedMode);
-
-                // Re-render the calendar
-                console.log('🔄 Re-rendering calendar...');
-                await Calendar.renderCalendar(Calendar.getCurrentDate());
-                console.log('✓ Calendar re-rendered successfully');
-            } catch (error) {
-                console.error('❌ Error changing view mode:', error);
-            }
-        });
-
-        console.log('✓ View mode button event listeners attached');
-    };
-
-    // Helper function to apply view mode (used on page load and when switching modes)
-    const applyViewMode = (mode, weeklyBtn, dailyBtn) => {
-        if (mode === 'daily') {
-            dailyBtn.classList.add('active');
-            weeklyBtn.classList.remove('active');
-            Calendar.setViewMode('daily');
-        } else {
-            weeklyBtn.classList.add('active');
-            dailyBtn.classList.remove('active');
-            Calendar.setViewMode('weekly');
-        }
-        console.log('✓ View mode applied:', mode);
-    };
-
-    // Setup staff filter dropdown
-    const setupStaffFilter = () => {
-        const staffFilter = document.getElementById('staff-filter');
-
-        if (!staffFilter) {
-            console.error('❌ Staff filter dropdown not found');
-            return;
-        }
-
-        console.log('✓ Staff filter dropdown found, setting up event listener');
-
-        // Add change event listener
-        staffFilter.addEventListener('change', async function(e) {
-            const selectedValue = e.target.value;
-            console.log('🔄 Staff filter changed to:', selectedValue);
-            console.log('📋 Selected value type:', typeof selectedValue);
-            console.log('📋 Staff filter element:', staffFilter);
-
-            try {
-                let selectedStaffIds = null;
-
-                // If "all" is selected, show all staff bookings
-                if (selectedValue && selectedValue !== '' && selectedValue !== 'all') {
-                    // Filter by specific staff member
-                    selectedStaffIds = [selectedValue];
-                    console.log('📋 Filtering calendar for staff IDs:', selectedStaffIds);
-                } else {
-                    console.log('📋 Showing all staff bookings (no filter)');
-                }
-
-                // Show loading indicator
-                Utils.toggleSpinner(true);
-
-                // Refresh the calendar with the selected staff filter
-                console.log('🔄 Calling Calendar.refreshCalendar with:', { selectedStaffIds });
-                await Calendar.refreshCalendar({ selectedStaffIds });
-                console.log('✓ Calendar refreshed with staff filter');
-
-                // Hide loading indicator
-                Utils.toggleSpinner(false);
-
-            } catch (error) {
-                console.error('❌ Error applying staff filter:', error);
-                Utils.toggleSpinner(false);
-            }
-        });
-
-        console.log('✓ Staff filter event listener attached');
     };
 
     // Initialize dashboard

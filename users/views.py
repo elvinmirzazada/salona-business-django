@@ -5,7 +5,6 @@ from django.views import View
 from django.http import JsonResponse
 import requests
 from django.conf import settings
-from django.shortcuts import redirect
 from .api_proxy import APIProxyView
 
 
@@ -461,11 +460,15 @@ class DashboardView(GeneralView):
             return None
 
         try:
-            # Calculate start date (3 days ago) and format it properly
-            start_date = datetime.datetime.now() - datetime.timedelta(days=3)
+            # Calculate start date (current week's Monday)
+            today = datetime.datetime.now()
+            # Monday is 0, Sunday is 6
+            days_since_monday = today.weekday()
+            start_date = today - datetime.timedelta(days=days_since_monday)
+            start_date_str = start_date.strftime('%Y-%m-%d')
 
             query_params = {
-                'start_date': start_date,
+                'start_date': start_date_str,
                 'availability_type': 'weekly'
             }
             
@@ -490,8 +493,12 @@ class DashboardView(GeneralView):
             return None
 
         try:
+            # Calculate start date (3 days ago)
+            start_date = datetime.datetime.now() - datetime.timedelta(days=3)
+            start_date_str = start_date.strftime('%Y-%m-%d')
+
             query_params = {
-                'start_date': str(datetime.datetime.today() - 3 * datetime.timedelta(days=1))
+                'start_date': start_date_str
             }
 
             api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/bookings"
@@ -527,7 +534,7 @@ class DashboardView(GeneralView):
         staff_data = self.get_staff(request)
         unread_notifications_count = self.get_unread_notifications_count(request)
         user_time_offs = self.get_user_time_offs(request)
-        print(len(user_time_offs))
+
         # Check if this is an AJAX request
         if request.headers.get('Accept') == 'application/json':
             return JsonResponse({
@@ -542,7 +549,8 @@ class DashboardView(GeneralView):
         return render(request, 'users/dashboard.html', {
             'is_authenticated': True,
             'user_data': user_data,
-            'user_data_json': json.dumps(user_data),  # Add JSON serialized version
+            'user_data_json': json.dumps(user_data),
+            'start_date': str(datetime.datetime.today() - datetime.timedelta(days=3)),
             'staff_data': staff_data,
             'staff_data_json': json.dumps(staff_data) if staff_data else json.dumps([]),
             'user_time_offs': user_time_offs,

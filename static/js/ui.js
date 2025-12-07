@@ -1,5 +1,8 @@
 // UI related functionality
 const UI = (() => {
+    // Store active close handlers to properly clean them up
+    let activePopupCloseHandler = null;
+
     // Initialize resizable panel functionality
     const initResizablePanel = () => {
         const panel = document.getElementById('booking-form-panel');
@@ -511,6 +514,12 @@ const UI = (() => {
         const popup = document.getElementById('event-popup');
         if (!popup) return;
 
+        // Remove any existing close handler first
+        if (activePopupCloseHandler) {
+            document.removeEventListener('click', activePopupCloseHandler);
+            activePopupCloseHandler = null;
+        }
+
         // Store event data
         popup.dataset.eventId = event.id || '';
         popup.dataset.bookingData = JSON.stringify(event);
@@ -549,11 +558,13 @@ const UI = (() => {
         // Close popup when clicking outside
         setTimeout(() => {
             const closeHandler = (e) => {
-                if (!popup.contains(e.target) && !e.target.closest('.event')) {
+                if (!popup.contains(e.target) && !e.target.closest('.fc-event')) {
                     popup.style.display = 'none';
                     document.removeEventListener('click', closeHandler);
+                    activePopupCloseHandler = null;
                 }
             };
+            activePopupCloseHandler = closeHandler;
             document.addEventListener('click', closeHandler);
         }, 10);
     };

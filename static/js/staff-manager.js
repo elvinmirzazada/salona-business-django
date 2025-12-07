@@ -564,14 +564,25 @@ class StaffManager {
      */
     static async loadStaffMembers() {
         try {
-            const response = await window.api.getStaff();
+            // Check if we have cached staff data from the initial page load
+            let staffData;
+            if (window.staff_data && Array.isArray(window.staff_data) && window.staff_data.length > 0) {
+                staffData = window.staff_data;
+                console.log('Using cached staff data for booking form');
+            } else {
+                // Only fetch from API if we don't have cached data
+                const response = await window.api.getStaff();
 
-            if (!response || !response.data) {
-                console.warn('No staff data received');
-                return;
+                if (!response || !response.data) {
+                    console.warn('No staff data received');
+                    return;
+                }
+
+                staffData = response.data;
+                // Update the global cache
+                window.staff_data = staffData;
             }
 
-            const staffData = response.data;
             const staffSelect = document.getElementById('booking-worker');
 
             if (!staffSelect) {
@@ -603,14 +614,25 @@ class StaffManager {
      */
     static async loadStaffMembersForTimeOff() {
         try {
-            const response = await window.api.getStaff();
+            // Check if we have cached staff data from the initial page load
+            let staffData;
+            if (window.staff_data && Array.isArray(window.staff_data) && window.staff_data.length > 0) {
+                staffData = window.staff_data;
+                console.log('Using cached staff data for time off form');
+            } else {
+                // Only fetch from API if we don't have cached data
+                const response = await window.api.getStaff();
 
-            if (!response || !response.data) {
-                console.warn('No staff data received');
-                return;
+                if (!response || !response.data) {
+                    console.warn('No staff data received');
+                    return;
+                }
+
+                staffData = response.data;
+                // Update the global cache
+                window.staff_data = staffData;
             }
 
-            const staffData = response.data;
             const staffSelect = document.getElementById('time-off-staff');
 
             if (!staffSelect) {

@@ -1,5 +1,6 @@
 import requests
 import json
+from datetime import datetime
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -27,6 +28,81 @@ class APIProxyView(View):
             path = f"api/{path}"
         return f"{api_base}/{path}"
     
+    @staticmethod
+    def ensure_utc_params(data):
+        """
+        Recursively convert all time-related parameters to UTC format.
+        Looks for common time field names and converts them to ISO 8601 UTC format.
+
+        Args:
+            data: Dictionary or list containing request parameters
+
+        Returns:
+            Data with time parameters converted to UTC
+        """
+        if not data or not isinstance(data, (dict, list)):
+            return data
+
+        # Common time field patterns
+        time_field_patterns = [
+            'time', 'date', 'datetime', 'start', 'end', 'begin', 'from', 'to',
+            'created', 'updated', 'scheduled', 'appointment', 'booking',
+            'started_at', 'ended_at', 'created_at', 'updated_at', 'start_at', 'end_at'
+        ]
+
+        def is_time_field(field_name):
+            """Check if field name matches time patterns"""
+            field_lower = field_name.lower()
+            return any(pattern in field_lower for pattern in time_field_patterns)
+
+        def is_iso_datetime(value_str):
+            """Check if string is ISO 8601 datetime format"""
+            if not isinstance(value_str, str):
+                return False
+            try:
+                # Try to parse ISO format
+                datetime.fromisoformat(value_str.replace('Z', '+00:00'))
+                return True
+            except (ValueError, AttributeError):
+                return False
+
+        def convert_value(value):
+            """Convert a single value if it's a time string"""
+            if isinstance(value, str) and is_iso_datetime(value):
+                # Already in ISO format, return as is (backend expects UTC)
+                return value
+            return value
+
+        def process_dict(obj):
+            """Recursively process dictionary"""
+            result = {}
+            for key, value in obj.items():
+                if value is None:
+                    result[key] = value
+                elif isinstance(value, dict):
+                    result[key] = process_dict(value)
+                elif isinstance(value, list):
+                    result[key] = [process_dict(item) if isinstance(item, dict) else
+                                   (process_list(item) if isinstance(item, list) else convert_value(item))
+                                   for item in value]
+                elif is_time_field(key) and isinstance(value, str):
+                    result[key] = convert_value(value)
+                else:
+                    result[key] = value
+            return result
+
+        def process_list(lst):
+            """Recursively process list"""
+            return [process_dict(item) if isinstance(item, dict) else
+                   (process_list(item) if isinstance(item, list) else item)
+                   for item in lst]
+
+        if isinstance(data, dict):
+            return process_dict(data)
+        elif isinstance(data, list):
+            return process_list(data)
+        return data
+
     def get_tokens_from_request(self, request):
         """
         Get tokens from request, checking for refreshed tokens first
@@ -138,17 +214,24 @@ class APIProxyView(View):
         # Get query parameters from the request
         params = request.GET.dict() if request.GET else None
 
+        # Convert datetime parameters to UTC
+        params = self.ensure_utc_params(params)
+
         # Prepare request data
         data = None
         if request.method in ['POST', 'PUT', 'PATCH']:
             if request.content_type == 'application/json':
                 try:
                     data = json.loads(request.body)
+                    # Convert datetime parameters to UTC
+                    data = self.ensure_utc_params(data)
                 except json.JSONDecodeError:
                     data = None
             else:
                 data = request.POST.dict()
-        
+                # Convert datetime parameters to UTC
+                data = self.ensure_utc_params(data)
+
         # Make the API request
         try:
             response = requests.request(

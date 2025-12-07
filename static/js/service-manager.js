@@ -41,11 +41,21 @@ class ServiceManager {
             this.showLoading('services');
             this.showLoading('categories');
 
+            // Check if we have cached staff data from the initial page load
+            let staffDataPromise;
+            if (window.staff_data && Array.isArray(window.staff_data) && window.staff_data.length > 0) {
+                console.log('Using cached staff data in ServiceManager');
+                staffDataPromise = Promise.resolve({ data: window.staff_data });
+            } else {
+                // Only fetch from API if we don't have cached data
+                staffDataPromise = window.api.getStaff().catch(err => ({ data: [] }));
+            }
+
             // Load data in parallel - categories and services separately
             const [categorizedResponse, categoriesResponse, staffResponse] = await Promise.all([
                 window.api.getCompanyServices().catch(err => ({ data: [] })),
                 window.api.getCategories().catch(err => ({ data: [] })),
-                window.api.getStaff().catch(err => ({ data: [] }))
+                staffDataPromise
             ]);
 
             // Process categories from dedicated endpoint
@@ -68,6 +78,11 @@ class ServiceManager {
             });
 
             this.staff = staffResponse?.data || [];
+
+            // Update the global cache
+            if (this.staff.length > 0) {
+                window.staff_data = this.staff;
+            }
 
             // Render both tabs
             this.renderServices();
