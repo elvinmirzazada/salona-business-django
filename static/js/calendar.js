@@ -540,7 +540,7 @@ const Calendar = (() => {
 
                     // Clear existing events before fetching new ones to prevent duplicates
                     calendar.removeAllEvents();
-
+                    
                     fetchAndRenderEvents(currentRange);
 
                 },

@@ -856,7 +856,7 @@ class StaffView(GeneralView):
         if request.headers.get('Accept') == 'application/json':
             return JsonResponse({
                 'user_data': user_data,
-                'staff_data': staff_data,
+                # 'staff_data': staff_data,
                 'unread_notifications_count': unread_notifications_count,
                 'company_id': user_data.get('company_id', '')
             })
@@ -866,8 +866,8 @@ class StaffView(GeneralView):
             'is_authenticated': True,
             'user_data': user_data,
             'user_data_json': json.dumps(user_data),
-            'staff_data': staff_data,
-            'staff_data_json': json.dumps(staff_data) if staff_data else json.dumps([]),
+            # 'staff_data': staff_data,
+            # 'staff_data_json': json.dumps(staff_data) if staff_data else json.dumps([]),
             'unread_notifications_count': unread_notifications_count,
             'company_id': user_data.get('company_id', ''),
             'API_BASE_URL': getattr(settings, 'API_BASE_URL', 'https://api.salona.me')

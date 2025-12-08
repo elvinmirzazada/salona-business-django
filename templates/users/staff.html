@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
     <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
     <link rel="stylesheet" href="{% static 'css/staff.css' %}">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -19,6 +22,14 @@
     <div class="bg-shape bg-shape-1"></div>
     <div class="bg-shape bg-shape-2"></div>
     <div class="bg-shape bg-shape-3"></div>
+
+    <!-- Mobile Menu Toggle Button -->
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
     <div class="app-container">
         <!-- Include reusable sidebar -->
@@ -200,10 +211,20 @@
 
     <!-- Include JavaScript files -->
     {% load static %}
+    <!-- jQuery (required for DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/plug-ins/2.3.5/features/scrollResize/dataTables.scrollResize.min.js"></script>
+
     <script src="{% static 'js/config.js' %}"></script>
     <script src="{% static 'js/api-client.js' %}"></script>
     <script src="{% static 'js/notifications.js' %}"></script>
     <script src="{% static 'js/staff-manager.js' %}"></script>
+    <!-- Font Awesome JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 
     <script>
         // Pass user data to the staff manager
@@ -247,6 +268,56 @@
             admin: "{% trans 'Admin' %}",
             owner: "{% trans 'Owner' %}"
         };
+
+        // Mobile sidebar toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const sidebar = document.querySelector('.sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+            if (mobileMenuToggle && sidebar && sidebarOverlay) {
+                // Toggle sidebar on mobile menu button click
+                mobileMenuToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                    sidebarOverlay.classList.toggle('active');
+
+                    // Reposition toggle button when sidebar is active
+                    if (sidebar.classList.contains('active')) {
+                        mobileMenuToggle.style.left = '295px'; // 280px sidebar + 15px spacing
+                    } else {
+                        mobileMenuToggle.style.left = '15px';
+                    }
+                });
+
+                // Close sidebar when clicking overlay
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                    mobileMenuToggle.style.left = '15px'; // Reset position
+                });
+
+                // Close sidebar when clicking any nav item on mobile
+                const navItems = sidebar.querySelectorAll('.nav-item');
+                navItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        if (window.innerWidth <= 768) {
+                            sidebar.classList.remove('active');
+                            sidebarOverlay.classList.remove('active');
+                            mobileMenuToggle.style.left = '15px'; // Reset position
+                        }
+                    });
+                });
+
+                // Handle window resize to properly hide/show mobile elements
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth > 768) {
+                        sidebar.classList.remove('active');
+                        sidebarOverlay.classList.remove('active');
+                        mobileMenuToggle.style.left = '15px';
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>

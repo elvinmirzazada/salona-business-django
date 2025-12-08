@@ -28,6 +28,14 @@
     <div class="bg-shape bg-shape-2"></div>
     <div class="bg-shape bg-shape-3"></div>
 
+    <!-- Mobile Menu Toggle Button -->
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
     <div class="app-container">
         <!-- Include reusable sidebar -->
         {% include 'partials/sidebar.html' %}
@@ -212,6 +220,56 @@
             page: "{% trans 'Page' %}",
             of: "{% trans 'of' %}"
         };
+
+        // Mobile sidebar toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const sidebar = document.querySelector('.sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+            if (mobileMenuToggle && sidebar && sidebarOverlay) {
+                // Toggle sidebar on mobile menu button click
+                mobileMenuToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                    sidebarOverlay.classList.toggle('active');
+
+                    // Reposition toggle button when sidebar is active
+                    if (sidebar.classList.contains('active')) {
+                        mobileMenuToggle.style.left = '295px'; // 280px sidebar + 15px spacing
+                    } else {
+                        mobileMenuToggle.style.left = '15px';
+                    }
+                });
+
+                // Close sidebar when clicking overlay
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                    mobileMenuToggle.style.left = '15px'; // Reset position
+                });
+
+                // Close sidebar when clicking any nav item on mobile
+                const navItems = sidebar.querySelectorAll('.nav-item');
+                navItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        if (window.innerWidth <= 768) {
+                            sidebar.classList.remove('active');
+                            sidebarOverlay.classList.remove('active');
+                            mobileMenuToggle.style.left = '15px'; // Reset position
+                        }
+                    });
+                });
+
+                // Handle window resize to properly hide/show mobile elements
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth > 768) {
+                        sidebar.classList.remove('active');
+                        sidebarOverlay.classList.remove('active');
+                        mobileMenuToggle.style.left = '15px';
+                    }
+                });
+            }
+        });
     </script>
     <script src="{% static 'js/utils.js' %}"></script>
     <script src="{% static 'js/auth.js' %}"></script>
