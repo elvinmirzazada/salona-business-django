@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'salona_business_django',  # Add main app for management commands and template tags
     'users',  # Added new users app
     'customers',  # Added new customers app
 ]
@@ -55,6 +56,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Add WhiteNoise for static files
+    'salona_business_django.cache_middleware.StaticFilesCacheMiddleware',  # Custom caching middleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',  # Add locale middleware for language switching
     'django.middleware.common.CommonMiddleware',
@@ -69,9 +71,8 @@ ROOT_URLCONF = 'salona_business_django.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
-        'APP_DIRS': True,
+        'DIRS': [BASE_DIR / 'templates'],
+        'APP_DIRS': DEBUG,  # Only use APP_DIRS in development
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -84,6 +85,15 @@ TEMPLATES = [
         },
     },
 ]
+
+# Add cached template loaders for production
+if not DEBUG:
+    TEMPLATES[0]['OPTIONS']['loaders'] = [
+        ('django.template.loaders.cached.Loader', [
+            'django.template.loaders.filesystem.Loader',
+            'django.template.loaders.app_directories.Loader',
+        ]),
+    ]
 
 WSGI_APPLICATION = 'salona_business_django.wsgi.application'
 ASGI_APPLICATION = 'salona_business_django.asgi.application'
@@ -169,8 +179,43 @@ STATIC_URL = os.getenv('STATIC_URL', '/static/')
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
-# WhiteNoise configuration
+# Enhanced WhiteNoise configuration for better static file caching
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# WhiteNoise settings for improved caching
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = DEBUG  # Only auto-refresh in development
+WHITENOISE_SKIP_COMPRESS_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'zip', 'gz', 'tgz', 'bz2', 'tbz', 'xz', 'br']
+WHITENOISE_MAX_AGE = 31536000 if not DEBUG else 0  # 1 year cache for production, no cache for development
+
+# Static file finders for better performance
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
+
+# Additional static file caching headers
+if not DEBUG:
+    # Production caching settings
+    WHITENOISE_IMMUTABLE_FILE_TEST = lambda path, url: True  # All files are immutable with manifest
+
+    # Custom cache control for different file types
+    def custom_headers(headers, path, url):
+        if path.endswith(('.css', '.js')):
+            headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+        elif path.endswith(('.png', '.jpg', '.jpeg', '.gif', '.ico', '.svg', '.webp')):
+            headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+        elif path.endswith(('.woff', '.woff2', '.ttf', '.eot')):
+            headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+        else:
+            headers['Cache-Control'] = 'public, max-age=86400'  # 1 day for other files
+
+        # Add security headers
+        headers['X-Content-Type-Options'] = 'nosniff'
+        if path.endswith(('.js', '.css')):
+            headers['Content-Security-Policy'] = "default-src 'self'"
+
+    WHITENOISE_ADD_HEADERS_FUNCTION = custom_headers
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -182,3 +227,29 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = not DEBUG
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
+
+# Cache settings for better performance
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache' if DEBUG else 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': '/tmp/django_cache' if not DEBUG else '',
+        'TIMEOUT': 300,  # 5 minutes default
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,
+        }
+    }
+}
+
+# Use Redis cache if available in production
+if not DEBUG and REDIS_URL:
+    CACHES['default'] = {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': REDIS_URL,
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+
+# Session cache settings
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'

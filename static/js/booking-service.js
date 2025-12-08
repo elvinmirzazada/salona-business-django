@@ -37,15 +37,6 @@ const BookingService = (() => {
     // Fetch bookings from API with date range parameters
     const fetchBookings = async (startDate, endDate, staffIds = null) => {
         try {
-            // Generate cache key
-            const cacheKey = generateCacheKey(startDate, endDate, staffIds);
-
-            // Check if we have valid cached data
-            if (isCacheValid(cacheKey)) {
-                console.log('📦 Using cached booking data (cache hit)');
-                return bookingCache.data;
-            }
-
             // Format dates for API request
             const formattedStartDate = Utils.formatDate(startDate);
             const formattedEndDate = Utils.formatDate(endDate);
@@ -69,12 +60,6 @@ const BookingService = (() => {
             const response = await api.getBookings(params);
             const bookings = response?.success ? response.data : [];
 
-            // Cache the result
-            bookingCache.data = bookings;
-            bookingCache.timestamp = Date.now();
-            bookingCache.cacheKey = cacheKey;
-            console.log('💾 Booking data cached successfully');
-
             return bookings;
         } catch (error) {
             console.error('Error fetching bookings:', error);
@@ -85,8 +70,22 @@ const BookingService = (() => {
     // Convert API bookings to calendar events
     const convertBookingsToEvents = (bookings) => {
         return bookings.map(booking => {
-            const startAt = new Date(booking.start_at);
-            const endAt = new Date(booking.end_at);
+            // Parse UTC dates and convert to local timezone
+            // The dates come as "2025-12-10T16:00:00" format (UTC) but without 'Z' suffix
+            // We need to explicitly treat them as UTC and convert to local time
+
+            // Create UTC dates by appending 'Z' to force UTC interpretation
+            const utcStartString = booking.start_at.includes('Z') ? booking.start_at : booking.start_at + 'Z';
+            const utcEndString = booking.end_at.includes('Z') ? booking.end_at : booking.end_at + 'Z';
+
+            // Parse as UTC dates
+            const utcStartDate = new Date(utcStartString);
+            const utcEndDate = new Date(utcEndString);
+
+            // Convert UTC to local timezone by creating new dates with local time values
+            // This accounts for the user's timezone offset
+            const localStartAt = new Date(utcStartDate.getTime());
+            const localEndAt = new Date(utcEndDate.getTime());
 
             // Determine color based on booking status
             let color = 'event-blue';
@@ -108,8 +107,8 @@ const BookingService = (() => {
                 id: booking.id,
                 title: customerName,
                 description: booking.notes || 'No notes',
-                start: startAt,
-                end: endAt,
+                start: localStartAt,
+                end: localEndAt,
                 color: color,
                 totalPrice: booking.total_price,
                 status: booking.status,

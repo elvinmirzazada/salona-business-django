@@ -1,0 +1,11 @@
+<!-- Resource hints for better performance -->
+{% for domain in dns_prefetch_domains %}
+<link rel="dns-prefetch" href="{{ domain }}">
+{% endfor %}
+
+{% for domain in preconnect_domains %}
+<link rel="preconnect" href="{{ domain }}" crossorigin>
+{% endfor %}
+
+<!-- Prefetch critical resources -->
+<link rel="prefetch" href="{% url 'home' %}">

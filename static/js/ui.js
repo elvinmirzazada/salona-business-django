@@ -190,15 +190,19 @@ const UI = (() => {
 
     /**
      * Format date and time for display
-     * @param {Date} startDate - Start date
-     * @param {Date} endDate - End date
+     * @param {Date|string} startDate - Start date (can be Date object or ISO string)
+     * @param {Date|string} endDate - End date (can be Date object or ISO string)
      * @returns {string} Formatted date-time string
      */
     const formatEventDateTime = (startDate, endDate) => {
-        const startDateStr = startDate.toLocaleDateString();
-        const endDateStr = endDate.toLocaleDateString();
-        const startTime = Utils.formatTime(startDate.getHours(), startDate.getMinutes());
-        const endTime = Utils.formatTime(endDate.getHours(), endDate.getMinutes());
+        // Ensure we have Date objects, convert from string if necessary
+        const startDateObj = startDate instanceof Date ? startDate : new Date(startDate);
+        const endDateObj = endDate instanceof Date ? endDate : new Date(endDate);
+        
+        const startDateStr = startDateObj.toLocaleDateString();
+        const endDateStr = endDateObj.toLocaleDateString();
+        const startTime = Utils.formatTime(startDateObj.getHours(), startDateObj.getMinutes());
+        const endTime = Utils.formatTime(endDateObj.getHours(), endDateObj.getMinutes());
 
         if (startDateStr === endDateStr) {
             // Same day event

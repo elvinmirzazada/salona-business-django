@@ -206,7 +206,6 @@ const Calendar = (() => {
             // Convert to FullCalendar format
             const fullCalendarEvents = convertToFullCalendarEvents(bookingEvents, timeOffEvents);
             fullCalendarEvents.forEach(event => calendar.addEvent(event));
-
         } catch (error) {
             console.error('Error fetching calendar events:', error);
         } finally {
@@ -359,6 +358,14 @@ const Calendar = (() => {
                 themeSystem: 'Flatly',
                 initialView: 'timeGridWeek',
                 initialDate: currentDate,
+                views: {
+                    dayGridMonth: {
+                      dayHeaderFormat: { weekday: 'short' } // month view
+                    },
+                    timeGridWeek: {
+                      dayHeaderFormat: {weekday: 'short', day: '2-digit' }
+                    }
+                },
                 customButtons: {
                     staffFilter: {
                         // text: 'Filter Staff',
@@ -530,6 +537,9 @@ const Calendar = (() => {
                     const end = dateInfo.endStr;
 
                     let currentRange = { viewType, start, end };
+
+                    // Clear existing events before fetching new ones to prevent duplicates
+                    calendar.removeAllEvents();
 
                     fetchAndRenderEvents(currentRange);
 

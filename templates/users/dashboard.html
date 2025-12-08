@@ -4,17 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% load i18n %}{% trans "Salona - Dashboard" %}</title>
-    {% load static %}
-    <link rel="icon" type="image/png" href="{% static 'images/salona-icon.png' %}">
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-    <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
-    <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
+    {% load static_cache %}
+    <!-- Add resource hints in <head> -->
+    {% resource_hints %}
+    <link rel="icon" type="image/png" href="{% static_versioned 'images/salona-icon.png' %}">
+    <link rel="stylesheet" href="{% static_versioned 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static_versioned 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static_versioned 'css/notifications.css' %}">
+    <link rel="stylesheet" href="{% static_versioned 'css/navigation.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- FullCalendar CSS -->
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
 </head>
 <body>
 
@@ -391,115 +390,6 @@
         </div>
     </div>
 
-{#    <style>#}
-{#        @keyframes spin {#}
-{#            0% { transform: rotate(0deg); }#}
-{#            100% { transform: rotate(360deg); }#}
-{##}
-{#        /* Staff filter dropdown styling */#}
-{#        .staff-filter-container {#}
-{#            margin: 15px 0;#}
-{#            padding: 10px;#}
-{#            background-color: #fff;#}
-{#            border-radius: 8px;#}
-{#            box-shadow: 0 2px 10px rgba(0,0,0,0.1);#}
-{#            display: flex;#}
-{#            align-items: center;#}
-{#        }#}
-{##}
-{#        .staff-filter-container label {#}
-{#            margin-right: 10px;#}
-{#            font-weight: 600;#}
-{#            color: #333;#}
-{#        }#}
-{##}
-{#        .staff-filter-dropdown {#}
-{#            padding: 8px 12px;#}
-{#            border-radius: 4px;#}
-{#            border: 1px solid #ddd;#}
-{#            background-color: #fff;#}
-{#            font-size: 14px;#}
-{#            min-width: 200px;#}
-{#            cursor: pointer;#}
-{#        }#}
-{##}
-{#        .staff-filter-dropdown:focus {#}
-{#            outline: none;#}
-{#            border-color: #4361EE;#}
-{#            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);#}
-{#        }#}
-{##}
-{#        /* Staff circles styling */#}
-{#        .staff-circles-container {#}
-{#            margin: 15px 0;#}
-{#            padding: 10px;#}
-{#            background-color: #fff;#}
-{#            border-radius: 8px;#}
-{#            box-shadow: 0 2px 10px rgba(0,0,0,0.1);#}
-{#        }#}
-{##}
-{#        .staff-circles-container h3 {#}
-{#            margin: 0 0 10px 0;#}
-{#            font-size: 1.2em;#}
-{#            color: #333;#}
-{#        }#}
-{##}
-{#        .staff-circles {#}
-{#            display: flex;#}
-{#            flex-wrap: wrap;#}
-{#            gap: 15px;#}
-{#            padding: 5px 0;#}
-{#        }#}
-{##}
-{#        .staff-circle {#}
-{#            display: flex;#}
-{#            align-items: center;#}
-{#            justify-content: center;#}
-{#            width: 50px;#}
-{#            height: 50px;#}
-{#            border-radius: 50%;#}
-{#            background-color: #4361EE;#}
-{#            color: white;#}
-{#            font-weight: bold;#}
-{#            font-size: 1.2em;#}
-{#            text-transform: uppercase;#}
-{#            cursor: pointer;#}
-{#            transition: all 0.2s ease;#}
-{#            position: relative;#}
-{#        }#}
-{##}
-{#        .staff-circle:hover {#}
-{#            transform: translateY(-3px);#}
-{#            box-shadow: 0 5px 15px rgba(0,0,0,0.2);#}
-{#        }#}
-{##}
-{#        .staff-circle.active {#}
-{#            border: 3px solid #38B000;#}
-{#        }#}
-{##}
-{#        .staff-info {#}
-{#            position: absolute;#}
-{#            bottom: -30px;#}
-{#            left: 50%;#}
-{#            transform: translateX(-50%);#}
-{#            background-color: rgba(0,0,0,0.7);#}
-{#            color: white;#}
-{#            padding: 3px 8px;#}
-{#            border-radius: 4px;#}
-{#            font-size: 0.7em;#}
-{#            white-space: nowrap;#}
-{#            opacity: 0;#}
-{#            transition: opacity 0.2s ease;#}
-{#            z-index: 10;#}
-{#        }#}
-{##}
-{#        .staff-circle:hover .staff-info {#}
-{#            opacity: 1;#}
-{#        }#}
-{##}
-
-{#    </style>#}
-
     <script>
         // Get API_BASE_URL from Django template context (environment variable)
         window.API_BASE_URL = "{{ API_BASE_URL }}";
@@ -510,19 +400,19 @@
         window.unread_notifications_count = {{ unread_notifications_count }};
         localStorage.setItem("unreadNotificationCount", window.unread_notifications_count);
     </script>
-    <script src="{% static 'js/utils.js' %}"></script>
-    <script src="{% static 'js/api-client.js' %}"></script>
-    <script src="{% static 'js/script.js' %}"></script>
-    <script src="{% static 'js/auth.js' %}"></script>
-    <script src="{% static 'js/calendar.js' %}"></script>
-    <script src="{% static 'js/staff-manager.js' %}"></script>
-    <script src="{% static 'js/customer-manager.js' %}"></script>
-    <script src="{% static 'js/service-manager.js' %}"></script>
-    <script src="{% static 'js/ui.js' %}"></script>
-    <script src="{% static 'js/booking-service.js' %}"></script>
-    <script src="{% static 'js/notifications.js' %}"></script>
-    <script src="{% static 'js/dashboard.js' %}"></script>
-    <script src="{% static 'js/time-off-manager.js' %}"></script>
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <script src="{% static_versioned 'js/utils.js' %}"></script>
+    <script src="{% static_versioned 'js/api-client.js' %}"></script>
+    <script src="{% static_versioned 'js/script.js' %}"></script>
+    <script src="{% static_versioned 'js/auth.js' %}"></script>
+    <script src="{% static_versioned 'js/calendar.js' %}"></script>
+    <script src="{% static_versioned 'js/staff-manager.js' %}"></script>
+    <script src="{% static_versioned 'js/customer-manager.js' %}"></script>
+    <script src="{% static_versioned 'js/service-manager.js' %}"></script>
+    <script src="{% static_versioned 'js/ui.js' %}"></script>
+    <script src="{% static_versioned 'js/booking-service.js' %}"></script>
+    <script src="{% static_versioned 'js/notifications.js' %}"></script>
+    <script src="{% static_versioned 'js/dashboard.js' %}"></script>
+    <script src="{% static_versioned 'js/time-off-manager.js' %}"></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.js'></script>
 </body>
 </html>
