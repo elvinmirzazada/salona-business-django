@@ -606,7 +606,17 @@ const Calendar = (() => {
             selectedStaffIds = options.selectedStaffIds;
         }
         if (calendar) {
-            calendar.refetchEvents();
+            // Get current date range from calendar view
+            const view = calendar.view;
+            const currentRange = {
+                viewType: view.type,
+                start: view.activeStart,
+                end: view.activeEnd
+            };
+
+            // Clear all events and re-fetch with new filter
+            calendar.removeAllEvents();
+            await fetchAndRenderEvents(currentRange);
         }
     };
 
