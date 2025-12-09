@@ -326,8 +326,19 @@ class LoginView(GeneralView):
             })
 
 
-class SignupView(View):
+class SignupView(GeneralView):
     def get(self, request):
+        # Check if user is already authenticated
+        access_token = request.COOKIES.get('access_token')
+        if access_token:
+            # Check if user has company using get_current_user
+            user_data = self.get_current_user(request)
+            if user_data:
+                if not user_data.get('company_id'):
+                    # User has no company, redirect to settings
+                    return redirect('users:settings')
+                # User has company, redirect to dashboard
+                return redirect('users:dashboard')
         return render(request, 'users/signup.html')
 
 
