@@ -138,10 +138,10 @@ class StaffManager {
                         if (window.userData && (window.userData.role === 'owner' || window.userData.role === 'admin')) {
                             return `
                                 <div class="actions-cell">
-                                    <button class="action-btn edit-btn" onclick="staffManager.openEditModal('${row.id}')" title="${self.translations.edit}">
+                                    <button class="action-btn edit-btn" onclick="staffManager.openEditModal('${row.user.id}')" title="${self.translations.edit}">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="action-btn delete-btn" onclick="staffManager.openDeleteModal('${row.id}')" title="${self.translations.delete}">
+                                    <button class="action-btn delete-btn" onclick="staffManager.openDeleteModal('${row.user.id}')" title="${self.translations.delete}">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
@@ -372,58 +372,58 @@ class StaffManager {
     /**
      * Render staff table
      */
-    renderStaffTable() {
-        const tbody = document.getElementById('staff-tbody');
-        const tableContainer = document.getElementById('staff-table-container');
-        const emptyState = document.getElementById('staff-empty');
-
-        if (!tbody) return;
-
-        // Check if we have staff
-        if (!this.staff || this.staff.length === 0) {
-            if (tableContainer) tableContainer.style.display = 'none';
-            if (emptyState) emptyState.style.display = 'block';
-            return;
-        }
-
-        // Show table, hide empty state
-        if (tableContainer) tableContainer.style.display = 'block';
-        if (emptyState) emptyState.style.display = 'none';
-
-        // Render staff rows
-        tbody.innerHTML = this.staff.map(staff => {
-            const statusClass = staff.status === 'active' ? 'status-active' : 'status-inactive';
-            const statusText = staff.status === 'active' ? this.translations.active : this.translations.inactive;
-
-            return `
-                <tr data-staff-id="${staff.user.id}">
-                    <td>${staff.user.first_name || ''} ${staff.user.last_name || ''}</td>
-                    <td>${staff.user.email || '-'}</td>
-                    <td>${staff.user.phone || '-'}</td>
-                    <td>${this.translateRole(staff.role || 'staff')}</td>
-                    <td>
-                        <span class="${statusClass}">
-                            ${statusText}
-                        </span>
-                    </td>
-                    <td class="actions-cell">
-                        ${window.userData && (window.userData.role === 'owner' || window.userData.role === 'admin') ? `
-                            <button class="action-btn edit-btn" onclick="staffManager.openEditModal('${staff.id}')" title="${this.translations.edit}">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="action-btn delete-btn" onclick="staffManager.openDeleteModal('${staff.id}')" title="${this.translations.delete}">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        ` : `
-                            <span class="view-only-icon" title="View only - Contact administrator for edit permissions" style="color: #9CA3AF; font-size: 14px;">
-                                <i class="fas fa-eye"></i>
-                            </span>
-                        `}
-                    </td>
-                </tr>
-            `;
-        }).join('');
-    }
+    // renderStaffTable() {
+    //     const tbody = document.getElementById('staff-tbody');
+    //     const tableContainer = document.getElementById('staff-table-container');
+    //     const emptyState = document.getElementById('staff-empty');
+    //
+    //     if (!tbody) return;
+    //
+    //     // Check if we have staff
+    //     if (!this.staff || this.staff.length === 0) {
+    //         if (tableContainer) tableContainer.style.display = 'none';
+    //         if (emptyState) emptyState.style.display = 'block';
+    //         return;
+    //     }
+    //
+    //     // Show table, hide empty state
+    //     if (tableContainer) tableContainer.style.display = 'block';
+    //     if (emptyState) emptyState.style.display = 'none';
+    //
+    //     // Render staff rows
+    //     tbody.innerHTML = this.staff.map(staff => {
+    //         const statusClass = staff.status === 'active' ? 'status-active' : 'status-inactive';
+    //         const statusText = staff.status === 'active' ? this.translations.active : this.translations.inactive;
+    //
+    //         return `
+    //             <tr data-staff-id="${staff.user.id}">
+    //                 <td>${staff.user.first_name || ''} ${staff.user.last_name || ''}</td>
+    //                 <td>${staff.user.email || '-'}</td>
+    //                 <td>${staff.user.phone || '-'}</td>
+    //                 <td>${this.translateRole(staff.role || 'staff')}</td>
+    //                 <td>
+    //                     <span class="${statusClass}">
+    //                         ${statusText}
+    //                     </span>
+    //                 </td>
+    //                 <td class="actions-cell">
+    //                     ${window.userData && (window.userData.role === 'owner' || window.userData.role === 'admin') ? `
+    //                         <button class="action-btn edit-btn" onclick="staffManager.openEditModal('${staff.user.id}')" title="${this.translations.edit}">
+    //                             <i class="fas fa-edit"></i>
+    //                         </button>
+    //                         <button class="action-btn delete-btn" onclick="staffManager.openDeleteModal('${staff.user.id}')" title="${this.translations.delete}">
+    //                             <i class="fas fa-trash"></i>
+    //                         </button>
+    //                     ` : `
+    //                         <span class="view-only-icon" title="View only - Contact administrator for edit permissions" style="color: #9CA3AF; font-size: 14px;">
+    //                             <i class="fas fa-eye"></i>
+    //                         </span>
+    //                     `}
+    //                 </td>
+    //             </tr>
+    //         `;
+    //     }).join('');
+    // }
 
     /**
      * Render invitations table
@@ -567,7 +567,7 @@ class StaffManager {
      * Open edit staff modal
      */
     openEditModal(staffId) {
-        const staff = this.staff.find(s => s.id === staffId);
+        const staff = this.staff.find(s => s.user.id === staffId);
         if (!staff) {
             this.showError(this.translations.staffNotFound || 'Staff member not found');
             return;
@@ -691,7 +691,7 @@ class StaffManager {
      * Open delete confirmation modal
      */
     openDeleteModal(staffId) {
-        const staff = this.staff.find(s => s.id === staffId);
+        const staff = this.staff.find(s => s.user.id === staffId);
         if (!staff) {
             this.showError(this.translations.staffNotFound || 'Staff member not found');
             return;

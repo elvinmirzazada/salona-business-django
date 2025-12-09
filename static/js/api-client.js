@@ -207,14 +207,14 @@ class APIClient {
     }
 
     async updateStaff(staffId, staffData) {
-        return this.request(`/users/api/v1/companies/users/${staffId}`, {
+        return this.request(`/users/api/v1/companies/members/${staffId}`, {
             method: 'PUT',
             body: JSON.stringify(staffData)
         });
     }
 
     async deleteStaff(staffId) {
-        return this.request(`/users/api/v1/companies/users/${staffId}`, {
+        return this.request(`/users/api/v1/companies/members/${staffId}`, {
             method: 'DELETE'
         });
     }
