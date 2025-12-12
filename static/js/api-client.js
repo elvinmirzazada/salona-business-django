@@ -406,7 +406,7 @@ class APIClient {
 
     async getCustomers(params = {}) {
         const queryString = new URLSearchParams(params).toString();
-        const url = `/users/api/v1/customers${queryString ? '?' + queryString : ''}`;
+        const url = `/users/api/v1/companies/customers${queryString ? '?' + queryString : ''}`;
         return this.request(url);
     }
 

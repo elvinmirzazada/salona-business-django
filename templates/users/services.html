@@ -85,22 +85,24 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="service-list-container" id="services-table-container">
-                                        <!-- Services table will be rendered here dynamically by JS -->
-                                        <table class="service-table" id="services-table" style="display:none;">
-                                            <thead>
-                                                <tr>
-                                                    <th>{% trans "Service Name" %}</th>
-                                                    <th>{% trans "Category" %}</th>
-                                                    <th>{% trans "Duration" %}</th>
-                                                    <th>{% trans "Price" %}</th>
-                                                    <th>{% trans "Staff" %}</th>
-                                                    <th>{% trans "Actions" %}</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="services-table-body">
-                                                <!-- Service rows will be added here -->
-                                            </tbody>
-                                        </table>
+                                        <div class="table-responsive">
+                                            <!-- Services table will be rendered here dynamically by JS -->
+                                            <table class="service-table" id="services-table" style="display:none;">
+                                                <thead>
+                                                    <tr>
+                                                        <th>{% trans "Service Name" %}</th>
+                                                        <th>{% trans "Category" %}</th>
+                                                        <th>{% trans "Duration" %}</th>
+                                                        <th>{% trans "Price" %}</th>
+                                                        <th>{% trans "Staff" %}</th>
+                                                        <th>{% trans "Actions" %}</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="services-table-body">
+                                                    <!-- Service rows will be added here -->
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                     <div id="services-loading" class="loading-container">
                                         <div class="spinner"></div>
@@ -140,20 +142,22 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="category-list-container" id="categories-table-container">
-                                        <!-- Categories table will be rendered here dynamically by JS -->
-                                        <table class="service-table" id="categories-table" style="display:none;">
-                                            <thead>
-                                                <tr>
-                                                    <th>{% trans "Category Name" %}</th>
-                                                    <th>{% trans "Description" %}</th>
-                                                    <th>{% trans "Services Count" %}</th>
-                                                    <th>{% trans "Actions" %}</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="categories-table-body">
-                                                <!-- Category rows will be added here -->
-                                            </tbody>
-                                        </table>
+                                        <div class="table-responsive">
+                                            <!-- Categories table will be rendered here dynamically by JS -->
+                                            <table class="service-table" id="categories-table" style="display:none;">
+                                                <thead>
+                                                    <tr>
+                                                        <th>{% trans "Category Name" %}</th>
+                                                        <th>{% trans "Description" %}</th>
+                                                        <th>{% trans "Services Count" %}</th>
+                                                        <th>{% trans "Actions" %}</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="categories-table-body">
+                                                    <!-- Category rows will be added here -->
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                     <div id="categories-loading" class="loading-container">
                                         <div class="spinner"></div>

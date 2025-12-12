@@ -160,10 +160,10 @@ class ServiceManager {
 
             return `
                 <tr data-service-id="${service.id}">
-                    <td class="service-name">${service.name}</td>
-                    <td>${categoryName}</td>
-                    <td>${service.duration} ${this.translations.min || 'min'}</td>
-                    <td>$${parseFloat(service.price).toFixed(2)}</td>
+                    <td><span class="service-name">${service.name}</span></td>
+                    <td><span class="category-badge">${categoryName}</span></td>
+                    <td><span class="duration-badge">${service.duration} ${this.translations.min || 'min'}</span></td>
+                    <td><span class="price-badge">$${parseFloat(service.price).toFixed(2)}</span></td>
                     <td class="staff-cell">${staffNames}</td>
                     <td class="actions-cell">
                         ${window.userData && (window.userData.role === 'owner' || window.userData.role === 'admin') ? `
@@ -207,9 +207,9 @@ class ServiceManager {
 
             return `
                 <tr data-category-id="${category.id}">
-                    <td class="category-name">${category.name}</td>
+                    <td><span class="category-name">${category.name}</span></td>
                     <td class="category-description">${category.description || '-'}</td>
-                    <td class="text-center">${serviceCount}</td>
+                    <td class="text-center"><span class="count-badge">${serviceCount}</span></td>
                     <td class="actions-cell">
                         ${window.userData && (window.userData.role === 'owner' || window.userData.role === 'admin') ? `
                             <button class="btn-icon btn-edit" onclick="serviceManager.editCategory('${category.id}')" title="${this.translations.edit || 'Edit'}">

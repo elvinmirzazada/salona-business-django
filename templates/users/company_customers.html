@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
     <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
     <link rel="stylesheet" href="{% static 'css/company_customers.css' %}">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -51,7 +54,7 @@
 
             <!-- Customers content -->
             <div class="content-wrapper">
-                <div class="card">
+                <div class="customers-container">
                     <div class="card-header customers-header">
                         <div class="header-content">
                             <div class="header-text">
@@ -69,23 +72,25 @@
                         <div id="alert-container"></div>
 
                         <div class="customers-table-container" id="customers-table-container">
-                            <table class="customers-table" id="customers-table" style="display:none;">
-                                <thead>
-                                    <tr>
-                                        <th>{% trans "Name" %}</th>
-                                        <th>{% trans "Email" %}</th>
-                                        <th>{% trans "Phone" %}</th>
-                                        <th>{% trans "Status" %}</th>
-                                        <th>{% trans "Actions" %}</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="customers-tbody">
-                                    <!-- Customers rows will be populated by JavaScript -->
-                                </tbody>
-                            </table>
+                            <div class="customers-table">
+                                <table id="customers-table">
+                                    <thead>
+                                        <tr>
+                                            <th>{% trans "Name" %}</th>
+                                            <th>{% trans "Email" %}</th>
+                                            <th>{% trans "Phone" %}</th>
+                                            <th>{% trans "Total Bookings" %}</th>
+                                            <th>{% trans "Last Visit" %}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="customers-tbody">
+                                        <!-- Customers rows will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
-                        <div id="customers-loading" class="loading-container">
+                        <div id="customers-loading" class="loading-container" style="display:none;">
                             <div class="spinner"></div>
                         </div>
 
@@ -103,81 +108,47 @@
 
     <!-- Include JavaScript files -->
     {% load static %}
+    <!-- jQuery (required for DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/plug-ins/2.3.5/features/scrollResize/dataTables.scrollResize.min.js"></script>
+
     <script src="{% static 'js/config.js' %}"></script>
     <script src="{% static 'js/api-client.js' %}"></script>
-    <script src="{% static 'js/customer-manager.js' %}"></script>
     <script src="{% static 'js/notifications.js' %}"></script>
+    <script src="{% static 'js/customer-datatable.js' %}"></script>
+    <!-- Font Awesome JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 
     <script>
         // Pass translations to JavaScript
         window.customerTranslations = {
-            active: "{% trans 'Active' %}",
-            disabled: "{% trans 'Disabled' %}",
-            viewDetails: "{% trans 'View Details' %}",
+            name: "{% trans 'Name' %}",
+            email: "{% trans 'Email' %}",
+            phone: "{% trans 'Phone' %}",
+            totalBookings: "{% trans 'Total Bookings' %}",
+            lastVisit: "{% trans 'Last Visit' %}",
             failedToLoad: "{% trans 'Failed to load customers' %}",
-            newCustomer: "{% trans 'New Customer' %}"
+            noCustomers: "{% trans 'No customers found.' %}",
+            loadingRecords: "{% trans 'Loading customers data...' %}",
+            processing: "{% trans 'Processing...' %}",
+            search: "{% trans 'Search customers:' %}",
+            lengthMenu: "{% trans 'Show _MENU_ entries' %}",
+            info: "{% trans 'Showing _START_ to _END_ of _TOTAL_ customers' %}",
+            infoEmpty: "{% trans 'Showing 0 to 0 of 0 customers' %}",
+            infoFiltered: "{% trans '(filtered from _MAX_ total customers)' %}",
+            paginate: {
+                first: "{% trans 'First' %}",
+                last: "{% trans 'Last' %}",
+                next: "{% trans 'Next' %}",
+                previous: "{% trans 'Previous' %}"
+            }
         };
 
-        function showLoadingState() {
-            document.getElementById('customers-loading').style.display = 'flex';
-            document.getElementById('customers-table-container').style.display = 'none';
-            document.getElementById('customers-empty').style.display = 'none';
-        }
-
-        function hideLoadingState() {
-            document.getElementById('customers-loading').style.display = 'none';
-        }
-
-        async function loadCustomersTable() {
-            try {
-                await CustomerManager.renderCustomersTable('customers-tbody', {
-                    onLoaded: (customers) => {
-                        // Show table when data is loaded
-                        document.getElementById('customers-table-container').style.display = 'block';
-                        document.getElementById('customers-table').style.display = 'table';
-                        document.getElementById('customers-empty').style.display = 'none';
-                        hideLoadingState();
-                    },
-                    onEmpty: () => {
-                        // Show empty state when no customers
-                        document.getElementById('customers-table-container').style.display = 'none';
-                        document.getElementById('customers-table').style.display = 'none';
-                        document.getElementById('customers-empty').style.display = 'block';
-                        hideLoadingState();
-                    },
-                    onActionClick: (customer, action) => {
-                        if (action === 'view') {
-                            viewCustomer(customer);
-                        }
-                    }
-                });
-            } catch (error) {
-                console.error('Error loading customers:', error);
-                showAlert(window.customerTranslations.failedToLoad, 'error');
-                hideLoadingState();
-            }
-        }
-
-        function viewCustomer(customer) {
-            if (customer) {
-                // Show customer details
-                console.log('View customer:', customer);
-            }
-        }
-
-        function showAlert(message, type = 'info') {
-            const alertContainer = document.getElementById('alert-container');
-            if (alertContainer) {
-                const alertDiv = document.createElement('div');
-                alertDiv.className = `alert alert-${type}`;
-                alertDiv.textContent = message;
-                alertContainer.innerHTML = '';
-                alertContainer.appendChild(alertDiv);
-                setTimeout(() => alertDiv.remove(), 5000);
-            }
-        }
-
-        // Initialize page functionality and mobile sidebar toggle
+        // Mobile sidebar toggle functionality
         document.addEventListener('DOMContentLoaded', function() {
             const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
             const sidebar = document.querySelector('.sidebar');
@@ -226,9 +197,11 @@
                 });
             }
 
-            // Initialize page functionality
-            showLoadingState();
-            loadCustomersTable();
+            // Initialize customers DataTable
+            if (typeof CustomersDataTable !== 'undefined') {
+                const customersManager = new CustomersDataTable();
+                customersManager.init();
+            }
         });
     </script>
 </body>
