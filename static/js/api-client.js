@@ -196,7 +196,15 @@ class APIClient {
     }
 
     async getStaff() {
-        return this.request('/users/api/v1/companies/users');
+        // Add cache-busting timestamp to prevent browser caching
+        const url = `/users/api/v1/companies/users?_t=${Date.now()}`;
+        return this.request(url, {
+            headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+        });
     }
 
     async createStaff(staffData) {
@@ -353,9 +361,17 @@ class APIClient {
     }
 
     async getCompanyServices(params = {}) {
-        const queryString = new URLSearchParams(params).toString();
+        // Add cache-busting timestamp to prevent browser caching
+        const cacheBuster = { _t: Date.now(), ...params };
+        const queryString = new URLSearchParams(cacheBuster).toString();
         const url = `/users/api/v1/companies/services${queryString ? '?' + queryString : ''}`;
-        return this.request(url);
+        return this.request(url, {
+            headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+        });
     }
 
     async createService(serviceData) {
@@ -366,22 +382,30 @@ class APIClient {
     }
 
     async updateService(serviceId, serviceData) {
-        return this.request(`/users/api/v1/services/${serviceId}`, {
+        return this.request(`/users/api/v1/services/service/${serviceId}`, {
             method: 'PUT',
             body: JSON.stringify(serviceData)
         });
     }
 
     async deleteService(serviceId) {
-        return this.request(`/users/api/v1/services/${serviceId}`, {
+        return this.request(`/users/api/v1/services/service/${serviceId}`, {
             method: 'DELETE'
         });
     }
 
     async getCategories(params = {}) {
-        const queryString = new URLSearchParams(params).toString();
+        // Add cache-busting timestamp to prevent browser caching
+        const cacheBuster = { _t: Date.now(), ...params };
+        const queryString = new URLSearchParams(cacheBuster).toString();
         const url = `/users/api/v1/services/companies/categories${queryString ? '?' + queryString : ''}`;
-        return this.request(url);
+        return this.request(url, {
+            headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+        });
     }
 
     async createCategory(categoryData) {

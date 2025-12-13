@@ -158,12 +158,18 @@ class ServiceManager {
                 return '';
             }).filter(name => name).join(', ') || (this.translations.noStaffAssigned || 'No staff assigned');
 
+            // Build price display with discount if available
+            const hasDiscount = service.discount_price && parseFloat(service.discount_price) > 0 && parseFloat(service.discount_price) < parseFloat(service.price);
+            const priceDisplay = hasDiscount
+                ? `<span class="price-original">$${parseFloat(service.price).toFixed(2)}</span><span class="price-discounted">$${parseFloat(service.discount_price).toFixed(2)}</span>`
+                : `$${parseFloat(service.price).toFixed(2)}`;
+
             return `
                 <tr data-service-id="${service.id}">
                     <td><span class="service-name">${service.name}</span></td>
                     <td><span class="category-badge">${categoryName}</span></td>
                     <td><span class="duration-badge">${service.duration} ${this.translations.min || 'min'}</span></td>
-                    <td><span class="price-badge">$${parseFloat(service.price).toFixed(2)}</span></td>
+                    <td><span class="price-badge">${priceDisplay}</span></td>
                     <td class="staff-cell">${staffNames}</td>
                     <td class="actions-cell">
                         ${window.userData && (window.userData.role === 'owner' || window.userData.role === 'admin') ? `
@@ -276,6 +282,7 @@ class ServiceManager {
         const addBtn = document.getElementById('add-service-btn');
         const cancelBtn = document.getElementById('cancel-service-btn');
         const closeBtn = modal?.querySelector('.close-modal');
+        const createCategoryBtn = document.getElementById('create-category-from-service-btn');
 
         if (addBtn) {
             addBtn.addEventListener('click', () => this.showServiceModal());
@@ -294,6 +301,20 @@ class ServiceManager {
 
         if (closeBtn) {
             closeBtn.addEventListener('click', () => this.hideServiceModal());
+        }
+
+        // Handle "Create New Category" button click
+        if (createCategoryBtn) {
+            createCategoryBtn.addEventListener('click', () => {
+                // Close service modal
+                this.hideServiceModal();
+                // Switch to categories tab
+                this.switchTab('categories');
+                // Open category modal after a short delay to ensure tab switch completes
+                setTimeout(() => {
+                    this.showCategoryModal();
+                }, 100);
+            });
         }
 
         // Close modal when clicking outside
@@ -471,7 +492,7 @@ class ServiceManager {
             if (this.currentService && form) {
                 document.getElementById('service-id').value = this.currentService.id;
                 document.getElementById('service-name').value = this.currentService.name;
-                document.getElementById('service-description').value = this.currentService.description || '';
+                document.getElementById('service-description').value = this.currentService.additional_info || '';
                 document.getElementById('service-category').value = this.currentService.category_id;
                 document.getElementById('service-duration').value = this.currentService.duration;
                 document.getElementById('service-price').value = this.currentService.price;
@@ -481,11 +502,22 @@ class ServiceManager {
                     discountPriceInput.value = this.currentService.discount_price;
                 }
 
-                // Check assigned staff
-                const staffIds = this.currentService.staff_ids || [];
+                // Check assigned staff - extract user IDs from service_staff array
+                let staffIds = [];
+                if (this.currentService.service_staff && Array.isArray(this.currentService.service_staff)) {
+                    // Extract user IDs from service_staff objects
+                    staffIds = this.currentService.service_staff.map(staffObj => staffObj.user?.id || staffObj.user_id).filter(id => id);
+                } else if (this.currentService.staff_ids) {
+                    // Fallback to staff_ids if available
+                    staffIds = this.currentService.staff_ids;
+                }
+
+                // Check the checkboxes for assigned staff
                 staffIds.forEach(staffId => {
                     const checkbox = staffSelection?.querySelector(`input[value="${staffId}"]`);
-                    if (checkbox) checkbox.checked = true;
+                    if (checkbox) {
+                        checkbox.checked = true;
+                    }
                 });
             }
         } else {
@@ -517,14 +549,15 @@ class ServiceManager {
         const serviceId = document.getElementById('service-id').value;
         const name = document.getElementById('service-name').value;
         const description = document.getElementById('service-description').value;
-        const categoryId = document.getElementById('service-category').value;
+        const categoryIdValue = document.getElementById('service-category').value;
+        const categoryId = categoryIdValue ? parseInt(categoryIdValue) : null;
         const duration = parseInt(document.getElementById('service-duration').value);
         const price = parseFloat(document.getElementById('service-price').value);
 
         const discountPriceInput = document.getElementById('service-discount-price');
         const discountPrice = discountPriceInput?.value ? parseFloat(discountPriceInput.value) : 0;
 
-        // Get selected staff
+        // Get selected staff - convert to integers
         const staffCheckboxes = document.querySelectorAll('#staff-selection input[type="checkbox"]:checked');
         const staffIds = Array.from(staffCheckboxes).map(cb => cb.value);
 
@@ -543,28 +576,34 @@ class ServiceManager {
         };
 
         try {
+            // Show loading overlay
+            window.showLoading(serviceId ? 'Updating service...' : 'Creating service...');
+
             if (serviceId) {
                 // Update existing service
-                await window.api.updateService(parseInt(serviceId), serviceData);
-                const index = this.services.findIndex(s => s.id === parseInt(serviceId));
-                if (index !== -1) {
-                    this.services[index] = { ...this.services[index], ...serviceData, id: parseInt(serviceId) };
-                }
-                this.showSuccess('Service updated successfully');
+                await window.api.updateService(serviceId, serviceData);
+                window.showMessage(this.translations.serviceUpdated || 'Service updated successfully');
             } else {
                 // Create new service
-                const response = await window.api.createService(serviceData);
-                if (response?.data) {
-                    this.services.push(response.data);
-                }
-                this.showSuccess('Service created successfully');
+                await window.api.createService(serviceData);
+                window.showMessage(this.translations.serviceCreated || 'Service created successfully');
             }
 
+            // Close modal first for better UX
             this.hideServiceModal();
-            this.renderServices();
+
+            window.hideLoading();
+            // Clear local cache to force fresh data
+            this.services = [];
+
+            // Reload fresh data from API to get the latest services
+            await this.loadData();
         } catch (error) {
             console.error('Failed to save service:', error);
-            this.showError('Failed to save service');
+            window.showError('Failed to save service');
+        } finally {
+            // Always hide loading overlay
+            window.hideLoading();
         }
     }
 
@@ -591,14 +630,26 @@ class ServiceManager {
         if (!this.deleteServiceId) return;
 
         try {
+            // Show loading overlay
+            window.showLoading('Deleting service...');
+
             await window.api.deleteService(this.deleteServiceId);
-            this.services = this.services.filter(s => s.id !== this.deleteServiceId);
-            this.showSuccess('Service deleted successfully');
+
+            if (window.showMessage) window.showMessage(this.translations.serviceDeleted || 'Service deleted successfully');
+
+            // Close modal first
             this.hideDeleteModal();
-            this.renderServices();
+
+            window.hideLoading();
+            this.services = [];
+            // Reload fresh data from API to get the latest services
+            await this.loadData();
         } catch (error) {
             console.error('Failed to delete service:', error);
-            this.showError('Failed to delete service');
+            window.showError('Failed to delete service');
+        } finally {
+            // Always hide loading overlay
+            window.hideLoading();
         }
     }
 
@@ -664,29 +715,34 @@ class ServiceManager {
         };
 
         try {
+            // Show loading overlay
+            window.showLoading(this.currentCategory ? 'Updating category...' : 'Creating category...');
+
             if (this.currentCategory) {
                 // Update existing category
                 await window.api.updateCategory(this.currentCategory.id, categoryData);
-                const index = this.categories.findIndex(c => c.id === this.currentCategory.id);
-                if (index !== -1) {
-                    this.categories[index] = { ...this.categories[index], ...categoryData };
-                }
-                this.showSuccess('Category updated successfully');
+                if (window.showMessage) window.showMessage(this.translations.categoryUpdated || 'Category updated successfully');
             } else {
                 // Create new category
-                const response = await window.api.createCategory(categoryData);
-                if (response?.data) {
-                    this.categories.push(response.data);
-                }
-                this.showSuccess('Category created successfully');
+                await window.api.createCategory(categoryData);
+                if (window.showMessage) window.showMessage(this.translations.categoryCreated || 'Category created successfully');
             }
 
+            // Close modal first for better UX
             this.hideCategoryModal();
-            this.renderCategories();
-            this.renderServices(); // Re-render services to update category names
+
+            window.hideLoading();
+            // Clear local cache to force fresh data
+            this.services = [];
+
+            // Reload fresh data from API to get the latest categories
+            await this.loadData();
         } catch (error) {
             console.error('Failed to save category:', error);
-            this.showError('Failed to save category');
+            if (window.showError) window.showError(this.translations.errorCreatingCategory || 'Failed to save category');
+        } finally {
+            // Always hide loading overlay
+            window.hideLoading();
         }
     }
 
@@ -720,15 +776,25 @@ class ServiceManager {
         if (!this.deleteCategoryId) return;
 
         try {
+            // Show loading overlay
+            window.showLoading('Deleting category...');
+
             await window.api.deleteCategory(this.deleteCategoryId);
-            this.categories = this.categories.filter(c => c.id !== this.deleteCategoryId);
-            this.showSuccess('Category deleted successfully');
+
+            if (window.showMessage) window.showMessage(this.translations.categoryDeleted || 'Category deleted successfully');
+
+            window.hideLoading();
+            // Close modal first
             this.hideDeleteCategoryModal();
-            this.renderCategories();
-            this.renderServices(); // Re-render services to update category names
+            this.categories = []
+            // Reload fresh data from API to get the latest categories and services
+            await this.loadData();
         } catch (error) {
             console.error('Failed to delete category:', error);
-            this.showError('Failed to delete category');
+            window.showError('Failed to delete category');
+        } finally {
+            // Always hide loading overlay
+            window.hideLoading();
         }
     }
 

@@ -16,6 +16,7 @@
 
 </head>
 <body>
+    {% include 'partials/messages.html' %}
     <!-- 3D Background Shapes -->
     <div class="bg-shape bg-shape-1"></div>
     <div class="bg-shape bg-shape-2"></div>
@@ -28,6 +29,14 @@
 
     <!-- Sidebar Overlay for Mobile -->
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- Operation Loading Overlay -->
+    <div id="operation-loading-overlay" class="operation-loading-overlay" style="display: none;">
+        <div class="operation-loading-content">
+            <div class="operation-spinner"></div>
+            <p id="operation-loading-text" class="operation-loading-text">Processing...</p>
+        </div>
+    </div>
 
     <div class="app-container">
         <!-- Include reusable sidebar -->
@@ -194,10 +203,16 @@
                     </div>
                     <div class="form-group">
                         <label for="service-category">{% trans "Category" %}</label>
-                        <select id="service-category" name="service-category" required>
-                            <option value="">{% trans "Select a category" %}</option>
-                            <!-- Categories will be loaded dynamically -->
-                        </select>
+                        <div class="category-input-group">
+                            <select id="service-category" name="service-category" required>
+                                <option value="">{% trans "Select a category" %}</option>
+                                <!-- Categories will be loaded dynamically -->
+                            </select>
+                            <button type="button" id="create-category-from-service-btn" class="btn-secondary btn-icon-text" title="{% trans 'Create new category' %}">
+                                <i class="fas fa-plus"></i>
+                                <span>{% trans "New Category" %}</span>
+                            </button>
+                        </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
@@ -426,6 +441,8 @@
     <script src="{% static 'js/auth.js' %}"></script>
     <script src="{% static 'js/ui.js' %}"></script>
     <script src="{% static 'js/api-client.js' %}"></script>
+    <script src="{% static 'js/messages.js' %}"></script>
+    <script src="{% static 'js/loading-utils.js' %}"></script>
     <script src="{% static 'js/service-manager.js' %}"></script>
 </body>
 </html>
