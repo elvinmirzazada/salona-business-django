@@ -95,21 +95,9 @@
                                 <div class="card-body">
                                     <div class="service-list-container" id="services-table-container">
                                         <div class="table-responsive">
-                                            <!-- Services table will be rendered here dynamically by JS -->
-                                            <table class="service-table" id="services-table" style="display:none;">
-                                                <thead>
-                                                    <tr>
-                                                        <th>{% trans "Service Name" %}</th>
-                                                        <th>{% trans "Category" %}</th>
-                                                        <th>{% trans "Duration" %}</th>
-                                                        <th>{% trans "Price" %}</th>
-                                                        <th>{% trans "Staff" %}</th>
-                                                        <th>{% trans "Actions" %}</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="services-table-body">
-                                                    <!-- Service rows will be added here -->
-                                                </tbody>
+                                            <!-- Services table with DataTables -->
+                                            <table class="service-table table table-striped table-hover" id="services-table">
+
                                             </table>
                                         </div>
                                     </div>
@@ -152,19 +140,9 @@
                                 <div class="card-body">
                                     <div class="category-list-container" id="categories-table-container">
                                         <div class="table-responsive">
-                                            <!-- Categories table will be rendered here dynamically by JS -->
-                                            <table class="service-table" id="categories-table" style="display:none;">
-                                                <thead>
-                                                    <tr>
-                                                        <th>{% trans "Category Name" %}</th>
-                                                        <th>{% trans "Description" %}</th>
-                                                        <th>{% trans "Services Count" %}</th>
-                                                        <th>{% trans "Actions" %}</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="categories-table-body">
-                                                    <!-- Category rows will be added here -->
-                                                </tbody>
+                                            <!-- Categories table with DataTables -->
+                                            <table class="service-table table table-striped table-hover" id="categories-table">
+
                                             </table>
                                         </div>
                                     </div>
@@ -437,7 +415,14 @@
             }
         });
     </script>
-    <script src="{% static 'js/utils.js' %}"></script>
+    <!-- jQuery (required for DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/plug-ins/2.3.5/features/scrollResize/dataTables.scrollResize.min.js"></script>
+
     <script src="{% static 'js/auth.js' %}"></script>
     <script src="{% static 'js/ui.js' %}"></script>
     <script src="{% static 'js/api-client.js' %}"></script>

@@ -1,5 +1,5 @@
 /**
- * Unified Service Manager - Handles services and categories with table-based UI
+ * Unified Service Manager - Handles services and categories with DataTables
  * Combines functionality from service-manager.js and services.js
  */
 
@@ -13,6 +13,8 @@ class ServiceManager {
         this.deleteServiceId = null;
         this.deleteCategoryId = null;
         this.translations = window.serviceTranslations || {};
+        this.servicesTable = null;
+        this.categoriesTable = null;
     }
 
     /**
@@ -24,211 +26,304 @@ class ServiceManager {
             this.setupTabSwitching();
             this.setupEventListeners();
             
-            await this.loadData();
+            // Initialize DataTables
+            await this.initializeServicesDataTable();
+            await this.initializeCategoriesDataTable();
+
+            // Load staff data for the service modal
+            await this.loadStaffData();
         } catch (error) {
             console.error('Failed to initialize service manager:', error);
-            this.hideLoading('services');
-            this.hideLoading('categories');
         }
     }
 
     /**
-     * Load all data
+     * Load staff data separately for modals
      */
-    async loadData() {
+    async loadStaffData() {
         try {
-            // Show loading for both tabs
-            this.showLoading('services');
-            this.showLoading('categories');
-
-            // Check if we have cached staff data from the initial page load
             let staffDataPromise;
             if (window.staff_data && Array.isArray(window.staff_data) && window.staff_data.length > 0) {
                 console.log('Using cached staff data in ServiceManager');
                 staffDataPromise = Promise.resolve({ data: window.staff_data });
             } else {
-                // Only fetch from API if we don't have cached data
-                staffDataPromise = window.api.getStaff().catch(err => ({ data: [] }));
+                staffDataPromise = window.api.getStaff().catch(() => ({ data: [] }));
             }
 
-            // Load data in parallel - categories and services separately
-            const [categorizedResponse, categoriesResponse, staffResponse] = await Promise.all([
-                window.api.getCompanyServices().catch(err => ({ data: [] })),
-                window.api.getCategories().catch(err => ({ data: [] })),
-                staffDataPromise
-            ]);
-
-            // Process categories from dedicated endpoint
-            this.categories = categoriesResponse?.data || [];
-
-            // Process categorized response for services
-            const serviceCategories = categorizedResponse?.data || [];
-
-            // Flatten services from the services endpoint
-            this.services = [];
-            serviceCategories.forEach(category => {
-                if (category.services && Array.isArray(category.services)) {
-                    category.services.forEach(service => {
-                        this.services.push({
-                            ...service,
-                            category_id: category.id
-                        });
-                    });
-                }
-            });
-
+            const staffResponse = await staffDataPromise;
             this.staff = staffResponse?.data || [];
 
-            // Update the global cache
             if (this.staff.length > 0) {
                 window.staff_data = this.staff;
             }
-
-            // Render both tabs
-            this.renderServices();
-            this.renderCategories();
-
-            // Hide loading
-            this.hideLoading('services');
-            this.hideLoading('categories');
-
         } catch (error) {
-            console.error('Failed to load data:', error);
-            this.hideLoading('services');
-            this.hideLoading('categories');
-            throw error;
+            console.error('Failed to load staff data:', error);
+            this.staff = [];
         }
     }
 
     /**
-     * Show loading state
+     * Initialize DataTable for services
      */
-    showLoading(type) {
-        const loading = document.getElementById(`${type}-loading`);
-        const table = document.getElementById(`${type}-table`);
-        const empty = document.getElementById(`${type}-empty`);
+    initializeServicesDataTable() {
+        const self = this;
 
-        if (loading) loading.style.display = 'flex';
-        if (table) table.style.display = 'none';
-        if (empty) empty.style.display = 'none';
-    }
-
-    /**
-     * Hide loading state
-     */
-    hideLoading(type) {
-        const loading = document.getElementById(`${type}-loading`);
-        if (loading) loading.style.display = 'none';
-    }
-
-    /**
-     * Render services table
-     */
-    renderServices() {
-        const tableBody = document.getElementById('services-table-body');
-        const table = document.getElementById('services-table');
-        const empty = document.getElementById('services-empty');
-
-        if (!tableBody) return;
-
-        // Check if we have services
-        if (this.services.length === 0) {
-            if (table) table.style.display = 'none';
-            if (empty) empty.style.display = 'block';
-            return;
-        }
-
-        // Show table, hide empty state
-        if (table) table.style.display = 'table';
-        if (empty) empty.style.display = 'none';
-
-        // Render service rows
-        tableBody.innerHTML = this.services.map(service => {
-            const category = this.categories.find(c => c.id === service.category_id);
-            const categoryName = category ? category.name : (this.translations.uncategorized || 'Uncategorized');
-
-            // Get staff assigned to this service from service_staff array
-            const serviceStaff = service.service_staff || [];
-            const staffNames = serviceStaff.map(staffObj => {
-                // Extract user from service_staff object
-                const user = staffObj.user;
-                if (user && user.first_name && user.last_name) {
-                    return `${user.first_name} ${user.last_name}`;
+        this.servicesTable = $('#services-table').DataTable({
+            ajax: {
+                url: '/users/api/v1/companies/services?_t=' + Date.now(),
+                type: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                },
+                dataSrc: function(json) {
+                    if (json && json.data) {
+                        // Flatten services from categorized response
+                        self.services = [];
+                        json.data.forEach(category => {
+                            if (category.services && Array.isArray(category.services)) {
+                                category.services.forEach(service => {
+                                    self.services.push({
+                                        ...service,
+                                        category_id: category.id,
+                                        category_name: category.name
+                                    });
+                                });
+                            }
+                        });
+                        return self.services;
+                    }
+                    return [];
+                },
+                error: function(xhr, error, code) {
+                    console.error('Failed to load services data:', error);
+                    window.showError('Failed to load services data');
                 }
-                return '';
-            }).filter(name => name).join(', ') || (this.translations.noStaffAssigned || 'No staff assigned');
-
-            // Build price display with discount if available
-            const hasDiscount = service.discount_price && parseFloat(service.discount_price) > 0 && parseFloat(service.discount_price) < parseFloat(service.price);
-            const priceDisplay = hasDiscount
-                ? `<span class="price-original">$${parseFloat(service.price).toFixed(2)}</span><span class="price-discounted">$${parseFloat(service.discount_price).toFixed(2)}</span>`
-                : `$${parseFloat(service.price).toFixed(2)}`;
-
-            return `
-                <tr data-service-id="${service.id}">
-                    <td><span class="service-name">${service.name}</span></td>
-                    <td><span class="category-badge">${categoryName}</span></td>
-                    <td><span class="duration-badge">${service.duration} ${this.translations.min || 'min'}</span></td>
-                    <td><span class="price-badge">${priceDisplay}</span></td>
-                    <td class="staff-cell">${staffNames}</td>
-                    <td class="actions-cell">
-                        ${window.userData && (window.userData.role === 'owner' || window.userData.role === 'admin') ? `
-                            <button class="btn-icon btn-edit" onclick="serviceManager.editService('${service.id}')" title="${this.translations.edit || 'Edit'}">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn-icon btn-delete" onclick="serviceManager.confirmDeleteService('${service.id}')" title="${this.translations.delete || 'Delete'}">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        ` : ''}
-                    </td>
-                </tr>
-            `;
-        }).join('');
+            },
+            columns: [
+                {
+                    data: 'name',
+                    title: 'Service Name',
+                    render: function(data) {
+                        return `<span class="service-name">${data}</span>`;
+                    }
+                },
+                {
+                    data: 'category_name',
+                    title: 'Category',
+                    render: function(data) {
+                        return `<span class="category-badge">${data || self.translations.uncategorized || 'Uncategorized'}</span>`;
+                    }
+                },
+                {
+                    data: 'duration',
+                    title: 'Duration',
+                    render: function(data) {
+                        return `<span class="duration-badge">${data} ${self.translations.min || 'min'}</span>`;
+                    }
+                },
+                {
+                    data: null,
+                    title: 'Price',
+                    render: function(data, type, row) {
+                        const hasDiscount = row.discount_price && parseFloat(row.discount_price) > 0 && parseFloat(row.discount_price) < parseFloat(row.price);
+                        const priceDisplay = hasDiscount
+                            ? `<span class="price-original">$${parseFloat(row.price).toFixed(2)}</span><span class="price-discounted">$${parseFloat(row.discount_price).toFixed(2)}</span>`
+                            : `$${parseFloat(row.price).toFixed(2)}`;
+                        return `<span class="price-badge">${priceDisplay}</span>`;
+                    }
+                },
+                {
+                    data: 'service_staff',
+                    title: 'Staff',
+                    render: function(data) {
+                        const serviceStaff = data || [];
+                        const staffNames = serviceStaff.map(staffObj => {
+                            const user = staffObj.user;
+                            if (user && user.first_name && user.last_name) {
+                                return `${user.first_name} ${user.last_name}`;
+                            }
+                            return '';
+                        }).filter(name => name).join(', ') || (self.translations.noStaffAssigned || 'No staff assigned');
+                        return `<span class="staff-cell">${staffNames}</span>`;
+                    }
+                },
+                {
+                    data: null,
+                    orderable: false,
+                    title: 'Actions',
+                    render: function(data, type, row) {
+                        if (window.userData && (window.userData.role === 'owner' || window.userData.role === 'admin')) {
+                            return `
+                                <div class="actions-cell">
+                                    <button class="btn-icon btn-edit" onclick="serviceManager.editService('${row.id}')" title="${self.translations.edit || 'Edit'}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-icon btn-delete" onclick="serviceManager.confirmDeleteService('${row.id}')" title="${self.translations.delete || 'Delete'}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            `;
+                        }
+                        return '';
+                    }
+                }
+            ],
+            responsive: true,
+            pageLength: 10,
+            lengthChange: true,
+            searching: true,
+            ordering: true,
+            autoWidth: false,
+            language: {
+                emptyTable: window.userData && (window.userData.role === 'owner' || window.userData.role === 'admin')
+                    ? 'No services found. Click "Add New Service" to create your first service.'
+                    : 'Insufficient privileges. Please contact your administrator.',
+                loadingRecords: 'Loading services...',
+                processing: 'Processing...',
+                search: 'Search services:',
+                lengthMenu: 'Show _MENU_ entries',
+                info: 'Showing _START_ to _END_ of _TOTAL_ services',
+                infoEmpty: 'Showing 0 to 0 of 0 services',
+                infoFiltered: '(filtered from _MAX_ total services)',
+                paginate: {
+                    first: 'First',
+                    last: 'Last',
+                    next: 'Next',
+                    previous: 'Previous'
+                }
+            },
+            dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
+                 '<"row"<"col-sm-12"tr>>' +
+                 '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+            drawCallback: function(settings) {
+                $('#services-loading').hide();
+                $('#services-empty').hide();
+                $('#services-table-container').show();
+            }
+        });
     }
 
     /**
-     * Render categories table
+     * Initialize DataTable for categories
      */
-    renderCategories() {
-        const tableBody = document.getElementById('categories-table-body');
-        const table = document.getElementById('categories-table');
-        const empty = document.getElementById('categories-empty');
+    initializeCategoriesDataTable() {
+        const self = this;
 
-        if (!tableBody) return;
+        this.categoriesTable = $('#categories-table').DataTable({
+            ajax: {
+                url: '/users/api/v1/services/companies/categories?_t=' + Date.now(),
+                type: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                },
+                dataSrc: function(json) {
+                    if (json && json.data) {
+                        self.categories = json.data;
+                        return json.data;
+                    }
+                    return [];
+                },
+                error: function(xhr, error, code) {
+                    console.error('Failed to load categories data:', error);
+                    window.showError('Failed to load categories data');
+                }
+            },
+            columns: [
+                {
+                    data: 'name',
+                    title: 'Category Name',
+                    render: function(data) {
+                        return `<span class="category-name">${data}</span>`;
+                    }
+                },
+                {
+                    data: 'description',
+                    title: 'Description',
+                    render: function(data) {
+                        return data || '-';
+                    }
+                },
+                {
+                    data: null,
+                    title: 'Services Count',
+                    render: function(data, type, row) {
+                        const serviceCount = self.services.filter(s => s.category_id === row.id).length;
+                        return `<div class="text-center"><span class="count-badge">${serviceCount}</span></div>`;
+                    }
+                },
+                {
+                    data: null,
+                    orderable: false,
+                    title: 'Actions',
+                    render: function(data, type, row) {
+                        if (window.userData && (window.userData.role === 'owner' || window.userData.role === 'admin')) {
+                            return `
+                                <div class="actions-cell">
+                                    <button class="btn-icon btn-edit" onclick="serviceManager.editCategory('${row.id}')" title="${self.translations.edit || 'Edit'}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-icon btn-delete" onclick="serviceManager.confirmDeleteCategory('${row.id}')" title="${self.translations.delete || 'Delete'}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            `;
+                        }
+                        return '';
+                    }
+                }
+            ],
+            responsive: true,
+            pageLength: 10,
+            lengthChange: true,
+            searching: true,
+            ordering: true,
+            autoWidth: false,
+            language: {
+                emptyTable: window.userData && (window.userData.role === 'owner' || window.userData.role === 'admin')
+                    ? 'No categories found. Click "Add New Category" to create your first category.'
+                    : 'Insufficient privileges. Please contact your administrator.',
+                loadingRecords: 'Loading categories...',
+                processing: 'Processing...',
+                search: 'Search categories:',
+                lengthMenu: 'Show _MENU_ entries',
+                info: 'Showing _START_ to _END_ of _TOTAL_ categories',
+                infoEmpty: 'Showing 0 to 0 of 0 categories',
+                infoFiltered: '(filtered from _MAX_ total categories)',
+                paginate: {
+                    first: 'First',
+                    last: 'Last',
+                    next: 'Next',
+                    previous: 'Previous'
+                }
+            },
+            dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
+                 '<"row"<"col-sm-12"tr>>' +
+                 '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+            drawCallback: function(settings) {
+                $('#categories-loading').hide();
+                $('#categories-empty').hide();
+                $('#categories-table-container').show();
+            }
+        });
+    }
 
-        // Check if we have categories
-        if (this.categories.length === 0) {
-            if (table) table.style.display = 'none';
-            if (empty) empty.style.display = 'block';
-            return;
+    /**
+     * Reload DataTables data
+     */
+    async reloadData() {
+        if (this.servicesTable) {
+            this.servicesTable.ajax.reload(null, false);
         }
-
-        // Show table, hide empty state
-        if (table) table.style.display = 'table';
-        if (empty) empty.style.display = 'none';
-
-        // Render category rows
-        tableBody.innerHTML = this.categories.map(category => {
-            const serviceCount = this.services.filter(s => s.category_id === category.id).length;
-
-            return `
-                <tr data-category-id="${category.id}">
-                    <td><span class="category-name">${category.name}</span></td>
-                    <td class="category-description">${category.description || '-'}</td>
-                    <td class="text-center"><span class="count-badge">${serviceCount}</span></td>
-                    <td class="actions-cell">
-                        ${window.userData && (window.userData.role === 'owner' || window.userData.role === 'admin') ? `
-                            <button class="btn-icon btn-edit" onclick="serviceManager.editCategory('${category.id}')" title="${this.translations.edit || 'Edit'}">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn-icon btn-delete" onclick="serviceManager.confirmDeleteCategory('${category.id}')" title="${this.translations.delete || 'Delete'}">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        ` : ''}
-                    </td>
-                </tr>
-            `;
-        }).join('');
+        if (this.categoriesTable) {
+            this.categoriesTable.ajax.reload(null, false);
+        }
+        await this.loadStaffData();
     }
 
     /**
@@ -549,8 +644,7 @@ class ServiceManager {
         const serviceId = document.getElementById('service-id').value;
         const name = document.getElementById('service-name').value;
         const description = document.getElementById('service-description').value;
-        const categoryIdValue = document.getElementById('service-category').value;
-        const categoryId = categoryIdValue ? parseInt(categoryIdValue) : null;
+        const categoryId = document.getElementById('service-category').value;
         const duration = parseInt(document.getElementById('service-duration').value);
         const price = parseFloat(document.getElementById('service-price').value);
 
@@ -597,7 +691,7 @@ class ServiceManager {
             this.services = [];
 
             // Reload fresh data from API to get the latest services
-            await this.loadData();
+            await this.reloadData();
         } catch (error) {
             console.error('Failed to save service:', error);
             window.showError('Failed to save service');
@@ -643,7 +737,7 @@ class ServiceManager {
             window.hideLoading();
             this.services = [];
             // Reload fresh data from API to get the latest services
-            await this.loadData();
+            await this.reloadData();
         } catch (error) {
             console.error('Failed to delete service:', error);
             window.showError('Failed to delete service');
@@ -736,7 +830,7 @@ class ServiceManager {
             this.services = [];
 
             // Reload fresh data from API to get the latest categories
-            await this.loadData();
+            await this.reloadData();
         } catch (error) {
             console.error('Failed to save category:', error);
             if (window.showError) window.showError(this.translations.errorCreatingCategory || 'Failed to save category');
@@ -788,7 +882,7 @@ class ServiceManager {
             this.hideDeleteCategoryModal();
             this.categories = []
             // Reload fresh data from API to get the latest categories and services
-            await this.loadData();
+            await this.reloadData();
         } catch (error) {
             console.error('Failed to delete category:', error);
             window.showError('Failed to delete category');
@@ -1114,9 +1208,14 @@ class ServiceManager {
 // Create global instance
 window.serviceManager = new ServiceManager();
 
-// Initialize when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => window.serviceManager.init());
-} else {
+// Initialize when DOM is ready and jQuery/DataTables are loaded
+$(document).ready(function() {
+    // Ensure DataTables is available
+    if (typeof $.fn.DataTable === 'undefined') {
+        console.error('DataTables is not loaded!');
+        return;
+    }
+
+    // Initialize the service manager
     window.serviceManager.init();
-}
+});
