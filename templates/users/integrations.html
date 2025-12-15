@@ -116,6 +116,12 @@
                         </span>
                     </div>
 
+                    <!-- Coming Soon Badge -->
+                    <div class="info-badge warning" style="margin-bottom: 20px;">
+                        <i class="fas fa-info-circle"></i>
+                        {% trans "This feature is currently under development and will be available soon." %}
+                    </div>
+
                     <div class="telegram-setup">
                         <div class="setup-step">
                             <div class="step-number">1</div>
@@ -146,6 +152,7 @@
                                             name="bot-token"
                                             placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
                                             required
+                                            disabled
                                         >
                                     </div>
 
@@ -156,11 +163,12 @@
                                             id="chat-id"
                                             name="chat-id"
                                             placeholder="{% trans 'Your Telegram Chat ID' %}"
+                                            disabled
                                         >
                                         <small style="color: #666;">{% trans "Leave empty to receive notifications in bot chat" %}</small>
                                     </div>
 
-                                    <button type="submit" class="save-button">
+                                    <button type="submit" class="save-button" disabled>
                                         <i class="fas fa-save"></i> {% trans "Save Configuration" %}
                                     </button>
                                 </form>

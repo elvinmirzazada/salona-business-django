@@ -76,58 +76,13 @@ function updateTelegramStatus(isConnected) {
     }
 }
 
-// Telegram bot configuration form
+// Telegram bot configuration form (currently disabled)
 document.getElementById('telegram-config-form').addEventListener('submit', async function(e) {
     e.preventDefault();
 
+    // Telegram bot feature is currently disabled
     const translations = window.integrationsTranslations || {};
-    const botToken = document.getElementById('bot-token').value.trim();
-    const chatId = document.getElementById('chat-id').value.trim();
-
-    // Validate bot token format
-    if (!botToken) {
-        alert(translations.enterValidToken || 'Please enter a valid bot token');
-        return;
-    }
-
-    // Show loading state
-    const submitButton = this.querySelector('.save-button');
-    const originalButtonContent = submitButton.innerHTML;
-    submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${translations.saving || 'Saving...'}`;
-    submitButton.disabled = true;
-
-    try {
-        const response = await window.api.addTelegramBot({
-                bot_token: botToken,
-                chat_id: chatId || null
-            });
-
-        const data = await response.data;
-
-        if (response.success) {
-            // Show success message
-            showNotification(translations.configSavedSuccess || 'Telegram bot configuration saved successfully!', 'success');
-
-            // Update status badge
-            updateTelegramStatus(true);
-
-            // Reset button
-            submitButton.innerHTML = `<i class="fas fa-check"></i> ${translations.saved || 'Saved!'}`;
-            setTimeout(() => {
-                submitButton.innerHTML = originalButtonContent;
-                submitButton.disabled = false;
-            }, 2000);
-        } else {
-            throw new Error(data.message || (translations.failedToSave || 'Failed to save configuration'));
-        }
-    } catch (error) {
-        console.error('Error saving Telegram config:', error);
-        showNotification((translations.error || 'Error:') + ' ' + error.message, 'error');
-
-        // Reset button
-        submitButton.innerHTML = originalButtonContent;
-        submitButton.disabled = false;
-    }
+    showNotification(translations.featureDisabled || 'This feature is currently under development and will be available soon.', 'info');
 });
 
 // Helper function to get CSRF token

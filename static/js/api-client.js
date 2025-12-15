@@ -458,6 +458,32 @@ class APIClient {
         });
     }
 
+
+    // Telegram Bot Integration
+    async getTelegramBot() {
+        return this.request('/users/api/v1/integrations/telegram');
+    }
+
+    async addTelegramBot(telegramData) {
+        return this.request('/users/api/v1/integrations/telegram', {
+            method: 'POST',
+            body: JSON.stringify(telegramData)
+        });
+    }
+
+    async updateTelegramBot(telegramData) {
+        return this.request('/users/api/v1/integrations/telegram/', {
+            method: 'PUT',
+            body: JSON.stringify(telegramData)
+        });
+    }
+
+    async deleteTelegramBot() {
+        return this.request('/users/api/v1/integrations/telegram', {
+            method: 'DELETE'
+        });
+    }
+
     // Helper methods for common operations
     async refreshData() {
         try {
