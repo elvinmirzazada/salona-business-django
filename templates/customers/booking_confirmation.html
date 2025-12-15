@@ -184,7 +184,7 @@
             if (bookingData.booking_services && bookingData.booking_services.length > 0) {
                 servicesList.innerHTML = bookingData.booking_services.map(bookingService => {
                     const service = bookingService.category_service;
-                    const price = service.discount_price || service.price || 0;
+                    const price = (service.discount_price || service.price || 0) / 100;
                     return `
                         <li class="service-item">
                             <div class="service-name">${service.name}</div>
@@ -265,7 +265,7 @@
             // Update total price
             const totalPrice = document.getElementById('total-price');
             if (bookingData.total_price !== undefined) {
-                totalPrice.textContent = `€${parseFloat(bookingData.total_price).toFixed(2)}`;
+                totalPrice.textContent = `€${(parseFloat(bookingData.total_price) / 100).toFixed(2) }`;
             } else {
                 totalPrice.textContent = '€0.00';
             }

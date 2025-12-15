@@ -110,7 +110,7 @@ def get_services_details(company_id, service_ids):
     for category in all_services:
         for service in category.get('services', []):
             if service['id'] in service_ids:
-                price = service.get('discount_price') or service.get('price') or 0
+                price = (service.get('discount_price') or service.get('price') or 0) / 100
                 services.append({
                     'id': service['id'],
                     'name': service['name'],

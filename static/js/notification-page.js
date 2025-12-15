@@ -11,10 +11,17 @@ const NotificationPage = {
 
     // Initialize the notifications page
     async init() {
-        this.translations = window.notificationsTranslations || {};
-        this.setupEventListeners();
-        await this.loadNotifications();
-        this.hidePageLoader();
+        try {
+            this.translations = window.notificationsTranslations || {};
+            this.setupEventListeners();
+            await this.loadNotifications();
+        } catch (error) {
+            console.error('Error initializing notifications page:', error);
+            this.showErrorState();
+        } finally {
+            // Always hide page loader, even if there's an error
+            this.hidePageLoader();
+        }
     },
 
     // Setup event listeners

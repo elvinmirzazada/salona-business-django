@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
     <link rel="stylesheet" href="{% static 'css/notification-page.css' %}">
     <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -57,107 +60,106 @@
                 </div>
             </header>
 
-            <!-- Notifications Controls -->
-            <div class="notifications-controls">
-                <div class="notifications-stats">
-                    <span id="total-notifications">0 {% trans "notifications" %}</span>
-                    <span class="separator">•</span>
-                    <span id="unread-notifications">0 {% trans "unread" %}</span>
-                </div>
-                <div class="notifications-actions">
-                    <button id="mark-all-read-btn" class="action-button primary" disabled>
-                        <i class="fas fa-check-double"></i>
-                        {% trans "Mark All Read" %}
-                    </button>
-                    <button id="refresh-notifications-btn" class="action-button secondary">
-                        <i class="fas fa-sync-alt"></i>
-                        {% trans "Refresh" %}
-                    </button>
-                </div>
-            </div>
-
-            <!-- Notifications Filter -->
-            <div class="notifications-filter">
-                <div class="filter-tabs">
-                    <button class="filter-tab active" data-filter="all">
-                        <i class="fas fa-inbox"></i>
-                        {% trans "All" %}
-                    </button>
-                    <button class="filter-tab" data-filter="unread">
-                        <i class="fas fa-envelope"></i>
-                        {% trans "Unread" %}
-                    </button>
-                    <button class="filter-tab" data-filter="general">
-                        <i class="fas fa-info-circle"></i>
-                        {% trans "General" %}
-                    </button>
-                    <button class="filter-tab" data-filter="booking">
-                        <i class="fas fa-calendar"></i>
-                        {% trans "Booking" %}
-                    </button>
-                    <button class="filter-tab" data-filter="payment">
-                        <i class="fas fa-credit-card"></i>
-                        {% trans "Payment" %}
-                    </button>
-                </div>
-            </div>
-
-            <!-- Notifications List -->
-            <div class="notifications-container">
-                <div id="notifications-list" class="notifications-list">
-                    <!-- Table Header -->
-                    <div class="notifications-table-header">
-                        <div class="header-cell">
-                            <i class="fas fa-bell"></i>
-                            {% trans "Type" %}
-                        </div>
-                        <div class="header-cell">
-                            <i class="fas fa-envelope"></i>
-                            {% trans "Message" %}
-                        </div>
-                        <div class="header-cell">
-                            <i class="fas fa-tag"></i>
-                            {% trans "Category" %}
-                        </div>
-                        <div class="header-cell">
-                            <i class="fas fa-clock"></i>
-                            {% trans "Time" %}
-                        </div>
-                        <div class="header-cell">
-                            <i class="fas fa-cog"></i>
-                            {% trans "Actions" %}
+            <!-- Notifications content -->
+            <div class="content-wrapper">
+                <div class="notifications-container">
+                    <div class="card-header notifications-header">
+                        <div class="header-content">
+                            <div class="header-text">
+                                <h2 class="notifications-title">
+                                    <i class="fas fa-bell notifications-icon"></i>
+                                    {% trans "Notifications" %}
+                                </h2>
+                                <p class="notifications-subtitle">{% trans "View and manage your notifications" %}</p>
+                            </div>
+                            <div class="header-actions">
+                                <button id="mark-all-read-btn" class="action-button primary">
+                                    <i class="fas fa-check-double"></i>
+                                    {% trans "Mark All Read" %}
+                                </button>
+                                <button id="refresh-notifications-btn" class="action-button secondary">
+                                    <i class="fas fa-sync-alt"></i>
+                                    {% trans "Refresh" %}
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    <!-- Notifications will be populated here -->
-                </div>
 
-                <!-- Empty State -->
-                <div id="empty-state" class="empty-state-container" style="display: none;">
-                    <div class="empty-state-icon">
-                        <i class="fas fa-bell-slash"></i>
+                    <div class="card-body">
+                        <!-- Notifications Stats -->
+                        <div class="notifications-stats-bar">
+                            <div class="stat-item">
+                                <i class="fas fa-inbox"></i>
+                                <span id="total-notifications">0</span>
+                                <span class="stat-label">{% trans "Total" %}</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-envelope"></i>
+                                <span id="unread-notifications">0</span>
+                                <span class="stat-label">{% trans "Unread" %}</span>
+                            </div>
+                        </div>
+
+                        <!-- Notifications Filter -->
+                        <div class="notifications-filter">
+                            <div class="filter-tabs">
+                                <button class="filter-tab active" data-filter="all">
+                                    <i class="fas fa-inbox"></i>
+                                    {% trans "All" %}
+                                </button>
+                                <button class="filter-tab" data-filter="unread">
+                                    <i class="fas fa-envelope"></i>
+                                    {% trans "Unread" %}
+                                </button>
+                                <button class="filter-tab" data-filter="general">
+                                    <i class="fas fa-info-circle"></i>
+                                    {% trans "General" %}
+                                </button>
+                                <button class="filter-tab" data-filter="booking">
+                                    <i class="fas fa-calendar"></i>
+                                    {% trans "Booking" %}
+                                </button>
+                                <button class="filter-tab" data-filter="payment">
+                                    <i class="fas fa-credit-card"></i>
+                                    {% trans "Payment" %}
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Alert messages -->
+                        <div id="alert-container"></div>
+
+                        <div class="notifications-table-container" id="notifications-table-container">
+                            <div class="notifications-table">
+                                <table id="notifications-table">
+                                    <thead>
+                                        <tr>
+                                            <th>{% trans "Type" %}</th>
+                                            <th>{% trans "Message" %}</th>
+                                            <th>{% trans "Category" %}</th>
+                                            <th>{% trans "Time" %}</th>
+                                            <th>{% trans "Actions" %}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="notifications-tbody">
+                                        <!-- Notifications rows will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div id="notifications-loading" class="loading-container" style="display:none;">
+                            <div class="spinner"></div>
+                        </div>
+
+                        <div id="notifications-empty" class="empty-state" style="display:none;">
+                            <div class="no-notifications">
+                                <i class="fas fa-bell-slash"></i>
+                                <p>{% trans "No notifications found. You're all caught up!" %}</p>
+                            </div>
+                        </div>
                     </div>
-                    <h3>{% trans "No notifications found" %}</h3>
-                    <p>{% trans "You're all caught up! No notifications to display." %}</p>
                 </div>
-
-                <!-- Loading State -->
-                <div id="loading-state" class="loading-state" style="display: none;">
-                    <div class="loading-spinner"></div>
-                    <p>{% trans "Loading notifications..." %}</p>
-                </div>
-            </div>
-
-            <!-- Pagination -->
-            <div id="pagination-container" class="pagination-container" style="display: none;">
-                <button id="prev-page" class="pagination-btn" disabled>
-                    <i class="fas fa-chevron-left"></i>
-                    {% trans "Previous" %}
-                </button>
-                <span id="page-info" class="page-info">{% trans "Page 1 of 1" %}</span>
-                <button id="next-page" class="pagination-btn" disabled>
-                    {% trans "Next" %}
-                    <i class="fas fa-chevron-right"></i>
-                </button>
             </div>
         </main>
     </div>
@@ -189,6 +191,7 @@
             notifications: "{% trans 'notifications' %}",
             notification: "{% trans 'notification' %}",
             unread: "{% trans 'unread' %}",
+            total: "{% trans 'Total' %}",
             generalNotification: "{% trans 'General Notification' %}",
             bookingUpdate: "{% trans 'Booking Update' %}",
             bookingCreated: "{% trans 'Booking Created' %}",
@@ -203,7 +206,6 @@
             deleteNotificationMessage: "{% trans 'Are you sure you want to delete this notification? This action cannot be undone.' %}",
             markAllAsReadTitle: "{% trans 'Mark All as Read' %}",
             markAllAsReadMessage: "{% trans 'Are you sure you want to mark all unread notifications as read?' %}",
-            unreadNotificationsAsRead: "{% trans 'unread notifications as read?' %}",
             notificationMarkedAsRead: "{% trans 'Notification marked as read' %}",
             failedToMarkAsRead: "{% trans 'Failed to mark notification as read' %}",
             notificationDeleted: "{% trans 'Notification deleted successfully' %}",
@@ -212,13 +214,29 @@
             allMarkedAsRead: "{% trans 'All notifications marked as read' %}",
             failedToMarkAllAsRead: "{% trans 'Failed to mark all notifications as read' %}",
             errorLoadingNotifications: "{% trans 'Error loading notifications' %}",
-            pleaseTryRefreshing: "{% trans 'Please try refreshing the page' %}",
-            justNow: "{% trans 'Just now' %}",
-            minutesAgo: "{% trans 'm ago' %}",
-            hoursAgo: "{% trans 'h ago' %}",
-            daysAgo: "{% trans 'd ago' %}",
-            page: "{% trans 'Page' %}",
-            of: "{% trans 'of' %}"
+            failedToLoad: "{% trans 'Failed to load notifications' %}",
+            noNotifications: "{% trans 'No notifications found.' %}",
+            loadingRecords: "{% trans 'Loading notifications...' %}",
+            processing: "{% trans 'Processing...' %}",
+            search: "{% trans 'Search notifications:' %}",
+            lengthMenu: "{% trans 'Show _MENU_ entries' %}",
+            info: "{% trans 'Showing _START_ to _END_ of _TOTAL_ notifications' %}",
+            infoEmpty: "{% trans 'Showing 0 to 0 of 0 notifications' %}",
+            infoFiltered: "{% trans '(filtered from _MAX_ total notifications)' %}",
+            paginate: {
+                first: "{% trans 'First' %}",
+                last: "{% trans 'Last' %}",
+                next: "{% trans 'Next' %}",
+                previous: "{% trans 'Previous' %}"
+            },
+            general: "{% trans 'General' %}",
+            booking: "{% trans 'Booking' %}",
+            payment: "{% trans 'Payment' %}",
+            type: "{% trans 'Type' %}",
+            message: "{% trans 'Message' %}",
+            category: "{% trans 'Category' %}",
+            time: "{% trans 'Time' %}",
+            actions: "{% trans 'Actions' %}"
         };
 
         // Mobile sidebar toggle functionality
@@ -271,10 +289,22 @@
             }
         });
     </script>
-    <script src="{% static 'js/utils.js' %}"></script>
-    <script src="{% static 'js/auth.js' %}"></script>
+
+    <!-- Include JavaScript files -->
+    {% load static %}
+    <!-- jQuery (required for DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/plug-ins/2.3.5/features/scrollResize/dataTables.scrollResize.min.js"></script>
+
+    <script src="{% static 'js/config.js' %}"></script>
     <script src="{% static 'js/api-client.js' %}"></script>
     <script src="{% static 'js/notifications.js' %}"></script>
-    <script src="{% static 'js/notification-page.js' %}"></script>
+    <script src="{% static 'js/notification-datatable.js' %}"></script>
+    <!-- Font Awesome JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 </body>
 </html>
