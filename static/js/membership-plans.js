@@ -64,7 +64,7 @@ class MembershipPlansManager {
                 </div>
                 <div class="active-plan-item">
                     <label>${this.translations.price || 'Price'}</label>
-                    <strong>$${priceFormatted} / ${durationText}</strong>
+                    <strong>€${priceFormatted} / ${durationText}</strong>
                 </div>
                 <div class="active-plan-item">
                     <label>${this.translations.status || 'Status'}</label>
@@ -150,20 +150,29 @@ class MembershipPlansManager {
         const buttonClass = isActive ? 'secondary' : (isFeatured ? 'primary' : 'secondary');
         const buttonDisabled = isActive ? 'disabled' : '';
 
+        // Check if this is Standard plan for free trial badge
+        const isStandardPlan = plan.name.toLowerCase().includes('standard');
+        const freeTrialBadge = isStandardPlan ? `
+            <div class="free-trial-badge">
+                <i class="fas fa-gift"></i> ${this.translations.freeTrialDays || '30 Days Free Trial'}
+            </div>
+        ` : '';
+
         card.innerHTML = `
             <div class="plan-header">
                 <h3 class="plan-name">${this.escapeHtml(plan.name)}</h3>
                 <span class="plan-type ${planTypeClass}">${this.escapeHtml(plan.plan_type)}</span>
             </div>
 
+            ${freeTrialBadge}
+
             <div class="plan-price">
                 <span class="price-amount">
-                    <span class="price-currency">$</span>${priceFormatted}
+                    <span class="price-currency">€</span>${priceFormatted}
                 </span>
                 <span class="price-period">${this.translations.per || 'per'} ${durationText}</span>
             </div>
 
-            <p class="plan-description">${this.escapeHtml(plan.description)}</p>
 
             <ul class="plan-features">
                 ${this.generateFeatures(plan)}
@@ -185,34 +194,26 @@ class MembershipPlansManager {
      * Generate features list based on plan type
      */
     generateFeatures(plan) {
-        const commonFeatures = [
-            this.translations.accessToBookingSystem || 'Access to booking system',
-            this.translations.customerManagement || 'Customer management',
-            this.translations.basicAnalytics || 'Basic analytics',
+        // Use description from database as the staff range feature
+        const staffRange = plan.description || (this.translations.multipleStaffMembers || 'Multiple Staff Members');
+
+        // All plans include all features
+        const allFeatures = [
+            staffRange,
+            this.translations.unlimitedBookings || 'Unlimited Bookings',
+            this.translations.customerManagement || 'Customer Management',
+            this.translations.serviceManagement || 'Service Management',
+            this.translations.calendarManagement || 'Calendar Management',
+            this.translations.emailNotifications || 'Email Notifications',
+            this.translations.smsNotifications || 'SMS Notifications',
+            this.translations.bookingReminders || 'Booking Reminders',
+            this.translations.advancedAnalytics || 'Advanced Analytics & Reports',
+            this.translations.customBranding || 'Custom Branding',
+            this.translations.mobileResponsive || 'Mobile Responsive',
+            this.translations.prioritySupport || '24/7 Priority Support',
         ];
 
-        const premiumFeatures = [
-            this.translations.advancedAnalytics || 'Advanced analytics',
-            this.translations.prioritySupport || 'Priority support',
-            this.translations.customBranding || 'Custom branding',
-        ];
-
-        const vipFeatures = [
-            this.translations.unlimitedBookings || 'Unlimited bookings',
-            this.translations.dedicatedSupport || 'Dedicated support',
-            this.translations.apiAccess || 'API access',
-            this.translations.whiteLabelSolution || 'White-label solution',
-        ];
-
-        let features = [...commonFeatures];
-
-        if (plan.plan_type.toLowerCase() === 'premium') {
-            features = [...features, ...premiumFeatures];
-        } else if (plan.plan_type.toLowerCase() === 'vip') {
-            features = [...features, ...premiumFeatures, ...vipFeatures];
-        }
-
-        return features.map(feature => `
+        return allFeatures.map(feature => `
             <li>
                 <i class="fas fa-check-circle"></i>
                 <span>${feature}</span>
