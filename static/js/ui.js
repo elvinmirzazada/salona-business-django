@@ -96,13 +96,51 @@ const UI = (() => {
             content.classList.remove('active');
         });
         document.getElementById(`booking-step-${stepNumber}`).classList.add('active');
+
+        // When going to step 2, populate staff dropdown from window.staff_data
+        if (stepNumber === 2) {
+            populateStaffDropdown();
+        }
+    };
+
+    // Populate staff dropdown from window.staff_data
+    const populateStaffDropdown = () => {
+        const staffSelect = document.getElementById('booking-worker');
+
+        if (!staffSelect) {
+            console.warn('Staff select element not found');
+            return;
+        }
+
+        // Use window.staff_data if available
+        if (!window.staff_data || !Array.isArray(window.staff_data)) {
+            console.warn('No staff data available in window.staff_data');
+            return;
+        }
+
+        const translations = window.staffTranslations || {};
+
+        // Clear existing options except the first one
+        staffSelect.innerHTML = `<option value="">${translations.selectStaffMember || 'Select a staff member'}</option>`;
+
+        // Populate dropdown with staff members
+        window.staff_data.forEach(staffMember => {
+            const option = document.createElement('option');
+            option.value = staffMember.user.id;
+            option.textContent = `${staffMember.user.first_name} ${staffMember.user.last_name}`;
+            staffSelect.appendChild(option);
+        });
+
     };
 
     // Show slot action popup for creating bookings or time off
     const showSlotActionPopup = (date, x, y) => {
         const popup = document.getElementById('slot-action-popup');
-        if (!popup) return;
-        
+        if (!popup) {
+            console.error('❌ slot-action-popup element not found!');
+            return;
+        }
+
         // Close any existing popup first
         popup.style.display = 'none';
 
@@ -122,22 +160,14 @@ const UI = (() => {
         // Store the date in the popup data for later use
         popup.dataset.date = date.toISOString();
         
-        // Account for scroll offset when positioning
-        const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
-        const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-
-        // Position popup near the click location, accounting for scroll
-        const popupX = x + scrollX;
-        const popupY = y + scrollY;
-
         // Make popup position fixed so it stays in viewport
         popup.style.position = 'fixed';
-        popup.style.left = `${x}px`;
-        popup.style.top = `${y}px`;
-        
-        // Show the popup
+
+        // Position and show popup
+        positionPopup(popup, x, y);
+        // Show the popup temporarily to get its dimensions
         popup.style.display = 'block';
-        
+
         // Set up event handlers for the buttons
         const addBookingBtn = document.getElementById('add-booking-btn');
         if (addBookingBtn) {
@@ -167,14 +197,18 @@ const UI = (() => {
         
         // Remove any existing click handlers first
         document.removeEventListener('click', window.currentClosePopupHandler);
+        document.removeEventListener('touchstart', window.currentClosePopupHandler);
 
         // Close popup when clicking outside
         const closePopupHandler = (e) => {
             if (!popup.contains(e.target) &&
                 !e.target.closest('.time-quarter-slot') &&
-                !e.target.closest('.slot')) {
+                !e.target.closest('.slot') &&
+                !e.target.closest('.fc-timegrid-slot') &&
+                !e.target.closest('.fc-daygrid-day')) {
                 popup.style.display = 'none';
                 document.removeEventListener('click', closePopupHandler);
+                document.removeEventListener('touchstart', closePopupHandler);
                 window.currentClosePopupHandler = null;
             }
         };
@@ -185,7 +219,8 @@ const UI = (() => {
         // Use setTimeout to prevent immediate closing
         setTimeout(() => {
             document.addEventListener('click', closePopupHandler);
-        }, 10);
+            document.addEventListener('touchstart', closePopupHandler);
+        }, 100); // Slightly longer delay for mobile
     };
 
     /**

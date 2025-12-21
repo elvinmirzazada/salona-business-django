@@ -278,7 +278,7 @@ const BookingService = (() => {
             document.getElementById('booking-form-panel').classList.remove('active');
 
             // Refresh the calendar to show the new booking
-            await Calendar.renderCalendar(Calendar.getCurrentDate());
+            await Calendar.refreshCalendar();
 
         } catch (error) {
             // Show error message
@@ -406,7 +406,7 @@ const BookingService = (() => {
             };
 
             // Refresh the calendar to show the updated booking
-            await Calendar.renderCalendar(Calendar.getCurrentDate());
+            await Calendar.refreshCalendar();
 
         } catch (error) {
             // Show error message
@@ -550,16 +550,9 @@ const BookingService = (() => {
             }
         });
         
-        // Fetch and populate staff members, then select the current one using staffId from booking_services
-        StaffManager.loadStaffMembers().then(() => {
-            const workerDropdown = document.getElementById('booking-worker');
-            
-            if (staffId && workerDropdown) {
-                // Select the worker in the dropdown
-                workerDropdown.value = staffId;
-            }
-        });
-        
+        // Fetch and populate staff members from window.staff_data, then select the current one
+        populateStaffFromWindowData(staffId);
+
         // Fetch and populate customers, then select the current one
         CustomerManager.loadCustomers().then(() => {
             const customerDropdown = document.getElementById('booking-customer');
@@ -590,7 +583,43 @@ const BookingService = (() => {
             }
         });
     };
-    
+
+    // Helper function to populate staff dropdown from window.staff_data
+    const populateStaffFromWindowData = (selectedStaffId = null) => {
+        const staffSelect = document.getElementById('booking-worker');
+
+        if (!staffSelect) {
+            console.warn('Staff select element not found');
+            return;
+        }
+
+        // Use window.staff_data if available
+        if (!window.staff_data || !Array.isArray(window.staff_data)) {
+            console.warn('No staff data available in window.staff_data');
+            return;
+        }
+
+        const translations = window.staffTranslations || {};
+
+        // Clear existing options
+        staffSelect.innerHTML = `<option value="">${translations.selectStaffMember || 'Select a staff member'}</option>`;
+
+        // Populate dropdown with staff members
+        window.staff_data.forEach(staffMember => {
+            const option = document.createElement('option');
+            option.value = staffMember.user.id;
+            option.textContent = `${staffMember.user.first_name} ${staffMember.user.last_name}`;
+            staffSelect.appendChild(option);
+        });
+
+        // Select the staff member if an ID was provided
+        if (selectedStaffId && staffSelect) {
+            staffSelect.value = selectedStaffId;
+        }
+
+        console.log('Staff members loaded successfully from window.staff_data');
+    };
+
     // Create new booking from calendar slot
     const createNewBooking = (date) => {
         const formPanel = document.getElementById('booking-form-panel');
@@ -633,7 +662,7 @@ const BookingService = (() => {
         ServiceManager.loadServices();
 
         // Load staff members
-        StaffManager.loadStaffMembers();
+        // StaffManager.loadStaffMembers();
 
         // Load customers into booking dropdown
         CustomerManager.renderBookingDropdown();
@@ -718,7 +747,7 @@ const BookingService = (() => {
             clearCache();
 
             // Refresh the calendar to remove the deleted booking
-            await Calendar.renderCalendar(Calendar.getCurrentDate());
+            await Calendar.refreshCalendar();
 
         } catch (error) {
             // Show error message
@@ -755,11 +784,58 @@ const BookingService = (() => {
         if (endTimeInput) endTimeInput.value = Utils.formatTime(endDate.getHours(), endDate.getMinutes(), true);
 
         // Load staff members into dropdown
-        StaffManager.loadStaffMembersForTimeOff();
+        loadStaffMembersForTimeOff();
 
         // Show the panel
         panel.classList.add('active');
     };
+
+    const loadStaffMembersForTimeOff = () => {
+        try {
+            // Check if we have cached staff data from the initial page load
+            let staffData;
+            if (window.staff_data && Array.isArray(window.staff_data) && window.staff_data.length > 0) {
+                staffData = window.staff_data;
+                console.log('Using cached staff data for time off form');
+            } else {
+                // Only fetch from API if we don't have cached data
+                const response = window.api.getStaff();
+
+                if (!response || !response.data) {
+                    console.warn('No staff data received');
+                    return;
+                }
+
+                staffData = response.data;
+                // Update the global cache
+                window.staff_data = staffData;
+            }
+
+            const staffSelect = document.getElementById('time-off-staff');
+
+            if (!staffSelect) {
+                console.warn('Time off staff select element not found');
+                return;
+            }
+
+            const translations = window.staffTranslations || {};
+
+            // Clear existing options
+            staffSelect.innerHTML = `<option value="">${translations.selectStaffMember || 'Select staff member'}</option>`;
+
+            // Populate dropdown with staff members
+            staffData.forEach(staffMember => {
+                const option = document.createElement('option');
+                option.value = staffMember.user.id;
+                option.textContent = `${staffMember.user.first_name} ${staffMember.user.last_name}`;
+                staffSelect.appendChild(option);
+            });
+
+            console.log('Staff members loaded successfully for time off form');
+        } catch (error) {
+            console.error('Failed to load staff for time off:', error);
+        }
+    }
 
     // Submit time off to API
     const submitTimeOff = async (timeOffData) => {
@@ -786,7 +862,7 @@ const BookingService = (() => {
             TimeOffManager.clearTimeOffForm();
 
             // Refresh the calendar to show the new time off
-            await Calendar.renderCalendar(Calendar.getCurrentDate());
+            await Calendar.refreshCalendar();
 
         } catch (error) {
             // Show error message

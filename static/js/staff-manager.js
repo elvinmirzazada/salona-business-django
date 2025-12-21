@@ -837,56 +837,6 @@ class StaffManager {
     }
 
     /**
-     * Static method to load staff members for time off form
-     */
-    static async loadStaffMembersForTimeOff() {
-        try {
-            // Check if we have cached staff data from the initial page load
-            let staffData;
-            if (window.staff_data && Array.isArray(window.staff_data) && window.staff_data.length > 0) {
-                staffData = window.staff_data;
-                console.log('Using cached staff data for time off form');
-            } else {
-                // Only fetch from API if we don't have cached data
-                const response = await window.api.getStaff();
-
-                if (!response || !response.data) {
-                    console.warn('No staff data received');
-                    return;
-                }
-
-                staffData = response.data;
-                // Update the global cache
-                window.staff_data = staffData;
-            }
-
-            const staffSelect = document.getElementById('time-off-staff');
-
-            if (!staffSelect) {
-                console.warn('Time off staff select element not found');
-                return;
-            }
-
-            const translations = window.staffTranslations || {};
-
-            // Clear existing options
-            staffSelect.innerHTML = `<option value="">${translations.selectStaffMember || 'Select staff member'}</option>`;
-
-            // Populate dropdown with staff members
-            staffData.forEach(staffMember => {
-                const option = document.createElement('option');
-                option.value = staffMember.user.id;
-                option.textContent = `${staffMember.user.first_name} ${staffMember.user.last_name}`;
-                staffSelect.appendChild(option);
-            });
-
-            console.log('Staff members loaded successfully for time off form');
-        } catch (error) {
-            console.error('Failed to load staff for time off:', error);
-        }
-    }
-
-    /**
      * Show success notification
      */
     showSuccess(message) {

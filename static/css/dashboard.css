@@ -1991,6 +1991,52 @@ select[multiple] {
     .fc .fc-timegrid-slot {
         height: 25px !important;
     }
+
+    /* Ensure proper touch handling on mobile */
+    .fc-timegrid-slot,
+    .fc-daygrid-day,
+    .fc-timegrid-col {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(0, 168, 132, 0.1);
+    }
+
+    /* Prevent text selection during touch */
+    .fc-timegrid-body,
+    .fc-daygrid-body {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    /* Make individual cells clearly tappable */
+    .fc-timegrid-slot {
+        position: relative;
+    }
+
+    /* Increase tap target size for better mobile interaction */
+    .fc .fc-timegrid-slot-lane {
+        min-height: 25px;
+    }
+
+    /* Ensure day cells in month view are clickable */
+    .fc-daygrid-day-frame {
+        cursor: pointer;
+        position: relative;
+        min-height: 40px;
+    }
+
+    /* Make sure slot lanes are clickable */
+    .fc-timegrid-slot-lane {
+        cursor: pointer;
+    }
+
+    /* Prevent event bubbling issues on mobile */
+    .fc-timegrid-col-frame,
+    .fc-daygrid-day-top {
+        position: relative;
+        pointer-events: auto;
+    }
 }
 
 /* Status-based event colors (already handled in JS, but backup CSS) */
@@ -2256,6 +2302,8 @@ select[multiple] {
   .slot-action-popup {
     width: 90%;
     max-width: 300px;
+    z-index: 10001 !important; /* Ensure it appears above everything on mobile */
+    position: fixed !important;
   }
   /* Booking form panel responsive */
   .booking-form-panel {

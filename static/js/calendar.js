@@ -5,6 +5,7 @@ const Calendar = (() => {
     let selectedStaffIds = null;
     let viewMode = localStorage.getItem('calendarViewMode') || 'timeGridWeek';
     let staffColors = {}; // Store staff colors
+    let lastClickTimestamp = 0; // To prevent duplicate click events on mobile
 
     // Calendar display configuration
     const calendarConfig = {
@@ -352,6 +353,9 @@ const Calendar = (() => {
 
             console.log('FullCalendar element found, initializing calendar...');
 
+            // Check if we're on mobile
+            const isMobile = window.innerWidth <= 768;
+
             // Initialize FullCalendar
             calendar = new FullCalendar.Calendar(calendarEl, {
                 // timeZone: 'local',
@@ -412,7 +416,9 @@ const Calendar = (() => {
                 nowIndicator: true,
                 editable: true,
                 selectable: true,
-                selectMirror: true,
+                selectMirror: !isMobile, // Disable select mirror on mobile to prevent row selection
+                selectMinDistance: isMobile ? 5 : 0, // Require minimum distance for selection on mobile
+                longPressDelay: isMobile ? 500 : 1000, // Shorter long press delay on mobile
                 height: 'auto',
                 contentHeight: 'auto',
                 expandRows: false,
@@ -522,13 +528,88 @@ const Calendar = (() => {
                 },
 
                 select: function(selectionInfo) {
+                    // Prevent duplicate events within 300ms
+                    const now = Date.now();
+                    if (now - lastClickTimestamp < 300) {
+                        console.log('⏭️ Ignoring duplicate select event');
+                        return;
+                    }
+                    lastClickTimestamp = now;
+
+                    // Check if we're on mobile
+                    const isMobile = window.innerWidth <= 768;
+
+                    // Prevent selection when dragging on mobile
+                    if (isMobile && selectionInfo.jsEvent) {
+                        const eventType = selectionInfo.jsEvent.type;
+
+                        // For touch events, only handle single cell selections
+                        if (eventType === 'touchend' || eventType === 'touchmove') {
+                            const duration = selectionInfo.end - selectionInfo.start;
+                            // If selection is too long (more than 2 hours), ignore it - likely accidental
+                            if (duration > 2 * 60 * 60 * 1000) {
+                                console.log('⏭️ Ignoring long selection on mobile (likely accidental)');
+                                return;
+                            }
+                        }
+                    }
+
                     const selectedDate = new Date(selectionInfo.start);
-                    UI.showSlotActionPopup(selectedDate, null, null);
+
+                    // Get coordinates from the jsEvent - handle both mouse and touch events
+                    let x = window.innerWidth / 2;
+                    let y = window.innerHeight / 2;
+
+                    if (selectionInfo.jsEvent) {
+                        // For touch events, check touches or changedTouches
+                        if (selectionInfo.jsEvent.touches && selectionInfo.jsEvent.touches.length > 0) {
+                            x = selectionInfo.jsEvent.touches[0].clientX;
+                            y = selectionInfo.jsEvent.touches[0].clientY;
+                        } else if (selectionInfo.jsEvent.changedTouches && selectionInfo.jsEvent.changedTouches.length > 0) {
+                            x = selectionInfo.jsEvent.changedTouches[0].clientX;
+                            y = selectionInfo.jsEvent.changedTouches[0].clientY;
+                        }
+                        // For mouse events, use clientX/clientY directly
+                        else if (selectionInfo.jsEvent.clientX !== undefined && selectionInfo.jsEvent.clientY !== undefined) {
+                            x = selectionInfo.jsEvent.clientX;
+                            y = selectionInfo.jsEvent.clientY;
+                        }
+                    }
+
+                    UI.showSlotActionPopup(selectedDate, x, y);
                 },
 
                 dateClick: function(info) {
+                    // Prevent duplicate events within 300ms
+                    const now = Date.now();
+                    if (now - lastClickTimestamp < 300) {
+                        console.log('⏭️ Ignoring duplicate dateClick event');
+                        return;
+                    }
+                    lastClickTimestamp = now;
+
                     const clickedDate = new Date(info.date);
-                    UI.showSlotActionPopup(clickedDate, info.jsEvent.clientX, info.jsEvent.clientY);
+
+                    // Get coordinates from the jsEvent - handle both mouse and touch events
+                    let x = window.innerWidth / 2;
+                    let y = window.innerHeight / 2;
+
+                    if (info.jsEvent) {
+                        // For touch events, check touches or changedTouches
+                        if (info.jsEvent.touches && info.jsEvent.touches.length > 0) {
+                            x = info.jsEvent.touches[0].clientX;
+                            y = info.jsEvent.touches[0].clientY;
+                        } else if (info.jsEvent.changedTouches && info.jsEvent.changedTouches.length > 0) {
+                            x = info.jsEvent.changedTouches[0].clientX;
+                            y = info.jsEvent.changedTouches[0].clientY;
+                        }
+                        // For mouse events, use clientX/clientY directly
+                        else if (info.jsEvent.clientX !== undefined && info.jsEvent.clientY !== undefined) {
+                            x = info.jsEvent.clientX;
+                            y = info.jsEvent.clientY;
+                        }
+                    }
+                    UI.showSlotActionPopup(clickedDate, x, y);
                 },
 
                 datesSet: function(dateInfo) {
