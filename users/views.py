@@ -6,6 +6,7 @@ from django.http import JsonResponse
 import requests
 from django.conf import settings
 from .api_proxy import APIProxyView
+from django.shortcuts import redirect
 
 
 class GeneralView(View):
@@ -172,9 +173,12 @@ class GeneralView(View):
         if success and response_data:
             data = response_data
             result = data.get('data').get('user', {})
-            result['role'] = data.get('data').get('role', 'owner')
-            result['company_id'] = data.get('data').get('company_id', None)
-
+            result['role_status'] = data.get('data').get('status', 'inactive')
+            if result['role_status'] != 'active':
+                result['company_id'] = None
+            else:
+                result['role'] = data.get('data').get('role', 'owner')
+                result['company_id'] = data.get('data').get('company_id', None)
             # Update cookies in request if they were refreshed
             if updated_cookies:
                 request.COOKIES['access_token'] = updated_cookies['access_token']
@@ -535,12 +539,13 @@ class DashboardView(GeneralView):
                 # Return JSON response for AJAX requests
                 return JsonResponse({'error': 'Authentication required'}, status=401)
 
-            # Redirect to login for regular requests
-            from django.shortcuts import redirect
             redirect_response = redirect('users:login')
             redirect_response.delete_cookie('access_token')
             redirect_response.delete_cookie('refresh_token')
             return redirect_response
+        elif user_data.get('company_id') is None:
+            # User has no company - redirect to settings
+            return redirect('users:settings')
 
         staff_data = self.get_staff(request)
         unread_notifications_count = self.get_unread_notifications_count(request)

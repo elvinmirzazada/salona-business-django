@@ -56,7 +56,9 @@
                 <div class="settings-tabs">
                     <div class="tab-nav">
                         <button class="tab-btn active" data-tab="profile">{% trans "Profile" %}</button>
+                        {% if user_data.role is None or user_data.role == 'admin' or user_data.role == 'owner' %}
                         <button class="tab-btn" data-tab="company">{% trans "Company Settings" %}</button>
+                        {% endif %}
                     </div>
 
                     <!-- Tab Content -->
@@ -94,6 +96,7 @@
                         </div>
 
                         <!-- Company Settings Tab -->
+                        {% if user_data.role is None or user_data.role == 'admin' or user_data.role == 'owner' %}
                         <div class="tab-pane" id="company-tab">
                             <!-- Create Company Section - Only show if no company exists -->
                             {% if not company_id or company_id == '' %}
@@ -329,6 +332,7 @@
                                 </div>
                             </div>
                         </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>

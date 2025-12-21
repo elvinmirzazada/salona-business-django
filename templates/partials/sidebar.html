@@ -9,8 +9,8 @@
         </a>
     </div>
     <nav class="sidebar-nav">
-        {% if company_id %}
-        <!-- Only show these menu items if user has a company -->
+        {% if company_id and user_data.role_status == 'active' %}
+        <!-- Only show these menu items if user has a company and status is active -->
         <a href="{% url 'users:dashboard' %}" class="nav-item" id="dashboard-nav">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
@@ -86,6 +86,7 @@
             </form>
         </div>
 
+        {% if user_data.role_status == 'active' %}
         {% if request.path == '/dashboard/' or '/dashboard' in request.path %}
         <a href="#" class="nav-item fullscreen-toggle" id="fullscreen-nav" onclick="toggleFullscreen(event)">
             <svg class="nav-icon fullscreen-icon-expand" viewBox="0 0 24 24" fill="currentColor">
@@ -96,6 +97,7 @@
             </svg>
             <span>{% trans "Fullscreen" %}</span>
         </a>
+        {% endif %}
         {% endif %}
 
         <a href="#" class="nav-item logout" id="logout-nav" onclick="handleLogout(event)">
