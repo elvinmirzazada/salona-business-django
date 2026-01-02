@@ -2,13 +2,50 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ company_name }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>{{ company_name }} - Book Your Appointment</title>
     {% load static %}
     <link rel="icon" type="image/png" href="{% static 'images/salona-icon.png' %}">
     <link rel="stylesheet" href="{% static 'css/booking.css' %}">
+    <!-- Preload critical resources -->
+    <link rel="preconnect" href="{{ API_BASE_URL }}">
 </head>
 <body>
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+        </div>
+        <p class="loading-text">Loading your booking experience...</p>
+    </div>
+
+    <!-- Animated Background -->
+    <div class="background-animation">
+        <div class="background-shape shape-1"></div>
+        <div class="background-shape shape-2"></div>
+        <div class="background-shape shape-3"></div>
+    </div>
+
+    <!-- Compact Company Badge -->
+    <div class="company-badge animate-fade-in">
+        <div class="company-badge-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <div class="company-badge-content">
+            <h1 class="company-badge-name">{{ company_name }}</h1>
+            <p class="company-badge-subtitle">Book your appointment</p>
+        </div>
+    </div>
+
     <!-- Progress Indicator -->
     <div class="progress-container">
         <div class="progress-wrapper">

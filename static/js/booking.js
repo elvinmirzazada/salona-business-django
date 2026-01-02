@@ -1,8 +1,107 @@
+// ========================================
+// Utility Functions - Toast Notifications & Loading
+// ========================================
+
+// Toast Notification System
+function showToast(message, type = 'info', duration = 5000) {
+    const container = document.getElementById('toast-container');
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+
+    const icons = {
+        success: '✓',
+        error: '✕',
+        warning: '⚠',
+        info: 'ℹ'
+    };
+
+    const titles = {
+        success: 'Success',
+        error: 'Error',
+        warning: 'Warning',
+        info: 'Info'
+    };
+
+    toast.innerHTML = `
+        <div class="toast-icon">${icons[type] || icons.info}</div>
+        <div class="toast-content">
+            <div class="toast-title">${titles[type] || titles.info}</div>
+            <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+    `;
+
+    container.appendChild(toast);
+
+    // Auto remove after duration
+    setTimeout(() => {
+        toast.classList.add('removing');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+
+    return toast;
+}
+
+// Loading Overlay
+function showLoading() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+        overlay.classList.remove('hidden');
+    }
+}
+
+function hideLoading() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
+    }
+}
+
+// Initialize - hide loading after page load
+window.addEventListener('load', () => {
+    setTimeout(hideLoading, 500);
+});
+
+// Add staggered animations to elements
+function addAnimationClasses() {
+    // Animate service cards when they load
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.animation = `fadeInUp 0.5s ease-out forwards`;
+                }, index * 50);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    // Observe cards
+    setTimeout(() => {
+        document.querySelectorAll('.service-card, .staff-card').forEach(card => {
+            card.style.opacity = '0';
+            observer.observe(card);
+        });
+    }, 100);
+}
+
+// ========================================
+// Multi-Step Booking Initialization
+// ========================================
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
+    showLoading();
     initializeBooking();
     setupStepNavigation();
     setupSummaryToggle();
+    addAnimationClasses();
 });
 
 async function initializeBooking() {
@@ -249,11 +348,18 @@ function renderServices(category) {
                         card.dataset.id = service.id;
                         card.dataset.price = price;
                         card.dataset.duration = service.duration;
+
+                        // Build description HTML if additional_info exists
+                        const descriptionHTML = service.additional_info && service.additional_info.trim()
+                            ? `<div class="service-description">${service.additional_info}</div>`
+                            : '';
+
                         card.innerHTML = `
                             <div class="service-card-header">
                                 <div class="service-name">${service.name}</div>
                                 <div class="service-checkbox"></div>
                             </div>
+                            ${descriptionHTML}
                             <div class="service-meta">
                                 <div class="service-duration">⏱ ${service.duration} min</div>
                                 <div class="service-price">€${price}</div>
@@ -843,7 +949,7 @@ async function submitBooking() {
         }
     } catch (error) {
         console.error('Booking error:', error);
-        alert(error.message || 'Something went wrong. Please try again.');
+        showToast(error.message || 'Something went wrong. Please try again.', 'error');
         bookButton.innerHTML = originalText;
         bookButton.disabled = false;
     }
