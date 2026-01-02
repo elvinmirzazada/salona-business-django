@@ -836,7 +836,7 @@ async function submitBooking() {
         if (response.ok && result.success && result.data) {
             // Successful booking - redirect to confirmation page with booking ID
             // The confirmation page will fetch the booking data from the API
-            window.location.href = `/customers/booking/${bookingState.companyId}/confirmation?booking_id=${result.data.id}`;
+            window.location.href = `/book/${bookingState.companySlug}/confirmation?booking_id=${result.data.id}`;
         } else {
             // Handle API error
             throw new Error(result.message || 'Failed to create booking');

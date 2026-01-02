@@ -34,5 +34,7 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('', views.home, name='home'),  # Home page
     path('verify-email/', views.VerifyEmailView.as_view(), name='verify_email'),
-    path('customers/', include('customers.urls'))
+    path('customers/', include('customers.urls')),
+    path('book/<str:company_slug>/', views.booking, name='booking_appointment'),
+    path('book/<str:company_slug>/confirmation/', views.booking_confirmation, name='booking_confirmation'),
 ]

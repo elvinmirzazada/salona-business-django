@@ -349,6 +349,7 @@
                 const bookingDate = document.getElementById('booking-date-value').value;
                 const bookingTime = document.getElementById('booking-time-value').value;
                 const professionalId = document.getElementById('professional-id').value;
+                const companySlug = document.getElementById('company-slug').value;
 
                 // Format start time in ISO format (YYYY-MM-DDTHH:MM:SSZ)
                 // Ensure the date and time are properly formatted
@@ -421,7 +422,7 @@
 
                     // Redirect to confirmation page
                     setTimeout(() => {
-                        window.location.href = `/customers/booking/${companyId}/confirmation?booking_id=${data.id}`;
+                        window.location.href = `/book/${companySlug}/confirmation?booking_id=${data.id}`;
                     }, 2000);
                 })
                 .catch(error => {

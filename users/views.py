@@ -1262,7 +1262,7 @@ class IntegrationsView(GeneralView):
         # Get the scheme (http or https) and host from the current request
         scheme = 'https' if request.is_secure() else 'http'
         host = request.get_host()  # This includes the domain and port if present
-        booking_url = f"{scheme}://{host}/customers/{company_id}"
+        booking_url = f"{scheme}://{host}/book/{company_info.get('slug', '')}" if company_info else ''
 
         # Token and user data are valid, serve integrations page
         return render(request, 'users/integrations.html', {
