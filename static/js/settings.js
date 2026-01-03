@@ -82,6 +82,12 @@ const Settings = (() => {
         // Setup profile form
         setupProfileForm();
 
+        // Setup profile photo upload
+        setupProfilePhoto();
+
+        // Setup language multi-select
+        setupLanguageMultiSelect();
+
         // Setup company information functionality
         setupCompanyForm();
 
@@ -155,11 +161,13 @@ const Settings = (() => {
         const lastNameInput = document.getElementById('profile-last-name');
         const emailInput = document.getElementById('profile-email');
         const phoneInput = document.getElementById('profile-phone');
+        const positionInput = document.getElementById('profile-position');
 
         if (firstNameInput) firstNameInput.value = userData.first_name || '';
         if (lastNameInput) lastNameInput.value = userData.last_name || '';
         if (emailInput) emailInput.value = userData.email || '';
         if (phoneInput) phoneInput.value = userData.phone || '';
+        if (positionInput) positionInput.value = userData.position || '';
     };
 
     // Setup profile form submission
@@ -174,7 +182,9 @@ const Settings = (() => {
                 first_name: document.getElementById('profile-first-name').value.trim(),
                 last_name: document.getElementById('profile-last-name').value.trim(),
                 email: document.getElementById('profile-email').value.trim(),
-                phone: document.getElementById('profile-phone').value.trim()
+                phone: document.getElementById('profile-phone').value.trim(),
+                languages: document.getElementById('profile-languages').value.trim(),
+                position: document.getElementById('profile-position').value.trim()
             };
 
             try {
@@ -1380,6 +1390,330 @@ const Settings = (() => {
     };
 
 
+    // Profile Photo Functionality
+    const setupProfilePhoto = () => {
+        const uploadBtn = document.getElementById('upload-photo-btn');
+        const removeBtn = document.getElementById('remove-photo-btn');
+        const fileInput = document.getElementById('profile-photo-input');
+        const photoImg = document.getElementById('profile-photo-img');
+        const photoPlaceholder = document.getElementById('profile-photo-placeholder');
+
+        if (!uploadBtn || !fileInput || !photoImg || !photoPlaceholder) return;
+
+        // Load existing profile photo if available
+        if (window.userData && window.userData.profile_photo_url) {
+            displayProfilePhoto(window.userData.profile_photo_url);
+        }
+
+        // Upload button click - trigger file input
+        uploadBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // File input change - upload photo
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                showToast('Please select a valid image file', 'error');
+                return;
+            }
+
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('Image size must be less than 5MB', 'error');
+                return;
+            }
+
+            // Show loading state
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+            try {
+                const result = await uploadProfilePhoto(file);
+
+                if (result.success) {
+                    showToast('Profile photo updated successfully!', 'success');
+                    displayProfilePhoto(result.data.profile_photo_url || result.profile_photo_url);
+
+                    // Update window.userData
+                    if (window.userData) {
+                        window.userData.profile_photo_url = result.data.profile_photo_url || result.profile_photo_url;
+                    }
+                } else {
+                    showToast(result.message || 'Failed to upload photo', 'error');
+                }
+            } catch (error) {
+                console.error('Error uploading photo:', error);
+                showToast('Error uploading photo', 'error');
+            } finally {
+                // Reset button state
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload Photo';
+                fileInput.value = '';
+            }
+        });
+
+        // Remove button click
+        if (removeBtn) {
+            removeBtn.addEventListener('click', async () => {
+                if (!confirm('Are you sure you want to remove your profile photo?')) {
+                    return;
+                }
+
+                removeBtn.disabled = true;
+                removeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Removing...';
+
+                try {
+                    const result = await removeProfilePhoto();
+
+                    if (result.success) {
+                        showToast('Profile photo removed successfully!', 'success');
+                        hideProfilePhoto();
+
+                        // Update window.userData
+                        if (window.userData) {
+                            window.userData.profile_photo_url = null;
+                        }
+                    } else {
+                        showToast(result.message || 'Failed to remove photo', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error removing photo:', error);
+                    showToast('Error removing photo', 'error');
+                } finally {
+                    removeBtn.disabled = false;
+                    removeBtn.innerHTML = '<i class="fas fa-trash"></i> Remove';
+                }
+            });
+        }
+
+        function displayProfilePhoto(photoUrl) {
+            if (photoImg && photoPlaceholder && removeBtn) {
+                photoImg.src = photoUrl;
+                photoImg.style.display = 'block';
+                photoPlaceholder.style.display = 'none';
+                removeBtn.style.display = 'inline-flex';
+            }
+        }
+
+        function hideProfilePhoto() {
+            if (photoImg && photoPlaceholder && removeBtn) {
+                photoImg.src = '';
+                photoImg.style.display = 'none';
+                photoPlaceholder.style.display = 'flex';
+                removeBtn.style.display = 'none';
+            }
+        }
+    };
+
+    // Upload profile photo to API
+    const uploadProfilePhoto = async (file) => {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            console.log('Uploading file:', file.name, file.type, file.size);
+            console.log('FormData entries:', Array.from(formData.entries()));
+
+            const apiUrl = `/users/api/v1/users/me/profile-photo`;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                credentials: 'include',
+                body: formData
+            });
+
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers.get('content-type'));
+
+            const responseText = await response.text();
+            console.log('Response text:', responseText);
+
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch (e) {
+                console.error('Failed to parse response as JSON:', e);
+                return {
+                    success: false,
+                    message: 'Invalid response from server'
+                };
+            }
+
+            console.log('Response data:', data);
+
+            if (!response.ok || !data.success) {
+                return {
+                    success: false,
+                    message: data.message || (data.detail ? JSON.stringify(data.detail) : 'Failed to upload profile photo')
+                };
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Error uploading profile photo:', error);
+            return {
+                success: false,
+                message: error.message
+            };
+        }
+    };
+
+    // Remove profile photo from API
+    const removeProfilePhoto = async () => {
+        try {
+            const apiUrl = `/users/api/v1/users/me/profile-photo`;
+
+            const response = await api.request(apiUrl, {
+                method: 'DELETE'
+            });
+
+            if (!response.success) {
+                return {
+                    success: false,
+                    message: response.message || 'Failed to remove profile photo'
+                };
+            }
+
+            return response;
+        } catch (error) {
+            console.error('Error removing profile photo:', error);
+            return {
+                success: false,
+                message: error.message
+            };
+        }
+    };
+
+
+    // Language Multi-Select Functionality
+    const languageList = [
+        'English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Russian',
+        'Chinese (Mandarin)', 'Japanese', 'Korean', 'Arabic', 'Hindi', 'Bengali',
+        'Turkish', 'Dutch', 'Swedish', 'Polish', 'Danish', 'Norwegian', 'Finnish',
+        'Greek', 'Czech', 'Hungarian', 'Romanian', 'Thai', 'Vietnamese', 'Indonesian',
+        'Malay', 'Hebrew', 'Ukrainian', 'Persian (Farsi)', 'Urdu', 'Swahili',
+        'Tamil', 'Telugu', 'Marathi', 'Gujarati', 'Kannada', 'Punjabi', 'Malayalam',
+        'Serbian', 'Croatian', 'Slovak', 'Bulgarian', 'Catalan', 'Estonian', 'Latvian',
+        'Lithuanian', 'Slovenian', 'Albanian', 'Macedonian', 'Icelandic', 'Georgian',
+        'Armenian', 'Azerbaijani', 'Kazakh', 'Uzbek', 'Mongolian', 'Burmese', 'Khmer',
+        'Lao', 'Tagalog (Filipino)', 'Amharic', 'Nepali', 'Sinhala', 'Pashto', 'Kurdish'
+    ];
+
+    let selectedLanguages = [];
+
+    const setupLanguageMultiSelect = () => {
+        const searchInput = document.getElementById('language-search');
+        const dropdown = document.getElementById('language-dropdown');
+        const selectedContainer = document.getElementById('selected-languages');
+        const hiddenInput = document.getElementById('profile-languages');
+
+        if (!searchInput || !dropdown || !selectedContainer || !hiddenInput) return;
+
+        // Initialize selected languages from user data
+        if (window.userData && window.userData.languages) {
+            const languages = window.userData.languages.split(',').map(lang => lang.trim()).filter(lang => lang);
+            selectedLanguages = [...languages];
+            renderSelectedLanguages();
+            updateHiddenInput();
+        }
+
+        // Populate dropdown with all languages
+        populateLanguageDropdown();
+
+        // Search input focus - show dropdown
+        searchInput.addEventListener('focus', () => {
+            dropdown.style.display = 'block';
+            populateLanguageDropdown(searchInput.value);
+        });
+
+        // Search input - filter languages
+        searchInput.addEventListener('input', (e) => {
+            populateLanguageDropdown(e.target.value);
+        });
+
+        // Click outside to close dropdown
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.style.display = 'none';
+                searchInput.value = '';
+            }
+        });
+
+        function populateLanguageDropdown(searchTerm = '') {
+            dropdown.innerHTML = '';
+            const term = searchTerm.toLowerCase();
+
+            const filteredLanguages = languageList.filter(lang =>
+                lang.toLowerCase().includes(term)
+            );
+
+            if (filteredLanguages.length === 0) {
+                dropdown.innerHTML = '<div class="language-option" style="color: #999;">No languages found</div>';
+                return;
+            }
+
+            filteredLanguages.forEach(language => {
+                const option = document.createElement('div');
+                option.className = 'language-option';
+                option.textContent = language;
+
+                if (selectedLanguages.includes(language)) {
+                    option.classList.add('selected');
+                }
+
+                option.addEventListener('click', () => {
+                    toggleLanguage(language);
+                    searchInput.value = '';
+                    populateLanguageDropdown();
+                });
+
+                dropdown.appendChild(option);
+            });
+        }
+
+        function toggleLanguage(language) {
+            const index = selectedLanguages.indexOf(language);
+            if (index > -1) {
+                selectedLanguages.splice(index, 1);
+            } else {
+                selectedLanguages.push(language);
+            }
+            renderSelectedLanguages();
+            updateHiddenInput();
+        }
+
+        function renderSelectedLanguages() {
+            selectedContainer.innerHTML = '';
+
+            selectedLanguages.forEach(language => {
+                const chip = document.createElement('div');
+                chip.className = 'language-chip';
+
+                const languageText = document.createElement('span');
+                languageText.textContent = language;
+
+                const removeBtn = document.createElement('span');
+                removeBtn.className = 'language-chip-remove';
+                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                removeBtn.addEventListener('click', () => {
+                    toggleLanguage(language);
+                    populateLanguageDropdown(searchInput.value);
+                });
+
+                chip.appendChild(languageText);
+                chip.appendChild(removeBtn);
+                selectedContainer.appendChild(chip);
+            });
+        }
+
+        function updateHiddenInput() {
+            hiddenInput.value = selectedLanguages.join(', ');
+        }
+    };
 
     // Public API
     return {

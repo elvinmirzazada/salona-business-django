@@ -197,12 +197,16 @@ class APIProxyView(View):
         """Forward the request to the external API"""
         api_url = self.get_api_url(path)
         
-        # Prepare headers
+        # Prepare headers - don't set Content-Type for multipart/form-data (file uploads)
         headers = {
-            'Content-Type': 'application/json',
             'Accept': 'application/json',
         }
         
+        # Only set Content-Type for JSON requests
+        is_multipart = request.content_type and 'multipart/form-data' in request.content_type
+        if not is_multipart:
+            headers['Content-Type'] = 'application/json'
+
         # Get cookies from the incoming request (check for refreshed tokens first)
         access_token, refresh_token = self.get_tokens_from_request(request)
         cookies = {}
@@ -217,16 +221,30 @@ class APIProxyView(View):
         # Convert datetime parameters to UTC
         params = self.ensure_utc_params(params)
 
-        # Prepare request data
+        # Prepare request data and files
         data = None
+        files = None
+        json_data = None
+
         if request.method in ['POST', 'PUT', 'PATCH']:
-            if request.content_type == 'application/json':
+            if is_multipart:
+                # Handle multipart/form-data (file uploads)
+                data = request.POST.dict() if request.POST else {}
+                # Convert datetime parameters to UTC
+                data = self.ensure_utc_params(data)
+
+                # Handle files
+                if request.FILES:
+                    files = {}
+                    for key, file_obj in request.FILES.items():
+                        files[key] = (file_obj.name, file_obj.read(), file_obj.content_type)
+            elif request.content_type == 'application/json':
                 try:
-                    data = json.loads(request.body)
+                    json_data = json.loads(request.body)
                     # Convert datetime parameters to UTC
-                    data = self.ensure_utc_params(data)
+                    json_data = self.ensure_utc_params(json_data)
                 except json.JSONDecodeError:
-                    data = None
+                    json_data = None
             else:
                 data = request.POST.dict()
                 # Convert datetime parameters to UTC
@@ -238,7 +256,9 @@ class APIProxyView(View):
                 method=request.method,
                 url=api_url,
                 headers=headers,
-                json=data if data else None,
+                json=json_data if json_data else None,
+                data=data if data and not json_data else None,
+                files=files,
                 params=params,
                 cookies=cookies,
                 timeout=30
@@ -265,7 +285,9 @@ class APIProxyView(View):
                                 method=request.method,
                                 url=api_url,
                                 headers=headers,
-                                json=data if data else None,
+                                json=json_data if json_data else None,
+                                data=data if data and not json_data else None,
+                                files=files,
                                 params=params,
                                 cookies=cookies,
                                 timeout=30

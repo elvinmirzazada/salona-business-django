@@ -71,6 +71,29 @@
                                 </div>
                                 <div class="card-body">
                                     <form id="profile-form">
+                                        <!-- Profile Photo Section -->
+                                        <div class="form-group profile-photo-section">
+                                            <label>{% trans "Profile Photo" %}</label>
+                                            <div class="profile-photo-container">
+                                                <div class="profile-photo-preview" id="profile-photo-preview">
+                                                    <img id="profile-photo-img" src="" alt="Profile Photo" style="display: none;">
+                                                    <div class="profile-photo-placeholder" id="profile-photo-placeholder">
+                                                        <i class="fas fa-user"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="profile-photo-actions">
+                                                    <input type="file" id="profile-photo-input" accept="image/*" style="display: none;">
+                                                    <button type="button" class="btn-secondary" id="upload-photo-btn">
+                                                        <i class="fas fa-upload"></i> {% trans "Upload Photo" %}
+                                                    </button>
+                                                    <button type="button" class="btn-danger" id="remove-photo-btn" style="display: none;">
+                                                        <i class="fas fa-trash"></i> {% trans "Remove" %}
+                                                    </button>
+                                                    <small class="form-text text-muted">{% trans "Recommended: Square image, at least 200x200px" %}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <div class="form-group">
                                             <label for="profile-first-name">{% trans "First Name" %}</label>
                                             <input type="text" id="profile-first-name" name="first-name" required>
@@ -86,6 +109,27 @@
                                         <div class="form-group">
                                             <label for="profile-phone">{% trans "Phone Number" %}</label>
                                             <input type="tel" id="profile-phone" name="phone">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="profile-languages">{% trans "Languages" %}</label>
+                                            <div class="language-select-wrapper">
+                                                <div class="language-search-container">
+                                                    <input type="text" id="language-search" class="language-search-input" placeholder="{% trans 'Search languages...' %}" autocomplete="off" aria-label="{% trans 'Search languages' %}">
+                                                    <i class="fas fa-search search-icon"></i>
+                                                </div>
+                                                <div class="language-dropdown" id="language-dropdown" style="display: none;">
+                                                    <!-- Language options will be populated by JavaScript -->
+                                                </div>
+                                                <div class="selected-languages" id="selected-languages">
+                                                    <!-- Selected language chips will appear here -->
+                                                </div>
+                                                <input type="hidden" id="profile-languages" name="languages">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="profile-position">{% trans "Position" %}</label>
+                                            <input type="text" id="profile-position" name="position" maxlength="250" placeholder="{% trans 'e.g., Stylist, Hairdresser...' %}">
+                                            <small class="form-text text-muted">{% trans "Maximum 250 characters" %}</small>
                                         </div>
                                         <div class="form-actions">
                                             <button type="submit" class="btn-primary">{% trans "Save Profile" %}</button>

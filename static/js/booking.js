@@ -361,7 +361,7 @@ function renderServices(category) {
                             </div>
                             ${descriptionHTML}
                             <div class="service-meta">
-                                <div class="service-duration">⏱ ${service.duration} min</div>
+                                <div class=d"service-duration">⏱ ${service.duration} min</div>
                                 <div class="service-price">€${price}</div>
                             </div>
                         `;
@@ -481,15 +481,35 @@ function renderStaff() {
     staffMap.forEach(staff => {
         const fullName = `${staff.first_name || ''} ${staff.last_name || ''}`.trim();
         const initials = (staff.first_name?.[0] || '') + (staff.last_name?.[0] || '');
+        const position = staff.position || 'Specialist';
+        const languages = staff.languages || '';
+
+        // Build staff avatar - use profile photo if available, otherwise show initials
+        let avatarHTML;
+        if (staff.profile_photo_url) {
+            avatarHTML = `<div class="staff-avatar"><img src="${staff.profile_photo_url}" alt="${fullName}" class="staff-avatar-img" /></div>`;
+        } else {
+            avatarHTML = `<div class="staff-avatar">${initials || '👤'}</div>`;
+        }
+
+        // Build staff info HTML with position and languages
+        let staffInfoHTML = `
+            ${avatarHTML}
+            <div class="staff-name">${fullName || 'Professional'}</div>
+            <div class="staff-role">${position}</div>
+        `;
+
+        // Add languages if available
+        if (languages) {
+            const languageList = languages.split(',').map(lang => lang.trim()).slice(0, 3); // Show max 3 languages
+            const languageBadges = languageList.map(lang => `<span class="language-badge">${lang}</span>`).join('');
+            staffInfoHTML += `<div class="staff-languages">${languageBadges}</div>`;
+        }
 
         const card = document.createElement('div');
         card.className = 'staff-card';
         card.dataset.id = staff.id;
-        card.innerHTML = `
-            <div class="staff-avatar">${initials || '👤'}</div>
-            <div class="staff-name">${fullName || 'Professional'}</div>
-            <div class="staff-role">Specialist</div>
-        `;
+        card.innerHTML = staffInfoHTML;
         card.addEventListener('click', () => selectStaff(staff.id, fullName));
         grid.appendChild(card);
     });
