@@ -349,19 +349,27 @@ function renderServices(category) {
                         card.dataset.price = price;
                         card.dataset.duration = service.duration;
 
+                        // Build image HTML if image_url exists
+                        const imageHTML = service.image_url
+                            ? `<div class="service-image">
+                                <img src="${service.image_url}" alt="${service.name}" onerror="this.parentElement.style.display='none'">
+                               </div>`
+                            : '';
+
                         // Build description HTML if additional_info exists
                         const descriptionHTML = service.additional_info && service.additional_info.trim()
                             ? `<div class="service-description">${service.additional_info}</div>`
                             : '';
 
                         card.innerHTML = `
+                            ${imageHTML}
                             <div class="service-card-header">
                                 <div class="service-name">${service.name}</div>
                                 <div class="service-checkbox"></div>
                             </div>
                             ${descriptionHTML}
                             <div class="service-meta">
-                                <div class=d"service-duration">⏱ ${service.duration} min</div>
+                                <div class="service-duration">⏱ ${service.duration} min</div>
                                 <div class="service-price">€${price}</div>
                             </div>
                         `;
