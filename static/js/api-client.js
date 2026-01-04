@@ -79,14 +79,22 @@ class APIClient {
      * Make a request with proper error handling and token refresh
      */
     async request(url, options = {}) {
+        // Check if body is FormData - if so, don't set any headers
+        const isFormData = options.body instanceof FormData;
+
         const config = {
             credentials: 'include', // Always include cookies
-            headers: {
-                ...this.defaultHeaders,
-                ...options.headers
-            },
             ...options
         };
+
+        // Only set headers if NOT FormData
+        // For FormData, browser must set Content-Type with boundary automatically
+        if (!isFormData) {
+            config.headers = {
+                ...this.defaultHeaders,
+                ...options.headers
+            };
+        }
 
         try {
             const response = await fetch(url, config);
@@ -375,16 +383,22 @@ class APIClient {
     }
 
     async createService(serviceData) {
+        // Check if serviceData is FormData (for file uploads)
+        const isFormData = serviceData instanceof FormData;
+
         return this.request('/users/api/v1/services', {
             method: 'POST',
-            body: JSON.stringify(serviceData)
+            body: isFormData ? serviceData : JSON.stringify(serviceData)
         });
     }
 
     async updateService(serviceId, serviceData) {
+        // Check if serviceData is FormData (for file uploads)
+        const isFormData = serviceData instanceof FormData;
+
         return this.request(`/users/api/v1/services/service/${serviceId}`, {
             method: 'PUT',
-            body: JSON.stringify(serviceData)
+            body: isFormData ? serviceData : JSON.stringify(serviceData)
         });
     }
 

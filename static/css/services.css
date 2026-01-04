@@ -1771,3 +1771,87 @@ table.dataTable thead .sorting_desc:after {
         margin-bottom: 10px;
     }
 }
+
+/* ========================================
+   Image Upload Component
+   ======================================== */
+
+.image-upload-container {
+    display: flex;
+    flex-direction: inherit;
+    gap: 12px;
+}
+
+.image-preview-wrapper {
+    width: 100%;
+    /*max-width: 400px;*/
+}
+
+.image-preview {
+    width: 100%;
+    min-height: 200px;
+    max-height: 300px;
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #f9fafb;
+    overflow: hidden;
+}
+
+.image-preview:hover {
+    border-color: #4F46E5;
+    background: #f8f9ff;
+}
+
+.image-preview i {
+    font-size: 48px;
+    color: #9ca3af;
+}
+
+.image-preview span {
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.image-preview.has-image {
+    border-style: solid;
+    border-color: #4F46E5;
+    padding: 0;
+}
+
+/* Image upload buttons */
+.image-upload-container .btn-secondary,
+.image-upload-container .btn-danger {
+    width: auto;
+    align-self: flex-start;
+}
+
+@media (max-width: 768px) {
+    .image-preview {
+        min-height: 150px;
+        max-height: 200px;
+    }
+
+    .image-preview i {
+        font-size: 36px;
+    }
+
+    .image-preview span {
+        font-size: 13px;
+    }
+}
+

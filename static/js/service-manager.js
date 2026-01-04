@@ -379,6 +379,12 @@ class ServiceManager {
         const closeBtn = modal?.querySelector('.close-modal');
         const createCategoryBtn = document.getElementById('create-category-from-service-btn');
 
+        // Image upload elements
+        const imageInput = document.getElementById('service-image');
+        const uploadBtn = document.getElementById('upload-image-btn');
+        const removeBtn = document.getElementById('remove-image-btn');
+        const imagePreview = document.getElementById('image-preview');
+
         if (addBtn) {
             addBtn.addEventListener('click', () => this.showServiceModal());
         }
@@ -409,6 +415,37 @@ class ServiceManager {
                 setTimeout(() => {
                     this.showCategoryModal();
                 }, 100);
+            });
+        }
+
+        // Image upload handlers
+        if (uploadBtn && imageInput) {
+            uploadBtn.addEventListener('click', () => {
+                imageInput.click();
+            });
+        }
+
+        if (imagePreview && imageInput) {
+            imagePreview.addEventListener('click', () => {
+                imageInput.click();
+            });
+        }
+
+        if (imageInput) {
+            imageInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    this.handleImagePreview(file);
+                    if (removeBtn) removeBtn.style.display = 'inline-flex';
+                }
+            });
+        }
+
+        if (removeBtn) {
+            removeBtn.addEventListener('click', () => {
+                this.clearImagePreview();
+                if (imageInput) imageInput.value = '';
+                removeBtn.style.display = 'none';
             });
         }
 
@@ -614,6 +651,20 @@ class ServiceManager {
                         checkbox.checked = true;
                     }
                 });
+
+                // Show existing image if available
+                if (this.currentService.image_url) {
+                    const imagePreview = document.getElementById('image-preview');
+                    const removeBtn = document.getElementById('remove-image-btn');
+                    if (imagePreview) {
+                        imagePreview.innerHTML = `<img src="${this.currentService.image_url}" alt="Service image" />`;
+                    }
+                    if (removeBtn) {
+                        removeBtn.style.display = 'inline-flex';
+                    }
+                } else {
+                    this.clearImagePreview();
+                }
             }
         } else {
             // Create mode
@@ -621,6 +672,7 @@ class ServiceManager {
             if (modalTitle) modalTitle.textContent = this.translations.addService || 'Add Service';
             if (form) form.reset();
             document.getElementById('service-id').value = '';
+            this.clearImagePreview();
         }
 
         modal.classList.add('active');
@@ -634,6 +686,42 @@ class ServiceManager {
         if (modal) {
             modal.classList.remove('active');
             this.currentService = null;
+            this.clearImagePreview();
+        }
+    }
+
+    /**
+     * Handle image preview
+     */
+    handleImagePreview(file) {
+        const imagePreview = document.getElementById('image-preview');
+        if (!imagePreview) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            imagePreview.innerHTML = `<img src="${e.target.result}" alt="Service preview" />`;
+            imagePreview.classList.add('has-image');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    /**
+     * Clear image preview
+     */
+    clearImagePreview() {
+        const imagePreview = document.getElementById('image-preview');
+        const removeBtn = document.getElementById('remove-image-btn');
+
+        if (imagePreview) {
+            imagePreview.innerHTML = `
+                <i class="fas fa-image"></i>
+                <span>Click to upload image</span>
+            `;
+            imagePreview.classList.remove('has-image');
+        }
+
+        if (removeBtn) {
+            removeBtn.style.display = 'none';
         }
     }
 
@@ -655,8 +743,13 @@ class ServiceManager {
         const staffCheckboxes = document.querySelectorAll('#staff-selection input[type="checkbox"]:checked');
         const staffIds = Array.from(staffCheckboxes).map(cb => cb.value);
 
-        // Build service data according to API specification
-        const serviceData = {
+        const serviceImage = document.getElementById('service-image');
+
+        // Check if we have an image file to upload
+        const hasImageFile = serviceImage && serviceImage.files && serviceImage.files.length > 0;
+
+        // Build service data object (for Pydantic model)
+        const serviceDataObj = {
             name: name,
             duration: duration,
             price: price,
@@ -668,6 +761,26 @@ class ServiceManager {
             category_id: categoryId,
             staff_ids: staffIds
         };
+
+        let serviceData;
+
+        if (hasImageFile) {
+            // Use FormData when we have an image file
+            // FastAPI expects 'service_in' as a form field containing JSON
+            serviceData = new FormData();
+
+            // Send service data as JSON string in 'service_in' field
+            // FastAPI will parse this into CategoryServiceCreate Pydantic model
+            const jsonString = JSON.stringify(serviceDataObj);
+            serviceData.append('service_in', jsonString);
+
+            // Add the image file with the key 'image'
+            serviceData.append('image', serviceImage.files[0]);
+
+        } else {
+            // Use JSON when no image file
+            serviceData = serviceDataObj;
+        }
 
         try {
             // Show loading overlay

@@ -196,14 +196,24 @@ class APIProxyView(View):
     def forward_request(self, request, path, retry_count=0):
         """Forward the request to the external API"""
         api_url = self.get_api_url(path)
-        
+
+        # Check for multipart BEFORE accessing request.body/POST/FILES
+        # Accessing body will prevent POST/FILES from being parsed!
+        content_type = request.META.get('CONTENT_TYPE', '')
+        is_multipart = 'multipart/form-data' in content_type
+
+        # Only access POST/FILES after we know it's multipart
+        if is_multipart:
+            if request.POST:
+                for key in request.POST.keys():
+                    value = request.POST.get(key)
+
         # Prepare headers - don't set Content-Type for multipart/form-data (file uploads)
         headers = {
             'Accept': 'application/json',
         }
-        
+
         # Only set Content-Type for JSON requests
-        is_multipart = request.content_type and 'multipart/form-data' in request.content_type
         if not is_multipart:
             headers['Content-Type'] = 'application/json'
 
@@ -228,16 +238,42 @@ class APIProxyView(View):
 
         if request.method in ['POST', 'PUT', 'PATCH']:
             if is_multipart:
-                # Handle multipart/form-data (file uploads)
-                data = request.POST.dict() if request.POST else {}
-                # Convert datetime parameters to UTC
-                data = self.ensure_utc_params(data)
+                # Django only auto-parses multipart for POST, not PUT/PATCH
+                # We need to manually parse for PUT/PATCH
+                if request.method == 'POST':
+                    # For POST, Django auto-parses
+                    data = request.POST.dict() if request.POST else {}
+                    data = self.ensure_utc_params(data)
 
-                # Handle files
-                if request.FILES:
-                    files = {}
-                    for key, file_obj in request.FILES.items():
-                        files[key] = (file_obj.name, file_obj.read(), file_obj.content_type)
+                    if request.FILES:
+                        files = {}
+                        for key, file_obj in request.FILES.items():
+                            files[key] = (file_obj.name, file_obj.read(), file_obj.content_type)
+                    else:
+                        files = None
+                else:
+                    # For PUT/PATCH, manually parse multipart data
+                    from django.http.multipartparser import MultiPartParser
+
+                    try:
+                        parser = MultiPartParser(request.META, request, request.upload_handlers)
+                        post_data, files_data = parser.parse()
+
+                        # Convert QueryDict to regular dict
+                        data = dict(post_data.items()) if post_data else {}
+                        data = self.ensure_utc_params(data)
+
+                        # Convert uploaded files
+                        if files_data:
+                            files = {}
+                            for key, file_obj in files_data.items():
+                                files[key] = (file_obj.name, file_obj.read(), file_obj.content_type)
+                        else:
+                            files = None
+
+                    except Exception as e:
+                        data = {}
+                        files = None
             elif request.content_type == 'application/json':
                 try:
                     json_data = json.loads(request.body)

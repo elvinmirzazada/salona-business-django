@@ -217,6 +217,26 @@
                         <textarea id="service-description" name="service-description" rows="3"></textarea>
                     </div>
                     <div class="form-group">
+                        <label for="service-image">{% trans "Service Image (optional)" %}</label>
+                        <div class="image-upload-container">
+                            <input type="file" id="service-image" name="service-image" accept="image/*" style="display: none;">
+                            <div class="image-preview-wrapper">
+                                <div id="image-preview" class="image-preview">
+                                    <i class="fas fa-image"></i>
+                                    <span>{% trans "Click to upload image" %}</span>
+                                </div>
+                            </div>
+                            <button type="button" id="upload-image-btn" class="btn-secondary">
+                                <i class="fas fa-upload"></i>
+                                {% trans "Choose Image" %}
+                            </button>
+                            <button type="button" id="remove-image-btn" class="btn-danger" style="display: none;">
+                                <i class="fas fa-times"></i>
+                                {% trans "Remove" %}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label>{% trans "Staff who perform this service" %}</label>
                         <div id="staff-selection" class="checkbox-group">
                             <!-- Staff checkboxes will be loaded here dynamically -->
