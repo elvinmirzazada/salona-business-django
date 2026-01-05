@@ -433,7 +433,7 @@
     text-align: center;
     border-bottom: 2px solid #dee2e6;
     font-weight: 600;
-    min-height: 80px;
+    min-height: 100px;
     display: flex;
     flex-direction: column;
     justify-content: center;

@@ -183,6 +183,123 @@
                             <option value="admin">{% trans "Admin" %}</option>
                         </select>
                     </div>
+
+                    <!-- Staff Availability Section -->
+                    <div class="form-group availability-section">
+                        <label class="form-label">
+                            <i class="fas fa-calendar-alt"></i>
+                            {% trans "Weekly Availability" %}
+                        </label>
+                        <p class="availability-subtitle">{% trans "Set the working hours for this staff member" %}</p>
+
+                        <div class="availability-list" id="availability-list">
+                            <!-- Monday -->
+                            <div class="availability-day" data-day="0">
+                                <div class="day-header">
+                                    <div class="day-info">
+                                        <input type="checkbox" id="day-0-enabled" class="day-toggle" checked>
+                                        <label for="day-0-enabled" class="day-name">{% trans "Monday" %}</label>
+                                    </div>
+                                    <div class="time-inputs">
+                                        <input type="time" class="time-input start-time" value="09:00" data-day="0">
+                                        <span class="time-separator">-</span>
+                                        <input type="time" class="time-input end-time" value="17:00" data-day="0">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tuesday -->
+                            <div class="availability-day" data-day="1">
+                                <div class="day-header">
+                                    <div class="day-info">
+                                        <input type="checkbox" id="day-1-enabled" class="day-toggle" checked>
+                                        <label for="day-1-enabled" class="day-name">{% trans "Tuesday" %}</label>
+                                    </div>
+                                    <div class="time-inputs">
+                                        <input type="time" class="time-input start-time" value="09:00" data-day="1">
+                                        <span class="time-separator">-</span>
+                                        <input type="time" class="time-input end-time" value="17:00" data-day="1">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Wednesday -->
+                            <div class="availability-day" data-day="2">
+                                <div class="day-header">
+                                    <div class="day-info">
+                                        <input type="checkbox" id="day-2-enabled" class="day-toggle" checked>
+                                        <label for="day-2-enabled" class="day-name">{% trans "Wednesday" %}</label>
+                                    </div>
+                                    <div class="time-inputs">
+                                        <input type="time" class="time-input start-time" value="09:00" data-day="2">
+                                        <span class="time-separator">-</span>
+                                        <input type="time" class="time-input end-time" value="17:00" data-day="2">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Thursday -->
+                            <div class="availability-day" data-day="3">
+                                <div class="day-header">
+                                    <div class="day-info">
+                                        <input type="checkbox" id="day-3-enabled" class="day-toggle" checked>
+                                        <label for="day-3-enabled" class="day-name">{% trans "Thursday" %}</label>
+                                    </div>
+                                    <div class="time-inputs">
+                                        <input type="time" class="time-input start-time" value="09:00" data-day="3">
+                                        <span class="time-separator">-</span>
+                                        <input type="time" class="time-input end-time" value="17:00" data-day="3">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Friday -->
+                            <div class="availability-day" data-day="4">
+                                <div class="day-header">
+                                    <div class="day-info">
+                                        <input type="checkbox" id="day-4-enabled" class="day-toggle" checked>
+                                        <label for="day-4-enabled" class="day-name">{% trans "Friday" %}</label>
+                                    </div>
+                                    <div class="time-inputs">
+                                        <input type="time" class="time-input start-time" value="09:00" data-day="4">
+                                        <span class="time-separator">-</span>
+                                        <input type="time" class="time-input end-time" value="17:00" data-day="4">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Saturday -->
+                            <div class="availability-day" data-day="5">
+                                <div class="day-header">
+                                    <div class="day-info">
+                                        <input type="checkbox" id="day-5-enabled" class="day-toggle">
+                                        <label for="day-5-enabled" class="day-name">{% trans "Saturday" %}</label>
+                                    </div>
+                                    <div class="time-inputs">
+                                        <input type="time" class="time-input start-time" value="10:00" data-day="5" disabled>
+                                        <span class="time-separator">-</span>
+                                        <input type="time" class="time-input end-time" value="14:00" data-day="5" disabled>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sunday -->
+                            <div class="availability-day" data-day="6">
+                                <div class="day-header">
+                                    <div class="day-info">
+                                        <input type="checkbox" id="day-6-enabled" class="day-toggle">
+                                        <label for="day-6-enabled" class="day-name">{% trans "Sunday" %}</label>
+                                    </div>
+                                    <div class="time-inputs">
+                                        <input type="time" class="time-input start-time" value="10:00" data-day="6" disabled>
+                                        <span class="time-separator">-</span>
+                                        <input type="time" class="time-input end-time" value="14:00" data-day="6" disabled>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="modal-actions">
                         <button type="button" class="btn-secondary" onclick="closeModal()">{% trans "Cancel" %}</button>
                         <button type="submit" class="btn-primary" id="submit-btn">{% trans "Invite team member" %}</button>

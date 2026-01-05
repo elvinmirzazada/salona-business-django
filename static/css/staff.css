@@ -491,3 +491,173 @@
     opacity: 0.6;
     pointer-events: none;
 }
+
+/* Staff Availability Section Styles */
+.availability-section {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.availability-section .form-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.availability-section .form-label i {
+    color: #16a085;
+}
+
+.availability-subtitle {
+    color: #6B7280;
+    font-size: 13px;
+    margin: 0 0 16px 0;
+}
+
+.availability-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.availability-day {
+    background: rgba(249, 250, 251, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+    padding: 12px 16px;
+    transition: all 0.3s ease;
+}
+
+.availability-day:hover {
+    background: rgba(249, 250, 251, 1);
+    border-color: rgba(22, 160, 133, 0.3);
+}
+
+.day-header {
+    display: flex;
+    /*justify-content: space-between;*/
+    align-items: center;
+    gap: 16px;
+}
+
+.day-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 120px;
+    padding-top: 10px;
+}
+
+.day-toggle {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #16a085;
+}
+
+.day-name {
+    font-weight: 500;
+    color: #374151;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+    margin: 0;
+}
+
+.time-inputs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    justify-content: flex-end;
+    padding-bottom: 10px;
+}
+
+.time-input {
+    padding: 8px 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    font-size: 13px;
+    background: white;
+    transition: all 0.3s ease;
+    width: 110px;
+    font-family: inherit;
+}
+
+.time-input:focus {
+    outline: none;
+    border-color: #16a085;
+    box-shadow: 0 0 0 2px rgba(22, 160, 133, 0.1);
+}
+
+.time-input:disabled {
+    background: rgba(0, 0, 0, 0.03);
+    color: #9CA3AF;
+    cursor: not-allowed;
+}
+
+.time-separator {
+    color: #9CA3AF;
+    font-weight: 500;
+}
+
+/* Responsive adjustments for availability section */
+@media (max-width: 640px) {
+    .day-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .time-inputs {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .time-input {
+        flex: 1;
+        width: auto;
+    }
+}
+
+/* Modal content adjustment for larger availability section */
+.modal-content {
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    flex-shrink: 0;
+}
+
+.modal-body {
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+}
+
+/* Improve scrollbar styling */
+.modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: rgba(22, 160, 133, 0.3);
+    border-radius: 10px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(22, 160, 133, 0.5);
+}
+

@@ -537,6 +537,114 @@ class StaffManager {
                 }
             });
         }
+
+        // Setup availability day toggles
+        this.setupAvailabilityListeners();
+    }
+
+    /**
+     * Setup availability listeners for day toggles
+     */
+    setupAvailabilityListeners() {
+        const dayToggles = document.querySelectorAll('.day-toggle');
+        dayToggles.forEach(toggle => {
+            toggle.addEventListener('change', (e) => {
+                const day = e.target.id.split('-')[1];
+                const startTime = document.querySelector(`.start-time[data-day="${day}"]`);
+                const endTime = document.querySelector(`.end-time[data-day="${day}"]`);
+
+                if (e.target.checked) {
+                    if (startTime) startTime.disabled = false;
+                    if (endTime) endTime.disabled = false;
+                } else {
+                    if (startTime) startTime.disabled = true;
+                    if (endTime) endTime.disabled = true;
+                }
+            });
+        });
+    }
+
+    /**
+     * Collect availability data from form
+     */
+    collectAvailabilityData() {
+        const availabilities = [];
+
+        for (let day = 0; day < 7; day++) {
+            const dayToggle = document.getElementById(`day-${day}-enabled`);
+            const startTimeInput = document.querySelector(`.start-time[data-day="${day}"]`);
+            const endTimeInput = document.querySelector(`.end-time[data-day="${day}"]`);
+
+            if (dayToggle && startTimeInput && endTimeInput) {
+                const isAvailable = dayToggle.checked;
+
+                availabilities.push({
+                    day_of_week: day,
+                    start_time: startTimeInput.value || '09:00',
+                    end_time: endTimeInput.value || '17:00',
+                    is_available: isAvailable
+                });
+            }
+        }
+
+        return availabilities;
+    }
+
+    /**
+     * Populate availability data in form
+     */
+    populateAvailabilityData(availabilities) {
+        // Reset all days first
+        this.resetAvailabilityFields();
+
+        if (!availabilities || availabilities.length === 0) {
+            return;
+        }
+
+        availabilities.forEach(avail => {
+            const day = avail.day_of_week;
+            const dayToggle = document.getElementById(`day-${day}-enabled`);
+            const startTimeInput = document.querySelector(`.start-time[data-day="${day}"]`);
+            const endTimeInput = document.querySelector(`.end-time[data-day="${day}"]`);
+
+            if (dayToggle && startTimeInput && endTimeInput) {
+                dayToggle.checked = avail.is_available;
+                startTimeInput.value = avail.start_time;
+                endTimeInput.value = avail.end_time;
+                startTimeInput.disabled = !avail.is_available;
+                endTimeInput.disabled = !avail.is_available;
+            }
+        });
+    }
+
+    /**
+     * Reset availability fields to default
+     */
+    resetAvailabilityFields() {
+        // Default working hours: Monday-Friday 9-5, Saturday-Sunday off
+        const defaults = [
+            { day: 0, enabled: true, start: '09:00', end: '17:00' },  // Monday
+            { day: 1, enabled: true, start: '09:00', end: '17:00' },  // Tuesday
+            { day: 2, enabled: true, start: '09:00', end: '17:00' },  // Wednesday
+            { day: 3, enabled: true, start: '09:00', end: '17:00' },  // Thursday
+            { day: 4, enabled: true, start: '09:00', end: '17:00' },  // Friday
+            { day: 5, enabled: false, start: '10:00', end: '14:00' }, // Saturday
+            { day: 6, enabled: false, start: '10:00', end: '14:00' }  // Sunday
+        ];
+
+        defaults.forEach(def => {
+            const dayToggle = document.getElementById(`day-${def.day}-enabled`);
+            const startTimeInput = document.querySelector(`.start-time[data-day="${def.day}"]`);
+            const endTimeInput = document.querySelector(`.end-time[data-day="${def.day}"]`);
+
+            if (dayToggle && startTimeInput && endTimeInput) {
+                dayToggle.checked = def.enabled;
+                startTimeInput.value = def.start;
+                endTimeInput.value = def.end;
+                startTimeInput.disabled = !def.enabled;
+                endTimeInput.disabled = !def.enabled;
+            }
+        });
     }
 
     /**
@@ -558,6 +666,9 @@ class StaffManager {
         // Set default role to 'staff'
         const roleSelect = document.getElementById('role');
         if (roleSelect) roleSelect.value = 'staff';
+
+        // Reset availability to defaults
+        this.resetAvailabilityFields();
 
         this.currentEditingId = null;
         modal.style.display = 'block';
@@ -582,6 +693,13 @@ class StaffManager {
         // Populate form
         document.getElementById('email').value = staff.user.email || '';
         document.getElementById('role').value = staff.role || 'staff';
+
+        // Populate availability data
+        if (staff.user.availabilities && staff.user.availabilities.length > 0) {
+            this.populateAvailabilityData(staff.user.availabilities);
+        } else {
+            this.resetAvailabilityFields();
+        }
 
         if (modalTitle) modalTitle.textContent = this.translations.editStaffMember || 'Edit Staff Member';
         if (submitBtn) submitBtn.textContent = this.translations.updateStaffMember || 'Update Staff Member';
@@ -640,11 +758,15 @@ class StaffManager {
                 return;
             }
 
+            // Collect availability data
+            const availabilities = this.collectAvailabilityData();
+
             // Only handle invitations (no updates)
             if (this.currentEditingId) {
-                // Update existing staff role
+                // Update existing staff role and availability
                 const updateData = {
-                    role: formData.role
+                    role: formData.role,
+                    availabilities: availabilities
                 };
                 const response = await window.api.updateStaff(this.currentEditingId, updateData);
 
@@ -657,7 +779,8 @@ class StaffManager {
                     throw new Error(response?.message || (this.translations.staffUpdateFailed || 'Failed to update staff member'));
                 }
             } else {
-                // Send invitation to new member
+                // Send invitation to new member with availability
+                formData.availabilities = availabilities;
                 const response = await window.api.sendInvitation(formData);
 
                 if (response && response.success !== false) {

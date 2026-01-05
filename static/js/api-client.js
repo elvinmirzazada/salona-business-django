@@ -385,7 +385,7 @@ class APIClient {
     async createService(serviceData) {
         // Check if serviceData is FormData (for file uploads)
         const isFormData = serviceData instanceof FormData;
-
+        
         return this.request('/users/api/v1/services', {
             method: 'POST',
             body: isFormData ? serviceData : JSON.stringify(serviceData)
@@ -395,7 +395,7 @@ class APIClient {
     async updateService(serviceId, serviceData) {
         // Check if serviceData is FormData (for file uploads)
         const isFormData = serviceData instanceof FormData;
-
+        
         return this.request(`/users/api/v1/services/service/${serviceId}`, {
             method: 'PUT',
             body: isFormData ? serviceData : JSON.stringify(serviceData)
