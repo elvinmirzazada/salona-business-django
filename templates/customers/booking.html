@@ -300,7 +300,8 @@
             allServices: [],
             allStaff: [],
             currentMonth: new Date(),
-            availableTimeSlots: []
+            availableTimeSlots: [],
+            monthlyAvailability: {} // Store monthly availability data: { 'YYYY-MM-DD': [time_slots] }
         };
     </script>
     <script src="{% static 'js/booking.js' %}"></script>

@@ -177,8 +177,15 @@ function goToStep(stepNumber) {
         if (stepNumber === 2) {
             renderStaff();
         }
-        if (stepNumber === 3 && bookingState.selectedDate) {
-            fetchAvailableSlots();
+        if (stepNumber === 3) {
+            // Ensure we have monthly availability data
+            if (bookingState.selectedStaff) {
+                fetchMonthlyAvailability();
+            }
+            // If a date is already selected, render its time slots
+            if (bookingState.selectedDate) {
+                renderTimeSlotsForDate(bookingState.selectedDate);
+            }
         }
     }, 300);
 }
@@ -547,10 +554,6 @@ function selectStaff(id, name) {
     updateSummary();
     updateStepButtons();
 
-    // Fetch available slots if date is selected
-    if (bookingState.selectedDate) {
-        fetchAvailableSlots();
-    }
 }
 
 // ========================================
@@ -595,20 +598,39 @@ function renderCalendar() {
         const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         dayElement.dataset.date = dateString;
 
+        // Check if day is in the past
         if (date < today) {
             dayElement.classList.add('disabled');
         } else {
             if (date.toDateString() === today.toDateString()) {
                 dayElement.classList.add('today');
             }
-            if (bookingState.selectedDate === dayElement.dataset.date) {
-                dayElement.classList.add('selected');
+
+            // Check if this day has available time slots
+            const hasAvailability = checkDayHasAvailability(dateString);
+            if (!hasAvailability) {
+                dayElement.classList.add('disabled');
+            } else {
+                // Only add click listener if day has availability
+                if (bookingState.selectedDate === dateString) {
+                    dayElement.classList.add('selected');
+                }
+                dayElement.addEventListener('click', () => selectDate(dateString));
             }
-            dayElement.addEventListener('click', () => selectDate(dayElement.dataset.date));
         }
 
         grid.appendChild(dayElement);
     }
+}
+
+// Check if a specific day has available time slots
+function checkDayHasAvailability(dateString) {
+    if (!bookingState.monthlyAvailability || !bookingState.monthlyAvailability[dateString]) {
+        return false;
+    }
+
+    const daySlots = bookingState.monthlyAvailability[dateString];
+    return daySlots && daySlots.length > 0;
 }
 
 // Select date
@@ -627,110 +649,199 @@ function selectDate(date) {
     updateSummary();
     updateStepButtons();
 
-    // Fetch available time slots
-    if (bookingState.selectedStaff) {
-        fetchAvailableSlots();
-    }
+    // Render time slots from cached monthly availability
+    renderTimeSlotsForDate(date);
 }
 
 // ========================================
 // Time Slot Selection
 // ========================================
 
-// Fetch available time slots
-async function fetchAvailableSlots() {
-    const slotsGrid = document.getElementById('time-slots-grid');
-    slotsGrid.innerHTML = '<div class="loading">Loading available times...</div>';
+// Fetch monthly availability data
+async function fetchMonthlyAvailability() {
+    // Show loading state on calendar
+    showCalendarLoading();
 
     try {
         const apiUrl = window.API_BASE_URL;
         const staffId = bookingState.selectedStaff.id;
-        const dateFrom = bookingState.selectedDate;
+
+        // Get the first day of the current month
+        const year = bookingState.currentMonth.getFullYear();
+        const month = bookingState.currentMonth.getMonth();
+        const dateFrom = `${year}-${String(month + 1).padStart(2, '0')}-01`;
 
         let url, response, data;
 
         // Call different endpoint based on staff selection
         if (staffId === 'any') {
             // Call company-level availabilities endpoint for "any" staff
-            url = `${apiUrl}/api/v1/companies/${bookingState.companyId}/availabilities?date_from=${dateFrom}&availability_type=daily`;
+            url = `${apiUrl}/api/v1/companies/${bookingState.companyId}/availabilities?date_from=${dateFrom}&availability_type=monthly`;
         } else {
             // Call user-specific availability endpoint
-            url = `${apiUrl}/api/v1/companies/${bookingState.companyId}/users/${staffId}/availability?date_from=${dateFrom}&availability_type=daily`;
+            url = `${apiUrl}/api/v1/companies/${bookingState.companyId}/users/${staffId}/availability?date_from=${dateFrom}&availability_type=monthly`;
         }
 
-        console.log('Fetching availability from:', url);
+        console.log('Fetching monthly availability from:', url);
         response = await fetch(url);
         data = await response.json();
-        console.log('Availability response:', data);
+        console.log('Monthly availability response:', data);
 
         if (data.success && data.data) {
-            let allTimeSlots = [];
+            // Process the monthly data and store in bookingState
+            processMonthlyAvailability(data.data, staffId);
 
-            // Handle different response structures
-            if (staffId === 'any') {
-                // For "any" staff, data is an array of user availabilities
-                console.log('Processing array of availabilities for "any" staff');
+            // Re-render the calendar with availability information
+            renderCalendar();
 
-                if (Array.isArray(data.data) && data.data.length > 0) {
-                    // Merge all time slots from all available staff
-                    data.data.forEach(userAvailability => {
-                        if (userAvailability.daily && userAvailability.daily.time_slots) {
-                            allTimeSlots.push(...userAvailability.daily.time_slots);
-                        }
-                    });
-                    console.log('Merged time slots from all staff:', allTimeSlots);
-                } else {
-                    console.log('No staff availabilities found in array');
-                }
-            } else {
-                // For specific staff, data is a single object
-                console.log('Processing single staff availability');
-                const dailyData = data.data.daily;
-
-                if (dailyData && dailyData.time_slots) {
-                    allTimeSlots = dailyData.time_slots;
-                }
-            }
-
-            console.log('All time slots:', allTimeSlots);
-
-            // Check if we have any time slots
-            if (allTimeSlots.length === 0) {
-                console.log('No time slots available');
-                slotsGrid.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📅</div>
-                        <div>No times available for this date</div>
-                        <div style="font-size: 14px; color: #6B7280; margin-top: 8px;">Please select a different date</div>
-                    </div>`;
-            } else {
-                // Convert time ranges to 30-minute slots
-                const slots = convertTimeRangesToSlots(allTimeSlots);
-                console.log('Converted slots:', slots);
-                bookingState.availableTimeSlots = slots;
-
-                if (slots.length === 0) {
-                    slotsGrid.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">📅</div>
-                            <div>No times available for this date</div>
-                            <div style="font-size: 14px; color: #6B7280; margin-top: 8px;">Please select a different date</div>
-                        </div>`;
-                } else {
-                    renderTimeSlots(slots);
-                }
+            // If a date is already selected, render its time slots
+            if (bookingState.selectedDate) {
+                renderTimeSlotsForDate(bookingState.selectedDate);
             }
         } else {
             console.error('Invalid response format:', data);
-            throw new Error('Invalid response format');
+            bookingState.monthlyAvailability = {};
+            renderCalendar();
         }
     } catch (error) {
-        console.error('Error fetching time slots:', error);
+        console.error('Error fetching monthly availability:', error);
+        bookingState.monthlyAvailability = {};
+        renderCalendar();
+        showToast('Failed to load availability data', 'error');
+    } finally {
+        // Hide loading state
+        hideCalendarLoading();
+    }
+}
+
+// Show loading state on calendar
+function showCalendarLoading() {
+    const calendarGrid = document.getElementById('calendar-grid');
+    if (calendarGrid) {
+        calendarGrid.classList.add('calendar-loading');
+    }
+}
+
+// Hide loading state on calendar
+function hideCalendarLoading() {
+    const calendarGrid = document.getElementById('calendar-grid');
+    if (calendarGrid) {
+        calendarGrid.classList.remove('calendar-loading');
+    }
+}
+
+// Process monthly availability data
+function processMonthlyAvailability(data, staffId) {
+    const availability = {};
+
+    if (staffId === 'any') {
+        // For "any" staff, data is an array of user availabilities
+        console.log('Processing array of availabilities for "any" staff');
+
+        if (Array.isArray(data) && data.length > 0) {
+            // Merge all time slots from all available staff by date
+            data.forEach(userAvailability => {
+                if (userAvailability.monthly && userAvailability.monthly.weekly_slots) {
+                    // Process the new nested structure: weekly_slots -> daily_slots
+                    userAvailability.monthly.weekly_slots.forEach(week => {
+                        if (week.daily_slots && Array.isArray(week.daily_slots)) {
+                            week.daily_slots.forEach(daySlot => {
+                                if (daySlot.date && daySlot.time_slots && daySlot.time_slots.length > 0) {
+                                    if (!availability[daySlot.date]) {
+                                        availability[daySlot.date] = [];
+                                    }
+                                    availability[daySlot.date].push(...daySlot.time_slots);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Remove duplicate time slots for each date
+            Object.keys(availability).forEach(date => {
+                const uniqueSlots = Array.from(new Set(availability[date].map(slot =>
+                    `${slot.start_time}-${slot.end_time}-${slot.is_available}`
+                ))).map(str => {
+                    const [start_time, end_time, is_available] = str.split('-');
+                    return { start_time, end_time, is_available: is_available === 'true' };
+                });
+                availability[date] = uniqueSlots;
+            });
+
+            console.log('Merged availability by date:', availability);
+        }
+    } else {
+        // For specific staff, data is a single object with monthly property
+        console.log('Processing single staff availability');
+
+        if (data.monthly && data.monthly.weekly_slots) {
+            // Process the new nested structure: weekly_slots -> daily_slots
+            data.monthly.weekly_slots.forEach(week => {
+                if (week.daily_slots && Array.isArray(week.daily_slots)) {
+                    week.daily_slots.forEach(daySlot => {
+                        if (daySlot.date && daySlot.time_slots && daySlot.time_slots.length > 0) {
+                            availability[daySlot.date] = daySlot.time_slots;
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    bookingState.monthlyAvailability = availability;
+    console.log('Processed monthly availability:', bookingState.monthlyAvailability);
+}
+
+// Render time slots for a specific date from cached data
+function renderTimeSlotsForDate(date) {
+    const slotsGrid = document.getElementById('time-slots-grid');
+
+    if (!bookingState.monthlyAvailability || !bookingState.monthlyAvailability[date]) {
         slotsGrid.innerHTML = `
             <div class="empty-state">
-                <div class="empty-state-icon">⚠️</div>
-                <div>Failed to load time slots</div>
+                <div class="empty-state-icon">📅</div>
+                <div>No times available for this date</div>
+                <div style="font-size: 14px; color: #6B7280; margin-top: 8px;">Please select a different date</div>
             </div>`;
+        return;
+    }
+
+    const timeRanges = bookingState.monthlyAvailability[date];
+
+    if (!timeRanges || timeRanges.length === 0) {
+        slotsGrid.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">📅</div>
+                <div>No times available for this date</div>
+                <div style="font-size: 14px; color: #6B7280; margin-top: 8px;">Please select a different date</div>
+            </div>`;
+        return;
+    }
+
+    // Convert time ranges to 30-minute slots
+    const slots = convertTimeRangesToSlots(timeRanges);
+    console.log('Converted slots for', date, ':', slots);
+    bookingState.availableTimeSlots = slots;
+
+    if (slots.length === 0) {
+        slotsGrid.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">📅</div>
+                <div>No times available for this date</div>
+                <div style="font-size: 14px; color: #6B7280; margin-top: 8px;">Please select a different date</div>
+            </div>`;
+    } else {
+        renderTimeSlots(slots);
+    }
+}
+
+// Legacy function - kept for compatibility but now uses monthly data
+async function fetchAvailableSlots() {
+    // This function is now replaced by fetchMonthlyAvailability
+    // Keeping it for any legacy calls
+    if (bookingState.selectedDate) {
+        renderTimeSlotsForDate(bookingState.selectedDate);
     }
 }
 
@@ -887,12 +998,24 @@ function setupEventListeners() {
     // Calendar navigation
     document.getElementById('prev-month').addEventListener('click', () => {
         bookingState.currentMonth.setMonth(bookingState.currentMonth.getMonth() - 1);
-        renderCalendar();
+
+        // Fetch new monthly availability if staff is selected
+        if (bookingState.selectedStaff) {
+            fetchMonthlyAvailability();
+        } else {
+            renderCalendar();
+        }
     });
 
     document.getElementById('next-month').addEventListener('click', () => {
         bookingState.currentMonth.setMonth(bookingState.currentMonth.getMonth() + 1);
-        renderCalendar();
+
+        // Fetch new monthly availability if staff is selected
+        if (bookingState.selectedStaff) {
+            fetchMonthlyAvailability();
+        } else {
+            renderCalendar();
+        }
     });
 
     // Book button
