@@ -1272,6 +1272,7 @@ body {
     position: relative;
     overflow: hidden;
     transform-origin: center;
+    max-height: fit-content;
 }
 
 .service-card::before {
