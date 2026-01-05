@@ -92,6 +92,31 @@
 {#                        <button class="service-tab" data-category="women">Women</button>#}
                     </div>
 
+                    <div class="service-search-container">
+                        <div class="search-input-wrapper">
+                            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
+                            <input
+                                type="text"
+                                class="service-search-input"
+                                id="service-search"
+                                placeholder="Search services..."
+                                autocomplete="off"
+                            >
+                            <button class="search-clear-btn" id="search-clear" style="display: none;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="search-results-count" id="search-results-count" style="display: none;">
+                            <span id="search-results-text">0 services found</span>
+                        </div>
+                    </div>
+
                     <div class="step-content">
                         <div class="services-grid" id="services-grid">
                             <div class="loading">Loading services...</div>
@@ -123,6 +148,31 @@
                         <h2 class="section-title">Select Professional</h2>
                     </div>
                     <p class="section-subtitle">Choose your preferred professional or any available</p>
+
+                    <div class="service-search-container">
+                        <div class="search-input-wrapper">
+                            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
+                            <input
+                                type="text"
+                                class="staff-search-input"
+                                id="staff-search"
+                                placeholder="Search professionals..."
+                                autocomplete="off"
+                            >
+                            <button class="search-clear-btn" id="staff-search-clear" style="display: none;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="search-results-count" id="staff-search-results-count" style="display: none;">
+                            <span id="staff-search-results-text">0 professionals found</span>
+                        </div>
+                    </div>
 
                     <div class="step-content">
                         <div class="staff-grid" id="staff-grid">

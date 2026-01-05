@@ -1252,6 +1252,118 @@ body {
     display: none;
 }
 
+/* Service Search Styles */
+.service-search-container {
+    margin-bottom: 2rem;
+}
+
+.search-input-wrapper {
+    position: relative;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-light);
+    pointer-events: none;
+    z-index: 2;
+}
+
+.service-search-input {
+    width: 100%;
+    padding: 1rem 3rem 1rem 3rem;
+    border: 2px solid rgba(99, 102, 241, 0.2);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    color: var(--text-primary);
+    border-radius: var(--radius-xl);
+    font-size: 1rem;
+    font-weight: 500;
+    transition: var(--transition-base);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.1);
+}
+
+.service-search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1), 0 8px 25px rgba(99, 102, 241, 0.2);
+    background: white;
+}
+
+.service-search-input::placeholder {
+    color: var(--text-light);
+}
+
+.search-clear-btn {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(99, 102, 241, 0.1);
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-base);
+    color: var(--text-secondary);
+    z-index: 2;
+}
+
+.search-clear-btn:hover {
+    background: rgba(99, 102, 241, 0.2);
+    color: var(--primary-color);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.search-results-count {
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.search-results-count span {
+    padding: 0.5rem 1rem;
+    background: rgba(99, 102, 241, 0.08);
+    border-radius: var(--radius-full);
+    display: inline-block;
+}
+
+/* Staff Search Input - Same styling as service search */
+.staff-search-input {
+    width: 100%;
+    padding: 1rem 3rem 1rem 3rem;
+    border: 2px solid rgba(99, 102, 241, 0.2);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    color: var(--text-primary);
+    border-radius: var(--radius-xl);
+    font-size: 1rem;
+    font-weight: 500;
+    transition: var(--transition-base);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.1);
+}
+
+.staff-search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1), 0 8px 25px rgba(99, 102, 241, 0.2);
+    background: white;
+}
+
+.staff-search-input::placeholder {
+    color: var(--text-light);
+}
+
 /* ========================================
    Services Grid - Modern Card Design
    ======================================== */

@@ -108,6 +108,7 @@ async function initializeBooking() {
     await fetchServices();
     renderCalendar();
     setupEventListeners();
+    setupServiceSearch(); // Setup search functionality
 }
 
 // ========================================
@@ -176,6 +177,7 @@ function goToStep(stepNumber) {
         // Load data for the step if needed
         if (stepNumber === 2) {
             renderStaff();
+            setupStaffSearch(); // Setup staff search functionality
         }
         if (stepNumber === 3) {
             // Ensure we have monthly availability data
@@ -355,6 +357,7 @@ function renderServices(category) {
                         card.dataset.id = service.id;
                         card.dataset.price = price;
                         card.dataset.duration = service.duration;
+                        card.dataset.category = cat.name; // Add category name for search
 
                         // Build image HTML if image_url exists
                         const imageHTML = service.image_url
@@ -449,6 +452,207 @@ function updateServiceSelectionCount() {
         textEl.textContent = count === 1 ? 'service selected' : 'services selected';
     } else {
         countEl.style.display = 'none';
+    }
+}
+
+// ========================================
+// Service Search Functionality
+// ========================================
+
+function setupServiceSearch() {
+    const searchInput = document.getElementById('service-search');
+    const clearBtn = document.getElementById('search-clear');
+    const resultsCount = document.getElementById('search-results-count');
+    const resultsText = document.getElementById('search-results-text');
+
+    if (!searchInput) return;
+
+    // Real-time search as user types
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim().toLowerCase();
+
+        // Show/hide clear button
+        clearBtn.style.display = query ? 'flex' : 'none';
+
+        // Filter services
+        filterServices(query);
+
+        // Update results count
+        const visibleCards = document.querySelectorAll('.service-card:not([style*="display: none"])');
+        if (query) {
+            resultsCount.style.display = 'block';
+            resultsText.textContent = `${visibleCards.length} service${visibleCards.length !== 1 ? 's' : ''} found`;
+        } else {
+            resultsCount.style.display = 'none';
+        }
+    });
+
+    // Clear button functionality
+    clearBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        searchInput.focus();
+        clearBtn.style.display = 'none';
+        resultsCount.style.display = 'none';
+        filterServices('');
+    });
+
+    // Clear search when changing category tabs
+    document.querySelector('.service-tabs')?.addEventListener('click', function(e) {
+        if (e.target.classList.contains('service-tab')) {
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+            resultsCount.style.display = 'none';
+        }
+    });
+}
+
+function filterServices(query) {
+    const serviceCards = document.querySelectorAll('.service-card');
+
+    serviceCards.forEach(card => {
+        if (!query) {
+            // Show all services if no query
+            card.style.display = '';
+            return;
+        }
+
+        // Get service data from card
+        const serviceName = card.querySelector('.service-name')?.textContent.toLowerCase() || '';
+        const serviceDescription = card.querySelector('.service-description')?.textContent.toLowerCase() || '';
+        const categoryName = card.dataset.category?.toLowerCase() || '';
+
+        // Check if query matches name, description, or category
+        const matches = serviceName.includes(query) ||
+                       serviceDescription.includes(query) ||
+                       categoryName.includes(query);
+
+        // Show/hide card with animation
+        if (matches) {
+            card.style.display = '';
+            card.style.animation = 'fadeInUp 0.3s ease-out';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    // Show empty state if no results
+    const visibleCards = document.querySelectorAll('.service-card:not([style*="display: none"])');
+    const grid = document.getElementById('services-grid');
+
+    if (visibleCards.length === 0 && query) {
+        const existingEmpty = grid.querySelector('.search-empty-state');
+        if (!existingEmpty) {
+            const emptyState = document.createElement('div');
+            emptyState.className = 'empty-state search-empty-state';
+            emptyState.innerHTML = `
+                <div class="empty-state-icon">🔍</div>
+                <div>No services found for "${query}"</div>
+                <div style="font-size: 14px; color: #6B7280; margin-top: 8px;">Try a different search term</div>
+            `;
+            grid.appendChild(emptyState);
+        }
+    } else {
+        // Remove empty state if it exists
+        const existingEmpty = grid.querySelector('.search-empty-state');
+        if (existingEmpty) {
+            existingEmpty.remove();
+        }
+    }
+}
+
+// ========================================
+// Staff Search Functionality
+// ========================================
+
+function setupStaffSearch() {
+    const searchInput = document.getElementById('staff-search');
+    const clearBtn = document.getElementById('staff-search-clear');
+    const resultsCount = document.getElementById('staff-search-results-count');
+    const resultsText = document.getElementById('staff-search-results-text');
+
+    if (!searchInput) return;
+
+    // Real-time search as user types
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim().toLowerCase();
+
+        // Show/hide clear button
+        clearBtn.style.display = query ? 'flex' : 'none';
+
+        // Filter staff
+        filterStaff(query);
+
+        // Update results count
+        const visibleCards = document.querySelectorAll('.staff-card:not([style*="display: none"])');
+        if (query) {
+            resultsCount.style.display = 'block';
+            resultsText.textContent = `${visibleCards.length} professional${visibleCards.length !== 1 ? 's' : ''} found`;
+        } else {
+            resultsCount.style.display = 'none';
+        }
+    });
+
+    // Clear button functionality
+    clearBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        searchInput.focus();
+        clearBtn.style.display = 'none';
+        resultsCount.style.display = 'none';
+        filterStaff('');
+    });
+}
+
+function filterStaff(query) {
+    const staffCards = document.querySelectorAll('.staff-card');
+
+    staffCards.forEach(card => {
+        if (!query) {
+            // Show all staff if no query
+            card.style.display = '';
+            return;
+        }
+
+        // Get staff data from card
+        const staffName = card.querySelector('.staff-name')?.textContent.toLowerCase() || '';
+        const staffRole = card.querySelector('.staff-role')?.textContent.toLowerCase() || '';
+        const staffLanguages = card.querySelector('.staff-languages')?.textContent.toLowerCase() || '';
+
+        // Check if query matches name, role, or languages
+        const matches = staffName.includes(query) ||
+                       staffRole.includes(query) ||
+                       staffLanguages.includes(query);
+
+        // Show/hide card with animation
+        if (matches) {
+            card.style.display = '';
+            card.style.animation = 'fadeInUp 0.3s ease-out';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    // Show empty state if no results
+    const visibleCards = document.querySelectorAll('.staff-card:not([style*="display: none"])');
+    const grid = document.getElementById('staff-grid');
+
+    if (visibleCards.length === 0 && query) {
+        const existingEmpty = grid.querySelector('.search-empty-state');
+        if (!existingEmpty) {
+            const emptyState = document.createElement('div');
+            emptyState.className = 'empty-state search-empty-state';
+            emptyState.innerHTML = `
+                <div class="empty-state-icon">🔍</div>
+                <div>No professionals found for "${query}"</div>
+                <div style="font-size: 14px; color: #6B7280; margin-top: 8px;">Try a different search term</div>
+            `;
+            grid.appendChild(emptyState);
+        }
+    } else {
+        // Remove empty state if it exists
+        const existingEmpty = grid.querySelector('.search-empty-state');
+        if (existingEmpty) {
+            existingEmpty.remove();
+        }
     }
 }
 
