@@ -971,6 +971,7 @@ body {
 .nav-button.primary:hover:not(:disabled) {
     transform: translateY(-4px);
     box-shadow: 0 15px 40px rgba(99, 102, 241, 0.4);
+    color: white;
 }
 
 .nav-button.primary:disabled {
@@ -2117,6 +2118,10 @@ body {
     animation: pulseSlot 2s ease-in-out infinite;
 }
 
+.time-slot.selected:hover {
+    color: white;
+}
+
 @keyframes pulseSlot {
     0%, 100% {
         box-shadow: 0 12px 30px rgba(99, 102, 241, 0.35);
@@ -2211,6 +2216,88 @@ textarea.form-input {
     resize: vertical;
     font-family: inherit;
     line-height: 1.5;
+}
+
+/* Booking Terms and Conditions Checkbox */
+.booking-terms {
+    margin-top: 1rem;
+}
+
+.booking-checkbox-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    cursor: pointer;
+    position: relative;
+    padding-left: 2rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.booking-checkbox-container input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.booking-checkmark {
+    position: absolute;
+    left: 0;
+    top: 2px;
+    height: 20px;
+    width: 20px;
+    border: 2px solid rgba(99, 102, 241, 0.3);
+    border-radius: 4px;
+    background-color: white;
+    transition: var(--transition-base);
+}
+
+.booking-checkbox-container:hover .booking-checkmark {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.booking-checkbox-container input[type="checkbox"]:checked ~ .booking-checkmark {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-color: var(--primary-color);
+}
+
+.booking-checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.booking-checkbox-container input[type="checkbox"]:checked ~ .booking-checkmark:after {
+    display: block;
+}
+
+.booking-terms-text {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.booking-terms-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition-base);
+}
+
+.booking-terms-link:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
 }
 
 @media (min-width: 640px) {

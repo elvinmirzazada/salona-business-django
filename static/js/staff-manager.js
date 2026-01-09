@@ -757,7 +757,7 @@ class StaffManager {
                 }
                 return;
             }
-
+            
             // Collect availability data
             const availabilities = this.collectAvailabilityData();
 

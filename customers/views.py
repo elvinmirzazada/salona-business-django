@@ -318,3 +318,17 @@ def booking_confirmation(request, company_id):
     }
 
     return render(request, 'customers/booking_confirmation.html', context)
+
+
+def booking_terms(request):
+    """
+    Renders the booking terms and conditions page for customers
+    """
+    return render(request, 'customers/booking_terms.html')
+
+
+def booking_privacy(request):
+    """
+    Renders the privacy policy page for booking customers
+    """
+    return render(request, 'customers/booking_privacy.html')

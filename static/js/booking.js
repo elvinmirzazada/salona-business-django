@@ -246,12 +246,13 @@ function updateBookButton() {
     const lastName = document.getElementById('last-name')?.value.trim() || '';
     const email = document.getElementById('email')?.value.trim() || '';
     const phone = document.getElementById('phone')?.value.trim() || '';
+    const termsAgreed = document.getElementById('terms-agreement')?.checked || false;
 
     const canBook = bookingState.services.length > 0 &&
                    bookingState.selectedStaff &&
                    bookingState.selectedDate &&
                    bookingState.selectedTime &&
-                   firstName && lastName && email && phone;
+                   firstName && lastName && email && phone && termsAgreed;
 
     bookButton.disabled = !canBook;
 }
@@ -1229,6 +1230,25 @@ function setupEventListeners() {
     const formInputs = document.querySelectorAll('#customer-form .form-input');
     formInputs.forEach(input => {
         input.addEventListener('input', updateBookButton);
+    });
+
+    // Terms checkbox validation
+    const termsCheckbox = document.getElementById('terms-agreement');
+    if (termsCheckbox) {
+        termsCheckbox.addEventListener('change', updateBookButton);
+    }
+
+    // Terms and Privacy links - using event delegation
+    document.addEventListener('click', (e) => {
+        if (e.target.id === 'booking-terms-link' || e.target.closest('#booking-terms-link')) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.open('/customers/accept/booking-terms/', '_blank');
+        } else if (e.target.id === 'booking-privacy-link' || e.target.closest('#booking-privacy-link')) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.open('/customers/accept/booking-privacy/', '_blank');
+        }
     });
 }
 

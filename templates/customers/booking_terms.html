@@ -1,0 +1,257 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans "Booking Terms & Conditions" %} - Salona</title>
+    {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'images/salona-icon.png' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            color: #2c3e50;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .legal-document {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 40px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 30px;
+            color: #6366f1;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #4f46e5;
+            transform: translateX(-4px);
+        }
+
+        .legal-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 25px;
+            border-bottom: 3px solid #f0f0f0;
+        }
+
+        .legal-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: #1f2937;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .legal-header .last-updated {
+            color: #6b7280;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .legal-content h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            color: #1f2937;
+            margin-top: 35px;
+            margin-bottom: 18px;
+            font-weight: 600;
+        }
+
+        .legal-content h3 {
+            font-size: 1.25rem;
+            color: #374151;
+            margin-top: 25px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .legal-content p {
+            line-height: 1.8;
+            color: #4b5563;
+            margin-bottom: 16px;
+            font-size: 1rem;
+        }
+
+        .legal-content ul, .legal-content ol {
+            margin: 16px 0;
+            padding-left: 30px;
+        }
+
+        .legal-content li {
+            margin-bottom: 12px;
+            line-height: 1.8;
+            color: #4b5563;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border-left: 4px solid #6366f1;
+            padding: 20px 24px;
+            margin: 24px 0;
+            border-radius: 8px;
+        }
+
+        .highlight-box p {
+            margin: 0;
+            color: #1f2937;
+            font-weight: 500;
+        }
+
+        .contact-info {
+            background: #f9fafb;
+            padding: 24px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        .contact-info h3 {
+            margin-top: 0;
+            color: #1f2937;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .legal-document {
+                padding: 25px 20px;
+                margin: 20px auto;
+            }
+
+            .legal-header h1 {
+                font-size: 2rem;
+            }
+
+            .legal-content h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="legal-document">
+        <a href="javascript:history.back()" class="back-link">
+            <i class="fas fa-arrow-left"></i> {% trans "Back to Booking" %}
+        </a>
+
+        <div class="legal-header">
+            <h1>{% trans "Booking Terms & Conditions" %}</h1>
+            <p class="last-updated">{% trans "Last Updated: January 8, 2026" %}</p>
+        </div>
+
+        <div class="legal-content">
+            <div class="highlight-box">
+                <p><strong>{% trans "Important:" %}</strong> {% trans "By completing a booking through Salona, you agree to these terms and conditions. Please read them carefully before proceeding with your appointment." %}</p>
+            </div>
+
+            <h2>{% trans "1. Booking Acceptance" %}</h2>
+            <p>{% trans "When you make a booking through Salona, you are entering into an agreement with the service provider (salon, spa, or beauty professional). Salona acts as a platform to facilitate this booking but is not directly responsible for the services provided." %}</p>
+
+            <h3>{% trans "1.1 Booking Confirmation" %}</h3>
+            <p>{% trans "You will receive a confirmation email with your booking details once your appointment is successfully scheduled. Please review all details carefully and contact the service provider immediately if any information is incorrect." %}</p>
+
+            <h2>{% trans "2. Cancellation Policy" %}</h2>
+            <p>{% trans "Each service provider sets their own cancellation policy. Generally, the following applies:" %}</p>
+            <ul>
+                <li>{% trans "Cancellations must be made at least 24 hours before your scheduled appointment." %}</li>
+                <li>{% trans "Late cancellations (less than 24 hours notice) may result in a cancellation fee of up to 50% of the service price." %}</li>
+                <li>{% trans "No-shows will be charged the full service price." %}</li>
+                <li>{% trans "The specific cancellation policy of your chosen service provider will be communicated during the booking process." %}</li>
+            </ul>
+
+            <h3>{% trans "2.1 How to Cancel" %}</h3>
+            <p>{% trans "To cancel your appointment, please contact the service provider directly using the contact information provided in your booking confirmation email, or use the cancellation link if available." %}</p>
+
+            <h2>{% trans "3. Payment Terms" %}</h2>
+            <p>{% trans "Payment methods and timing are determined by each service provider:" %}</p>
+            <ul>
+                <li>{% trans "Some providers require advance payment at the time of booking." %}</li>
+                <li>{% trans "Others accept payment upon arrival or after service completion." %}</li>
+                <li>{% trans "All displayed prices include applicable taxes unless otherwise stated." %}</li>
+                <li>{% trans "Service providers may charge additional fees for special requests or premium services." %}</li>
+            </ul>
+
+            <h2>{% trans "4. Late Arrivals" %}</h2>
+            <p>{% trans "We understand that delays happen, but please note:" %}</p>
+            <ul>
+                <li>{% trans "Arriving late may result in a shortened service to accommodate other scheduled appointments." %}</li>
+                <li>{% trans "If you are more than 15 minutes late, your appointment may be cancelled and considered a no-show." %}</li>
+                <li>{% trans "Please contact the service provider immediately if you know you will be late." %}</li>
+            </ul>
+
+            <h2>{% trans "5. Rescheduling" %}</h2>
+            <p>{% trans "If you need to reschedule your appointment:" %}</p>
+            <ul>
+                <li>{% trans "Contact the service provider at least 24 hours in advance when possible." %}</li>
+                <li>{% trans "Rescheduling is subject to availability." %}</li>
+                <li>{% trans "Frequent rescheduling may result in a requirement for advance payment." %}</li>
+            </ul>
+
+            <h2>{% trans "6. Service Quality and Disputes" %}</h2>
+            <p>{% trans "The service provider is responsible for the quality of services rendered. If you are unsatisfied:" %}</p>
+            <ul>
+                <li>{% trans "Speak directly with the service provider at the time of service." %}</li>
+                <li>{% trans "Contact the service provider within 48 hours to discuss any concerns." %}</li>
+                <li>{% trans "If unable to resolve, you may contact Salona support for assistance." %}</li>
+            </ul>
+
+            <h2>{% trans "7. Health and Safety" %}</h2>
+            <p>{% trans "For your safety and the safety of service providers:" %}</p>
+            <ul>
+                <li>{% trans "Inform the service provider of any allergies, medical conditions, or skin sensitivities." %}</li>
+                <li>{% trans "Follow any health and hygiene guidelines provided by the service provider." %}</li>
+                <li>{% trans "If you are feeling unwell, please reschedule your appointment." %}</li>
+            </ul>
+
+            <h2>{% trans "8. Personal Information" %}</h2>
+            <p>{% trans "The information you provide during booking will be shared with your chosen service provider to facilitate your appointment. Your data is protected according to our Privacy Policy. We will not share your information with third parties except as necessary to provide the booking service." %}</p>
+
+            <h2>{% trans "9. Changes to Terms" %}</h2>
+            <p>{% trans "We may update these terms from time to time. Continued use of our booking service after changes are posted constitutes acceptance of the updated terms. Material changes will be communicated via email or notification on our platform." %}</p>
+
+            <h2>{% trans "10. Limitation of Liability" %}</h2>
+            <p>{% trans "Salona provides a booking platform but does not provide the beauty services directly. We are not liable for:" %}</p>
+            <ul>
+                <li>{% trans "Quality of services provided by service providers." %}</li>
+                <li>{% trans "Actions or omissions of service providers." %}</li>
+                <li>{% trans "Injuries or damages occurring during service provision." %}</li>
+                <li>{% trans "Disputes between customers and service providers." %}</li>
+            </ul>
+
+            <div class="contact-info">
+                <h3>{% trans "Questions?" %}</h3>
+                <p>{% trans "If you have questions about these terms, please contact us:" %}</p>
+                <p><strong>{% trans "Email:" %}</strong> support@salona.me</p>
+                <p><strong>{% trans "Website:" %}</strong> <a href="https://salona.me" style="color: #6366f1;">www.salona.me</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
