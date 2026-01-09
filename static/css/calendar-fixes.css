@@ -1,0 +1,216 @@
+/* FullCalendar Style Protection */
+/* This file ensures FullCalendar styles are not overridden by Tailwind */
+
+/* Reset any Tailwind overrides for calendar */
+#fullcalendar * {
+    box-sizing: border-box;
+}
+
+/* Ensure calendar buttons have proper styling */
+.fc .fc-button {
+    padding: 0.4em 0.65em !important;
+    font-size: 1em !important;
+    line-height: 1.5 !important;
+    border-radius: 0.25em !important;
+    font-weight: normal !important;
+}
+
+.fc .fc-button:not(:disabled) {
+    cursor: pointer !important;
+}
+
+/* Ensure calendar toolbar has proper spacing */
+.fc .fc-toolbar {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0 !important;
+    margin-bottom: 1em !important;
+}
+
+.fc .fc-toolbar-title {
+    font-size: 1.75em !important;
+    margin: 0 !important;
+    font-weight: 600 !important;
+}
+
+/* Fix calendar table borders */
+.fc-theme-standard td,
+.fc-theme-standard th {
+    border: 1px solid #ddd !important;
+}
+
+/* Fix calendar header cells */
+.fc-col-header-cell {
+    font-weight: bold !important;
+    padding: 8px 4px !important;
+    background: #f8f9fa !important;
+}
+
+/* Fix day cells */
+.fc-daygrid-day {
+    cursor: pointer !important;
+}
+
+.fc-daygrid-day-top {
+    display: flex !important;
+    flex-direction: row !important;
+    padding: 4px !important;
+}
+
+.fc-daygrid-day-number {
+    padding: 4px !important;
+    font-size: 0.9em !important;
+}
+
+/* Fix event styling */
+.fc-event {
+    border-radius: 3px !important;
+    padding: 2px 4px !important;
+    margin: 1px 2px !important;
+    font-size: 0.85em !important;
+    cursor: pointer !important;
+}
+
+.fc-event-title {
+    font-weight: normal !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+/* Fix time grid styles */
+.fc-timegrid-slot {
+    height: var(--time-slot-height, 36px) !important;
+    border-bottom: 1px solid #ddd !important;
+}
+
+.fc-timegrid-slot-label {
+    border-right: 1px solid #ddd !important;
+    font-size: 0.85em !important;
+    padding: 4px !important;
+    text-align: right !important;
+}
+
+/* Fix scrollbar */
+.fc-scroller {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+/* Fix more link */
+.fc-daygrid-more-link {
+    color: #007bff !important;
+    font-size: 0.85em !important;
+    cursor: pointer !important;
+    text-decoration: underline !important;
+}
+
+/* Fix popover */
+.fc-popover {
+    position: absolute !important;
+    z-index: 9999 !important;
+    background: white !important;
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+}
+
+.fc-popover-header {
+    padding: 8px !important;
+    background: #f8f9fa !important;
+    border-bottom: 1px solid #ddd !important;
+    font-weight: bold !important;
+}
+
+.fc-popover-body {
+    padding: 8px !important;
+}
+
+/* Ensure proper height for calendar container */
+.calendar-container {
+    min-height: 600px;
+    height: auto;
+}
+
+#fullcalendar {
+    height: 100%;
+    min-height: 600px;
+}
+
+/* Fix buttons in button group */
+.fc .fc-button-group {
+    display: inline-flex !important;
+}
+
+.fc .fc-button-group > .fc-button {
+    border-radius: 0 !important;
+    margin: 0 !important;
+}
+
+.fc .fc-button-group > .fc-button:first-child {
+    border-top-left-radius: 0.25em !important;
+    border-bottom-left-radius: 0.25em !important;
+}
+
+.fc .fc-button-group > .fc-button:last-child {
+    border-top-right-radius: 0.25em !important;
+    border-bottom-right-radius: 0.25em !important;
+}
+
+/* Fix disabled state */
+.fc .fc-button:disabled {
+    opacity: 0.65 !important;
+    cursor: not-allowed !important;
+}
+
+/* Fix hover state */
+.fc .fc-button:not(:disabled):hover {
+    background-color: #0069d9 !important;
+}
+
+/* Fix active/pressed state */
+.fc .fc-button:not(:disabled):active,
+.fc .fc-button-active {
+    background-color: #0062cc !important;
+    border-color: #005cbf !important;
+}
+
+/* Fix calendar background */
+.fc {
+    background: white;
+}
+
+/* Fix today highlighting */
+.fc .fc-day-today {
+    background-color: rgba(255, 220, 40, 0.15) !important;
+}
+
+/* Fix non-business hours */
+.fc .fc-non-business {
+    background-color: rgba(215, 215, 215, 0.3) !important;
+}
+
+/* Fix resource timeline if used */
+.fc-timeline-event {
+    border-radius: 3px !important;
+    padding: 2px 4px !important;
+}
+
+/* Ensure text is readable */
+.fc-event-title,
+.fc-event-time {
+    color: inherit !important;
+    text-decoration: none !important;
+}
+
+/* Fix selection */
+.fc .fc-highlight {
+    background: rgba(188, 232, 241, 0.3) !important;
+}
+
+/* Fix license message if present */
+.fc-license-message {
+    display: none !important;
+}
+

@@ -1,0 +1,138 @@
+/* Flowbite Sidebar Overrides for Salona Business */
+
+/* Z-index layering hierarchy */
+.bg-shape {
+    z-index: 0;
+}
+
+.main-content {
+    position: relative;
+    z-index: 10;
+    min-height: 100vh;
+    transition: margin-left 0.3s ease;
+}
+
+#sidebar {
+    z-index: 40;
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Mobile toggle button positioning */
+button[data-drawer-toggle="sidebar"] {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 50;
+    background: rgba(139, 92, 246, 0.9);
+    color: white;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+button[data-drawer-toggle="sidebar"]:hover {
+    background: rgba(139, 92, 246, 1);
+}
+
+/* Hide mobile toggle on desktop */
+@media (min-width: 640px) {
+    button[data-drawer-toggle="sidebar"] {
+        display: none;
+    }
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 640px) {
+    .sm\:ml-64 {
+        margin-left: 0 !important;
+    }
+
+    /* Ensure content doesn't go behind mobile toggle button */
+    .main-content {
+        padding-top: 60px !important;
+    }
+}
+
+/* Override Tailwind's default button styles for existing buttons */
+button:not([data-drawer-toggle]):not([data-collapse-toggle]) {
+    all: unset;
+}
+
+/* Ensure the main content wrapper works with existing styles */
+.sm\:ml-64 .main-content {
+    background: transparent;
+}
+
+/* Fullscreen mode adjustments for Flowbite */
+body:fullscreen #sidebar,
+body:-webkit-full-screen #sidebar,
+body:-moz-full-screen #sidebar,
+body:-ms-fullscreen #sidebar {
+    display: none !important;
+}
+
+body:fullscreen .sm\:ml-64,
+body:-webkit-full-screen .sm\:ml-64,
+body:-moz-full-screen .sm\:ml-64,
+body:-ms-fullscreen .sm\:ml-64 {
+    margin-left: 0 !important;
+}
+
+/* Active navigation styling */
+.nav-link.active {
+    background-color: rgb(126, 34, 206) !important;
+    color: white !important;
+}
+
+.nav-link.active svg {
+    color: white !important;
+}
+
+/* Notification badge styling */
+#notification-count {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: .5;
+    }
+}
+
+/* Language dropdown styling */
+#language-dropdown {
+    padding-left: 1rem;
+}
+
+/* Hover effects for navigation items */
+.nav-link:hover {
+    transform: translateX(4px);
+    transition: all 0.2s ease;
+}
+
+/* Sidebar scrollbar styling */
+#sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+#sidebar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+#sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+#sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Mobile drawer backdrop */
+[data-drawer-backdrop] {
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+

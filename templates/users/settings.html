@@ -14,6 +14,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Flowbite CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css" rel="stylesheet" />
+
+    <!-- Flowbite Overrides -->
+    <link rel="stylesheet" href="{% static 'css/flowbite-overrides.css' %}">
+
 </head>
 <body>
     <!-- 3D Background Shapes -->
@@ -21,20 +30,12 @@
     <div class="bg-shape bg-shape-2"></div>
     <div class="bg-shape bg-shape-3"></div>
 
-    <!-- Mobile Menu Toggle Button -->
-    <button class="mobile-menu-toggle" id="mobile-menu-toggle">
-        <i class="fas fa-bars"></i>
-    </button>
+    <!-- Include reusable sidebar -->
+    {% include 'partials/sidebar.html' %}
 
-    <!-- Sidebar Overlay for Mobile -->
-    <div class="sidebar-overlay" id="sidebar-overlay"></div>
-
-    <div class="app-container">
-        <!-- Include reusable sidebar -->
-        {% include 'partials/sidebar.html' %}
-
-        <!-- Main content area -->
-        <main class="main-content">
+    <!-- Main content area with Flowbite sidebar offset -->
+    <div class="sm:ml-64">
+        <main class="main-content p-4">
             <header class="header">
                 <div class="header-left">
                     <button class="back-button" onclick="window.location.href='/users/dashboard/'">
@@ -500,5 +501,8 @@
     <script src="{% static 'js/api-client.js' %}"></script>
     <script src="{% static 'js/settings.js' %}"></script>
     <script src="{% static 'js/notifications.js' %}"></script>
+
+    <!-- Flowbite JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
 </body>
 </html>
