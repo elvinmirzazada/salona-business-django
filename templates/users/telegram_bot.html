@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% load i18n %}Salona - {% trans "Telegram Bot" %}</title>
+    {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'images/salona-icon.png' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
+    <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
+    <link rel="stylesheet" href="{% static 'css/integrations.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Flowbite CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css" rel="stylesheet" />
+
+    <!-- Flowbite Overrides -->
+    <link rel="stylesheet" href="{% static 'css/flowbite-overrides.css' %}">
+
+</head>
+<body>
+    {% include 'partials/messages.html' %}
+    <!-- 3D Background Shapes -->
+    <div class="bg-shape bg-shape-1"></div>
+    <div class="bg-shape bg-shape-2"></div>
+    <div class="bg-shape bg-shape-3"></div>
+
+    <!-- Include reusable sidebar -->
+    {% include 'partials/sidebar.html' %}
+
+    <!-- Main content area with Flowbite sidebar offset -->
+    <div class="sm:ml-64">
+        <main class="main-content p-4">
+            <header class="header">
+                <div class="header-left">
+                    <button class="back-button" onclick="window.location.href='/users/dashboard/'">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h2 class="page-title">{% trans "Telegram Bot" %}</h2>
+                </div>
+                <div class="header-actions">
+                    {% include 'partials/notification_icon.html' %}
+                    <div class="user-info welcome-message">
+                        <span class="user-name">{% blocktrans with name=user_data.first_name %}Welcome, {{ name }}!{% endblocktrans %}</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Telegram Bot Content -->
+            <div class="content-wrapper">
+                <div class="integration-card">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
+                        <div>
+                            <h3><i class="fab fa-telegram"></i> {% trans "Telegram Bot Configuration" %}</h3>
+                            <p style="color: #666; margin-top: 5px;">
+                                {% trans "Connect your Telegram bot to receive booking notifications and manage appointments." %}
+                            </p>
+                        </div>
+                        <span class="status-badge disconnected">
+                            <i class="fas fa-circle"></i>
+                            {% trans "Not Connected" %}
+                        </span>
+                    </div>
+
+                    <!-- Coming Soon Badge -->
+                    <div class="info-badge warning" style="margin-bottom: 20px;">
+                        <i class="fas fa-info-circle"></i>
+                        {% trans "This feature is currently under development and will be available soon." %}
+                    </div>
+
+                    <div class="telegram-setup">
+                        <div class="setup-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>{% trans "Create a Telegram Bot" %}</h4>
+                                <p>{% blocktrans %}Open Telegram and search for <strong>@BotFather</strong>. Send the command <code>/newbot</code> and follow the instructions to create your bot.{% endblocktrans %}</p>
+                            </div>
+                        </div>
+
+                        <div class="setup-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h4>{% trans "Get Your Bot Token" %}</h4>
+                                <p>{% trans "After creating the bot, BotFather will provide you with an API token. Copy this token." %}</p>
+                            </div>
+                        </div>
+
+                        <div class="setup-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h4>{% trans "Configure Your Bot" %}</h4>
+                                <form class="telegram-form" id="telegram-config-form">
+                                    <div class="form-group">
+                                        <label for="bot-token">{% trans "Bot Token" %}</label>
+                                        <input
+                                            type="text"
+                                            id="bot-token"
+                                            name="bot-token"
+                                            placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz"
+                                            required
+                                            disabled
+                                        >
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="chat-id">{% trans "Chat ID (Optional)" %}</label>
+                                        <input
+                                            type="text"
+                                            id="chat-id"
+                                            name="chat-id"
+                                            placeholder="{% trans 'Your Telegram Chat ID' %}"
+                                            disabled
+                                        >
+                                        <small style="color: #666;">{% trans "Leave empty to receive notifications in bot chat" %}</small>
+                                    </div>
+
+                                    <button type="submit" class="save-button" disabled>
+                                        <i class="fas fa-save"></i> {% trans "Save Configuration" %}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-box" style="margin-top: 30px;">
+                        <p><strong>{% trans "What you'll receive:" %}</strong></p>
+                        <p>• {% trans "Real-time notifications for new bookings" %}</p>
+                        <p>• {% trans "Booking confirmations and cancellations" %}</p>
+                        <p>• {% trans "Daily schedule summaries" %}</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Pass translations to JavaScript
+        window.integrationsTranslations = {
+            connected: "{% trans 'Connected' %}",
+            notConnected: "{% trans 'Not Connected' %}",
+            saving: "{% trans 'Saving...' %}",
+            saved: "{% trans 'Saved!' %}",
+            saveConfiguration: "{% trans 'Save Configuration' %}",
+            enterValidToken: "{% trans 'Please enter a valid bot token' %}",
+            configSavedSuccess: "{% trans 'Telegram bot configuration saved successfully!' %}",
+            failedToSave: "{% trans 'Failed to save configuration' %}",
+            error: "{% trans 'Error:' %}"
+        };
+
+        // Mobile sidebar toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const sidebar = document.querySelector('.sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+            if (mobileMenuToggle && sidebar && sidebarOverlay) {
+                // Toggle sidebar on mobile menu button click
+                mobileMenuToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                    sidebarOverlay.classList.toggle('active');
+
+                    // Reposition toggle button when sidebar is active
+                    if (sidebar.classList.contains('active')) {
+                        mobileMenuToggle.style.left = '295px'; // 280px sidebar + 15px spacing
+                    } else {
+                        mobileMenuToggle.style.left = '15px';
+                    }
+                });
+
+                // Close sidebar when clicking overlay
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                    mobileMenuToggle.style.left = '15px'; // Reset position
+                });
+
+                // Close sidebar when clicking any nav item on mobile
+                const navItems = sidebar.querySelectorAll('.nav-item');
+                navItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        if (window.innerWidth <= 768) {
+                            sidebar.classList.remove('active');
+                            sidebarOverlay.classList.remove('active');
+                            mobileMenuToggle.style.left = '15px'; // Reset position
+                        }
+                    });
+                });
+
+                // Handle window resize to properly hide/show mobile elements
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth > 768) {
+                        sidebar.classList.remove('active');
+                        sidebarOverlay.classList.remove('active');
+                        mobileMenuToggle.style.left = '15px';
+                    }
+                });
+            }
+        });
+    </script>
+    <script src="{% static 'js/api-client.js' %}"></script>
+    <script src="{% static 'js/utils.js' %}"></script>
+    <script src="{% static 'js/script.js' %}"></script>
+    <script src="{% static 'js/auth.js' %}"></script>
+    <script src="{% static 'js/notifications.js' %}"></script>
+    <script src="{% static 'js/integrations.js' %}"></script>
+
+    <!-- Flowbite JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
+</body>
+</html>
+

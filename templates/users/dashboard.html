@@ -33,9 +33,6 @@
     <link rel="stylesheet" href="{% static_versioned 'css/notifications.css' %}">
     <link rel="stylesheet" href="{% static_versioned 'css/navigation.css' %}">
     <link rel="stylesheet" href="{% static_versioned 'css/flowbite-overrides.css' %}">
-
-    <!-- FullCalendar protection - Load last to override Tailwind -->
-    <link rel="stylesheet" href="{% static_versioned 'css/calendar-fixes.css' %}">
 </head>
 <body>
 
@@ -49,7 +46,7 @@
 
     <!-- Main content area with Flowbite sidebar offset -->
     <div class="sm:ml-64">
-        <main class="main-content p-4">
+        <main class="main-content p-4 sm:p-6">
 
             <header class="header">
                 <h2 class="page-title">{% trans "Dashboard" %}</h2>
@@ -60,349 +57,20 @@
                     </div>
                 </div>
             </header>
-                  <!-- Calendar Grid -->
-            <div class="calendar-container">
-                <div id="fullcalendar"></div>
-            </div>
 
-            <div id="booking-message" style="display:none;margin-bottom:16px;padding:10px 20px;border-radius:4px;font-weight:bold;font-size:1.1em;"></div>
-
-        </main>
-    </div>
-
-    <!-- Event popup -->
-    <div id="event-popup" class="event-popup">
-        <div class="event-popup-header">
-            <div class="event-popup-title">{% trans "Booking Details" %}</div>
-            <div class="event-popup-actions">
-                <button id="event-popup-confirm" class="event-popup-confirm-btn" title="{% trans 'Confirm booking' %}" style="display: none;">
-                    <i class="fas fa-check"></i>
-                </button>
-                <button id="event-popup-completed" class="event-popup-completed-btn" title="{% trans 'Complete booking' %}" style="display: none;">
-                    <i class="fas fa-check-circle"></i>
-                </button>
-                <button id="event-popup-edit" class="event-popup-edit-btn" title="{% trans 'Edit booking' %}">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button id="event-popup-delete" class="event-popup-delete-btn" title="{% trans 'Delete booking' %}">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-                <button class="event-popup-close">&times;</button>
-            </div>
-        </div>
-        <div class="event-popup-body">
-            <!-- Time information -->
-            <div class="event-popup-time">
-                <i class="fas fa-clock"></i>
-                <span id="event-popup-time-value"></span>
-            </div>
-
-            <!-- Status information -->
-            <div class="event-popup-status">
-                <i class="fas fa-tag"></i>
-                <span id="event-popup-status-value"></span>
-            </div>
-
-            <!-- Price information -->
-            <div class="event-popup-price">
-                <i class="fas fa-dollar-sign"></i>
-                <span id="event-popup-price-value"></span>
-            </div>
-
-            <!-- Customer information section -->
-            <div class="event-popup-customer">
-                <div class="event-popup-section-title">{% trans "Customer Information" %}</div>
-                <!-- Customer name -->
-                <div class="event-popup-customer-detail">
-                    <i class="fas fa-user"></i>
-                    <span id="event-popup-customer-name"></span>
-                </div>
-                <!-- Customer email -->
-                <div class="event-popup-customer-detail">
-                    <i class="fas fa-envelope"></i>
-                    <span id="event-popup-customer-email"></span>
-                </div>
-                <!-- Customer phone -->
-                <div class="event-popup-customer-detail">
-                    <i class="fas fa-phone"></i>
-                    <span id="event-popup-customer-phone"></span>
+            <!-- Dashboard Content - Placeholder for Reports and Charts -->
+            <div class="dashboard-content">
+                <div style="padding: 3rem; text-align: center; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <i class="fas fa-chart-line" style="font-size: 4rem; color: #7c3aed; margin-bottom: 1rem;"></i>
+                    <h3 style="font-size: 1.5rem; color: #333; margin-bottom: 1rem;">{% trans "Dashboard Reports & Analytics" %}</h3>
+                    <p style="color: #666; font-size: 1rem; margin-bottom: 1.5rem;">
+                        {% trans "This section will contain comprehensive reports, analytics, and business insights." %}
+                    </p>
+                    <p style="color: #999; font-size: 0.9rem;">
+                        {% trans "Coming soon: Revenue reports, booking statistics, customer analytics, and more." %}
+                    </p>
                 </div>
             </div>
-
-            <!-- Services section -->
-            <div class="event-popup-services">
-                <div class="event-popup-section-title">{% trans "Booked Services" %}</div>
-                <div id="event-popup-services-list"></div>
-            </div>
-
-            <!-- Notes section -->
-            <div class="event-popup-notes">
-                <div class="event-popup-notes-title">{% trans "Notes:" %}</div>
-                <div id="event-popup-notes-value"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Slot Action Popup -->
-    <div id="slot-action-popup" class="slot-action-popup">
-        <div class="slot-action-popup-title">
-            <span id="slot-action-time"></span>
-        </div>
-        <div class="slot-action-buttons">
-            <button id="add-booking-btn" class="slot-action-button">
-                <i class="fas fa-calendar-plus"></i> {% trans "Add Booking" %}
-            </button>
-            <button id="add-timeoff-btn" class="slot-action-button">
-                <i class="fas fa-coffee"></i> {% trans "Add Time Off" %}
-            </button>
-        </div>
-    </div>
-
-    <!-- Booking Form Panel -->
-    <div id="booking-form-panel" class="booking-form-panel">
-        <div class="booking-form-header">
-            <h3>{% trans "Add New Booking" %}</h3>
-            <button class="close-panel-btn">&times;</button>
-        </div>
-        <div class="booking-form-content">
-            <!-- Booking form steps navigation -->
-            <div class="booking-steps">
-                <div class="booking-step active" data-step="1">
-                    <span class="step-number">1</span>
-                    <span class="step-name">{% trans "Date & Service" %}</span>
-                </div>
-                <div class="booking-step" data-step="2">
-                    <span class="step-number">2</span>
-                    <span class="step-name">{% trans "Staff & Customer" %}</span>
-                </div>
-            </div>
-
-            <form id="booking-form">
-                <!-- Step 1: Date, Time, Service Selection -->
-                <div id="booking-step-1" class="booking-step-content active">
-                    <div class="form-group time-inputs">
-                        <div>
-                            <label for="booking-start-date">{% trans "Start Date:" %}</label>
-                            <input type="date" id="booking-start-date" name="booking-start-date" required>
-                        </div>
-                        <div>
-                            <label for="booking-end-date">{% trans "End Date:" %}</label>
-                            <input type="date" id="booking-end-date" name="booking-end-date" required readonly>
-                        </div>
-                    </div>
-                    <div class="form-group time-inputs">
-                        <div>
-                            <label for="booking-start-time">{% trans "Start Time:" %}</label>
-                            <input type="time" id="booking-start-time" name="booking-start-time" required>
-                        </div>
-                        <div>
-                            <label for="booking-end-time">{% trans "End Time:" %} <small style="color: #7f8c8d;">({% trans "Auto-calculated" %})</small></label>
-                            <input type="time" id="booking-end-time" name="booking-end-time" required readonly>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="service-search">{% trans "Search Services:" %}</label>
-                        <input type="text" id="service-search" name="service-search" placeholder="{% trans 'Search by service name...' %}">
-                    </div>
-
-                    <div class="form-group">
-                        <label>{% trans "Services:" %}</label>
-                        <div id="custom-service-select" class="custom-service-list">
-                            <!-- Service categories will be populated here -->
-                        </div>
-                    </div>
-
-                    <div class="services-summary">
-                        <h4>{% trans "Selected Services" %}</h4>
-                        <div id="selected-services-list" class="selected-services-list">
-                            <!-- Selected services will appear here -->
-                            <div class="empty-selection-message">{% trans "No services selected" %}</div>
-                        </div>
-                        <div class="services-summary-totals">
-                            <div>
-                                <span>{% trans "Total Duration:" %}</span>
-                                <span id="total-duration">0 min</span>
-                            </div>
-                            <div>
-                                <span>{% trans "Total Price:" %}</span>
-                                <span id="total-price">$0.00</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-actions">
-                        <div></div>
-                        <button type="button" id="step-1-next" class="primary-button">{% trans "Next" %}</button>
-                    </div>
-                </div>
-
-                <!-- Step 2: Staff Member and Customer -->
-                <div id="booking-step-2" class="booking-step-content">
-                    <div class="form-group">
-                        <label for="booking-worker">{% trans "Staff Member:" %}</label>
-                        <select id="booking-worker" name="booking-worker" required>
-                            <option value="">{% trans "Select staff member" %}</option>
-                            <!-- Options will be populated via API -->
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="booking-customer">{% trans "Customer (Optional):" %}</label>
-                        <select id="booking-customer" name="booking-customer" required>
-                            <option value="new">{% trans "New Customer" %}</option>
-                            <!-- Existing customers would be loaded here -->
-                        </select>
-                    </div>
-
-                    <div id="new-customer-fields">
-                        <div class="form-group">
-                            <label for="customer-first-name">{% trans "First Name:" %}</label>
-                            <input type="text" id="customer-first-name" name="customer-first-name">
-                        </div>
-                        <div class="form-group">
-                            <label for="customer-last-name">{% trans "Last Name:" %}</label>
-                            <input type="text" id="customer-last-name" name="customer-last-name">
-                        </div>
-                        <div class="form-group">
-                            <label for="customer-email">{% trans "Email:" %}</label>
-                            <input type="email" id="customer-email" name="customer-email">
-                        </div>
-                        <div class="form-group">
-                            <label for="customer-phone">{% trans "Phone:" %}</label>
-                            <input type="tel" id="customer-phone" name="customer-phone">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="booking-description">{% trans "Description/Notes:" %}</label>
-                        <textarea id="booking-description" name="booking-description" rows="3"></textarea>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="button" id="step-2-back" class="secondary-button">{% trans "Back" %}</button>
-                        <button type="submit" id="booking-submit-btn" class="primary-button">{% trans "Create Booking" %}</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Confirmation Popup -->
-    <div id="confirmation-popup" class="confirmation-popup">
-        <div class="confirmation-popup-content">
-            <div class="confirmation-popup-header">
-                <h3>{% trans "Confirm Action" %}</h3>
-                <button class="confirmation-popup-close">&times;</button>
-            </div>
-            <div class="confirmation-popup-body">
-                <p id="confirmation-message">{% trans "Are you sure you want to delete this booking?" %}</p>
-            </div>
-            <div class="confirmation-popup-footer">
-                <button id="confirmation-cancel-btn" class="secondary-button">{% trans "No" %}</button>
-                <button id="confirmation-confirm-btn" class="primary-button">{% trans "Yes" %}</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="booking-spinner" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.6);z-index:9999;justify-content:center;align-items:center;">
-        <div class="spinner" style="border:8px solid #f3f3f3;border-top:8px solid #3498db;border-radius:50%;width:60px;height:60px;animation:spin 1s linear infinite;"></div>
-    </div>
-
-    <!-- Time Off Form Panel -->
-    <div id="time-off-panel" class="booking-form-panel">
-        <div class="booking-form-header">
-            <h3>{% trans "Schedule Time Off" %}</h3>
-            <button id="time-off-close-btn" class="close-panel-btn">&times;</button>
-        </div>
-        <div class="booking-form-content">
-            <form id="time-off-form">
-                <div class="form-group time-inputs">
-                    <div>
-                        <label for="time-off-start-date">{% trans "Start Date:" %}</label>
-                        <input type="date" id="time-off-start-date" name="time-off-start-date" required>
-                    </div>
-                    <div>
-                        <label for="time-off-end-date">{% trans "End Date:" %}</label>
-                        <input type="date" id="time-off-end-date" name="time-off-end-date" required>
-                    </div>
-                </div>
-                <div class="form-group time-inputs">
-                    <div>
-                        <label for="time-off-start-time">{% trans "Start Time:" %}</label>
-                        <input type="time" id="time-off-start-time" name="time-off-start-time" required>
-                    </div>
-                    <div>
-                        <label for="time-off-end-time">{% trans "End Time:" %}</label>
-                        <input type="time" id="time-off-end-time" name="time-off-end-time" required>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="time-off-staff">{% trans "Staff Member:" %}</label>
-                    <select id="time-off-staff" name="time-off-staff" required>
-                        <option value="">{% trans "Select staff member" %}</option>
-                        <!-- Options will be populated via API -->
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="time-off-reason">{% trans "Reason:" %}</label>
-                    <textarea id="time-off-reason" name="time-off-reason" rows="3" placeholder="{% trans 'Provide a reason for the time off (optional)' %}"></textarea>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" id="time-off-submit-btn" class="primary-button">{% trans "Schedule Time Off" %}</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Time Off Details Popup -->
-    <div id="time-off-popup" class="event-popup time-off-popup">
-        <div class="event-popup-header">
-            <div class="event-popup-title">{% trans "Time Off Details" %}</div>
-            <div class="event-popup-actions">
-                <button class="event-popup-delete-btn" id="time-off-delete-btn" title="{% trans 'Delete Time Off' %}">
-                    <i class="fas fa-trash"></i>
-                </button>
-                <button class="event-popup-close">&times;</button>
-            </div>
-        </div>
-        <div class="event-popup-body">
-            <!-- Time information -->
-            <div class="event-popup-time">
-                <i class="fas fa-clock"></i>
-                <span id="time-off-popup-time-value"></span>
-            </div>
-
-            <!-- Staff information section -->
-            <div class="event-popup-customer">
-                <div class="event-popup-section-title">{% trans "Staff Information" %}</div>
-                <!-- Staff name -->
-                <div class="event-popup-customer-detail">
-                    <i class="fas fa-user"></i>
-                    <span id="time-off-popup-staff-name"></span>
-                </div>
-                <!-- Staff email -->
-                <div class="event-popup-customer-detail">
-                    <i class="fas fa-envelope"></i>
-                    <span id="time-off-popup-staff-email"></span>
-                </div>
-                <!-- Staff phone -->
-                <div class="event-popup-customer-detail">
-                    <i class="fas fa-phone"></i>
-                    <span id="time-off-popup-staff-phone"></span>
-                </div>
-            </div>
-
-            <!-- Reason section -->
-            <div class="event-popup-notes">
-                <div class="event-popup-notes-title">{% trans "Reason:" %}</div>
-                <div id="time-off-popup-reason-value"></div>
-            </div>
-        </div>
-    </div>
 
         </main>
     </div>
@@ -413,7 +81,6 @@
 
         window.userData = {{ user_data_json|safe }};
         window.staff_data = {{ staff_data_json|safe }};
-        window.userTimeOffs = {{ user_time_offs_json|safe }};
         window.unread_notifications_count = {{ unread_notifications_count }};
         localStorage.setItem("unreadNotificationCount", window.unread_notifications_count);
     </script>
@@ -421,17 +88,10 @@
     <script src="{% static_versioned 'js/api-client.js' %}"></script>
     <script src="{% static_versioned 'js/script.js' %}"></script>
     <script src="{% static_versioned 'js/auth.js' %}"></script>
-    <script src="{% static_versioned 'js/calendar.js' %}"></script>
-    <script src="{% static_versioned 'js/customer-manager.js' %}"></script>
-    <script src="{% static_versioned 'js/service-manager.js' %}"></script>
-    <script src="{% static_versioned 'js/ui.js' %}"></script>
-    <script src="{% static_versioned 'js/booking-service.js' %}"></script>
     <script src="{% static_versioned 'js/notifications.js' %}"></script>
-    <script src="{% static_versioned 'js/dashboard.js' %}"></script>
-    <script src="{% static_versioned 'js/time-off-manager.js' %}"></script>
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.js'></script>
 
     <!-- Flowbite JS -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
 </body>
 </html>
+

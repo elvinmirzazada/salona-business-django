@@ -798,6 +798,164 @@ const UI = (() => {
         }, duration);
     };
 
+    // Generic loader for any element or full page overlay
+    const showLoader = (message = 'Loading...', targetElement = null) => {
+        const loaderId = 'profile-page-loader';
+        let loader = document.getElementById(loaderId);
+
+        // If loader already exists, just update message and show it
+        if (loader) {
+            const messageEl = loader.querySelector('.loader-message');
+            if (messageEl) {
+                messageEl.textContent = message;
+            }
+            loader.style.display = 'flex';
+            return;
+        }
+
+        // Create new loader element
+        loader = document.createElement('div');
+        loader.id = loaderId;
+        loader.className = 'profile-loader';
+
+        // Style based on whether it's targeted to an element or full page
+        if (targetElement) {
+            // Overlay on specific element
+            loader.style.position = 'absolute';
+            loader.style.top = '0';
+            loader.style.left = '0';
+            loader.style.width = '100%';
+            loader.style.height = '100%';
+            loader.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+            loader.style.display = 'flex';
+            loader.style.flexDirection = 'column';
+            loader.style.alignItems = 'center';
+            loader.style.justifyContent = 'center';
+            loader.style.zIndex = '100';
+            loader.style.borderRadius = 'inherit';
+
+            // Ensure parent has position relative
+            if (getComputedStyle(targetElement).position === 'static') {
+                targetElement.style.position = 'relative';
+            }
+
+            targetElement.appendChild(loader);
+        } else {
+            // Full page overlay
+            loader.style.position = 'fixed';
+            loader.style.top = '0';
+            loader.style.left = '0';
+            loader.style.width = '100%';
+            loader.style.height = '100%';
+            loader.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+            loader.style.display = 'flex';
+            loader.style.flexDirection = 'column';
+            loader.style.alignItems = 'center';
+            loader.style.justifyContent = 'center';
+            loader.style.zIndex = '9999';
+
+            document.body.appendChild(loader);
+        }
+
+        // Create spinner
+        const spinner = document.createElement('div');
+        spinner.className = 'loader-spinner';
+        spinner.style.border = '4px solid #f3f3f3';
+        spinner.style.borderTop = '4px solid #3498db';
+        spinner.style.borderRadius = '50%';
+        spinner.style.width = '40px';
+        spinner.style.height = '40px';
+        spinner.style.animation = 'spin 1s linear infinite';
+
+        // Create message element
+        const messageEl = document.createElement('div');
+        messageEl.className = 'loader-message';
+        messageEl.textContent = message;
+        messageEl.style.marginTop = '16px';
+        messageEl.style.fontSize = '14px';
+        messageEl.style.fontWeight = '500';
+        messageEl.style.color = targetElement ? '#333' : '#fff';
+
+        loader.appendChild(spinner);
+        loader.appendChild(messageEl);
+
+        // Add spinner animation if not already present
+        if (!document.getElementById('loader-spinner-style')) {
+            const style = document.createElement('style');
+            style.id = 'loader-spinner-style';
+            style.textContent = `
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    };
+
+    // Hide the generic loader
+    const hideLoader = () => {
+        const loader = document.getElementById('profile-page-loader');
+        if (loader) {
+            loader.style.display = 'none';
+            // Optionally remove it completely
+            // loader.remove();
+        }
+    };
+
+    // Toast notification function
+    const showToast = (message, type = 'info') => {
+        // Check if a toast container already exists, if not create one
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.style.position = 'fixed';
+            toastContainer.style.top = '20px';
+            toastContainer.style.right = '20px';
+            toastContainer.style.zIndex = '9999';
+            document.body.appendChild(toastContainer);
+        }
+
+        // Create the toast element
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.style.backgroundColor = type === 'error' ? '#f44336' :
+                                     type === 'success' ? '#4CAF50' :
+                                     type === 'warning' ? '#ff9800' : '#2196F3';
+        toast.style.color = 'white';
+        toast.style.padding = '12px 24px';
+        toast.style.marginBottom = '10px';
+        toast.style.borderRadius = '4px';
+        toast.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+        toast.style.minWidth = '250px';
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease-in-out';
+
+        // Add the message
+        toast.textContent = message;
+
+        // Add the toast to the container
+        toastContainer.appendChild(toast);
+
+        // Fade in the toast
+        setTimeout(() => {
+            toast.style.opacity = '1';
+        }, 10);
+
+        // Remove the toast after 3 seconds
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => {
+                toastContainer.removeChild(toast);
+                // Remove the container if it's empty
+                if (toastContainer.children.length === 0) {
+                    document.body.removeChild(toastContainer);
+                }
+            }, 300);
+        }, 3000);
+    };
+
     return {
         goToStep,
         showEventPopup,
@@ -806,7 +964,10 @@ const UI = (() => {
         showConfirmationPopup,
         setupBookingFormNavigation,
         showMessage,
-        initResizablePanel
+        initResizablePanel,
+        showLoader,
+        hideLoader,
+        showToast
     };
 })();
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% load i18n %}Salona - {% trans "Services" %}</title>
+    <title>{% load i18n %}Salona - {% trans "Categories" %}</title>
     {% load static %}
     <link rel="icon" type="image/png" href="{% static 'images/salona-icon.png' %}">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
@@ -50,7 +50,7 @@
                     <button class="back-button" onclick="window.location.href='/users/dashboard/'">
                         <i class="fas fa-arrow-left"></i>
                     </button>
-                    <h2 class="page-title">{% trans "Services" %}</h2>
+                    <h2 class="page-title">{% trans "Categories" %}</h2>
                 </div>
                 <div class="header-actions">
                     {% include 'partials/notification_icon.html' %}
@@ -60,43 +60,43 @@
                 </div>
             </header>
 
-            <!-- Services content -->
+            <!-- Categories content -->
             <div class="content-wrapper">
                 <div class="card">
-                    <div class="card-header services-header">
+                    <div class="card-header categories-header">
                         <div class="header-content">
                             <div class="header-text">
-                                <h2 class="services-title">
-                                    <i class="fas fa-cogs services-icon"></i>
-                                    {% trans "Manage Services" %}
+                                <h2 class="categories-title">
+                                    <i class="fas fa-folder-open categories-icon"></i>
+                                    {% trans "Manage Categories" %}
                                 </h2>
-                                <p class="services-subtitle">{% trans "Create, edit, and organize your business services" %}</p>
+                                <p class="categories-subtitle">{% trans "Organize and structure your service categories" %}</p>
                             </div>
                             <div class="header-actions">
                                 {% if user_data.role == 'owner' or user_data.role == 'admin' %}
-                                    <button id="add-service-btn" class="btn-primary add-service-btn">
+                                    <button id="add-category-btn" class="btn-primary add-category-btn">
                                         <i class="fas fa-plus-circle"></i>
-                                        <span>{% trans "Add New Service" %}</span>
+                                        <span>{% trans "Add New Category" %}</span>
                                     </button>
                                 {% endif %}
                             </div>
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="service-list-container" id="services-table-container">
+                        <div class="category-list-container" id="categories-table-container">
                             <div class="table-responsive">
-                                <!-- Services table with DataTables -->
-                                <table class="service-table table table-striped table-hover" id="services-table">
+                                <!-- Categories table with DataTables -->
+                                <table class="service-table table table-striped table-hover" id="categories-table">
 
                                 </table>
                             </div>
                         </div>
-                        <div id="services-loading" class="loading-container">
+                        <div id="categories-loading" class="loading-container">
                             <div class="spinner"></div>
                         </div>
-                        <div id="services-empty" class="empty-state" style="display:none;">
+                        <div id="categories-empty" class="empty-state" style="display:none;">
                             {% if user_data.role == 'owner' or user_data.role == 'admin' %}
-                                <p>{% trans 'No services found. Click "Add Service" to create your first service.' %}</p>
+                                <p>{% trans 'No categories found. Click "Add Category" to create your first category.' %}</p>
                             {% else %}
                                 <p>{% trans "Insufficient privileges. Please contact your administrator." %}</p>
                             {% endif %}
@@ -107,109 +107,6 @@
         </main>
     </div>
 
-    <!-- Service Modal -->
-    <div id="service-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="service-modal-title">{% trans "Add Service" %}</h2>
-                <span class="close-modal">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form id="service-form">
-                    <input type="hidden" id="service-id">
-                    <div class="form-group">
-                        <label for="service-name">{% trans "Service Name" %}</label>
-                        <input type="text" id="service-name" name="service-name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="service-category">{% trans "Category" %}</label>
-                        <div class="category-input-group">
-                            <select id="service-category" name="service-category" required>
-                                <option value="">{% trans "Select a category" %}</option>
-                                <!-- Categories will be loaded dynamically -->
-                            </select>
-                            <button type="button" id="create-category-from-service-btn" class="btn-secondary btn-icon-text" title="{% trans 'Create new category' %}">
-                                <i class="fas fa-plus"></i>
-                                <span>{% trans "New Category" %}</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="service-duration">{% trans "Duration (minutes)" %}</label>
-                            <input type="number" id="service-duration" name="service-duration" min="5" step="5" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="service-price">{% trans "Price" %}</label>
-                            <div class="price-input">
-                                <span class="currency-symbol">$</span>
-                                <input type="number" id="service-price" name="service-price" min="0" step="0.01" required>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="service-discount-price">{% trans "Discount Price (optional)" %}</label>
-                        <div class="price-input">
-                            <span class="currency-symbol">$</span>
-                            <input type="number" id="service-discount-price" name="service-discount-price" min="0" step="0.01">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="service-description">{% trans "Description" %}</label>
-                        <textarea id="service-description" name="service-description" rows="3"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="service-image">{% trans "Service Image (optional)" %}</label>
-                        <div class="image-upload-container">
-                            <input type="file" id="service-image" name="service-image" accept="image/*" style="display: none;">
-                            <div class="image-preview-wrapper">
-                                <div id="image-preview" class="image-preview">
-                                    <i class="fas fa-image"></i>
-                                    <span>{% trans "Click to upload image" %}</span>
-                                </div>
-                            </div>
-                            <button type="button" id="upload-image-btn" class="btn-secondary">
-                                <i class="fas fa-upload"></i>
-                                {% trans "Choose Image" %}
-                            </button>
-                            <button type="button" id="remove-image-btn" class="btn-danger" style="display: none;">
-                                <i class="fas fa-times"></i>
-                                {% trans "Remove" %}
-                            </button>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>{% trans "Staff who perform this service" %}</label>
-                        <div id="staff-selection" class="checkbox-group">
-                            <!-- Staff checkboxes will be loaded here dynamically -->
-                        </div>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn-secondary" id="cancel-service-btn">{% trans "Cancel" %}</button>
-                        <button type="submit" class="btn-primary" id="save-service-btn">{% trans "Save Service" %}</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div id="delete-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>{% trans "Delete Service" %}</h2>
-                <span class="close-modal">&times;</span>
-            </div>
-            <div class="modal-body">
-                <p>{% trans "Are you sure you want to delete this service?" %}</p>
-                <p>{% trans "This action cannot be undone." %}</p>
-                <div class="form-actions">
-                    <button type="button" class="btn-secondary" id="cancel-delete-btn">{% trans "Cancel" %}</button>
-                    <button type="button" class="btn-danger" id="confirm-delete-btn">{% trans "Delete" %}</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Add Category Modal -->
     <div id="category-modal" class="modal">
@@ -255,8 +152,7 @@
         </div>
     </div>
 
-
-    <!-- JavaScript - Only include what's needed for services page -->
+    <!-- JavaScript - Only include what's needed for categories page -->
     <script>
         // Get API_BASE_URL from Django template context (environment variable)
         window.API_BASE_URL = "{{ API_BASE_URL }}";

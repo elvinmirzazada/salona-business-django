@@ -52,10 +52,10 @@ button[data-drawer-toggle="sidebar"]:hover {
     }
 }
 
-/* Override Tailwind's default button styles for existing buttons */
-button:not([data-drawer-toggle]):not([data-collapse-toggle]) {
-    all: unset;
-}
+/*!* Override Tailwind's default button styles for existing buttons *!*/
+/*button:not([data-drawer-toggle]):not([data-collapse-toggle]) {*/
+/*    all: unset;*/
+/*}*/
 
 /* Ensure the main content wrapper works with existing styles */
 .sm\:ml-64 .main-content {

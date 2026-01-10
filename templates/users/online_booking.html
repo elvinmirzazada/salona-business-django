@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% load i18n %}Salona - {% trans "Online Booking" %}</title>
+    {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'images/salona-icon.png' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
+    <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
+    <link rel="stylesheet" href="{% static 'css/integrations.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Flowbite CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css" rel="stylesheet" />
+
+    <!-- Flowbite Overrides -->
+    <link rel="stylesheet" href="{% static 'css/flowbite-overrides.css' %}">
+
+</head>
+<body>
+    {% include 'partials/messages.html' %}
+    <!-- 3D Background Shapes -->
+    <div class="bg-shape bg-shape-1"></div>
+    <div class="bg-shape bg-shape-2"></div>
+    <div class="bg-shape bg-shape-3"></div>
+
+    <!-- Include reusable sidebar -->
+    {% include 'partials/sidebar.html' %}
+
+    <!-- Main content area with Flowbite sidebar offset -->
+    <div class="sm:ml-64">
+        <main class="main-content p-4">
+            <header class="header">
+                <div class="header-left">
+                    <button class="back-button" onclick="window.location.href='/users/dashboard/'">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h2 class="page-title">{% trans "Online Booking" %}</h2>
+                </div>
+                <div class="header-actions">
+                    {% include 'partials/notification_icon.html' %}
+                    <div class="user-info welcome-message">
+                        <span class="user-name">{% blocktrans with name=user_data.first_name %}Welcome, {{ name }}!{% endblocktrans %}</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Booking URL Content -->
+            <div class="content-wrapper">
+                <div class="integration-card">
+                    <h3><i class="fas fa-calendar-check"></i> {% trans "Customer Booking URL" %}</h3>
+                    <p style="color: #666; margin-bottom: 20px;">
+                        {% trans "Share this URL with your customers so they can book appointments directly with your business." %}
+                    </p>
+
+                    <div class="url-display">
+                        <input
+                            type="text"
+                            class="url-input"
+                            id="booking-url-input"
+                            value="{{ booking_url }}"
+                            readonly
+                        >
+                        <button class="copy-button" id="copy-booking-url">
+                            <i class="fas fa-copy"></i>
+                            <span>{% trans "Copy" %}</span>
+                        </button>
+                    </div>
+
+                    <div class="info-box">
+                        <p><strong>{% trans "How to use:" %}</strong></p>
+                        <p>• {% trans "Share this link on your website, social media, or via email" %}</p>
+                        <p>• {% trans "Customers can view available services and book appointments" %}</p>
+                        <p>• {% trans "Bookings appear automatically in your dashboard" %}</p>
+                    </div>
+
+                    <!-- QR Code Section -->
+                    <div class="qr-code-container">
+                        <img
+                            src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={{ booking_url|urlencode }}"
+                            alt="{% trans 'Booking QR Code' %}"
+                        >
+                        <p>{% trans "Customers can scan this QR code to book appointments" %}</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Pass translations to JavaScript
+        window.integrationsTranslations = {
+            copied: "{% trans 'Copied!' %}",
+            copy: "{% trans 'Copy' %}"
+        };
+
+        // Mobile sidebar toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const sidebar = document.querySelector('.sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+            if (mobileMenuToggle && sidebar && sidebarOverlay) {
+                // Toggle sidebar on mobile menu button click
+                mobileMenuToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                    sidebarOverlay.classList.toggle('active');
+
+                    // Reposition toggle button when sidebar is active
+                    if (sidebar.classList.contains('active')) {
+                        mobileMenuToggle.style.left = '295px'; // 280px sidebar + 15px spacing
+                    } else {
+                        mobileMenuToggle.style.left = '15px';
+                    }
+                });
+
+                // Close sidebar when clicking overlay
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                    mobileMenuToggle.style.left = '15px'; // Reset position
+                });
+
+                // Close sidebar when clicking any nav item on mobile
+                const navItems = sidebar.querySelectorAll('.nav-item');
+                navItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        if (window.innerWidth <= 768) {
+                            sidebar.classList.remove('active');
+                            sidebarOverlay.classList.remove('active');
+                            mobileMenuToggle.style.left = '15px'; // Reset position
+                        }
+                    });
+                });
+
+                // Handle window resize to properly hide/show mobile elements
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth > 768) {
+                        sidebar.classList.remove('active');
+                        sidebarOverlay.classList.remove('active');
+                        mobileMenuToggle.style.left = '15px';
+                    }
+                });
+            }
+        });
+    </script>
+    <script src="{% static 'js/api-client.js' %}"></script>
+    <script src="{% static 'js/utils.js' %}"></script>
+    <script src="{% static 'js/script.js' %}"></script>
+    <script src="{% static 'js/auth.js' %}"></script>
+    <script src="{% static 'js/notifications.js' %}"></script>
+    <script src="{% static 'js/integrations.js' %}"></script>
+
+    <!-- Flowbite JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% load i18n %}Salona - {% trans "Profile" %}</title>
+    {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'images/salona-icon.png' %}">
+    <!-- Flowbite CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
+    <link rel="stylesheet" href="{% static 'css/navigation.css' %}">
+    <link rel="stylesheet" href="{% static 'css/settings.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+
+    <!-- Flowbite Overrides -->
+    <link rel="stylesheet" href="{% static 'css/flowbite-overrides.css' %}">
+
+</head>
+<body>
+    {% include 'partials/messages.html' %}
+    <!-- 3D Background Shapes -->
+    <div class="bg-shape bg-shape-1"></div>
+    <div class="bg-shape bg-shape-2"></div>
+    <div class="bg-shape bg-shape-3"></div>
+
+    <!-- Include reusable sidebar -->
+    {% include 'partials/sidebar.html' %}
+
+    <!-- Main content area with Flowbite sidebar offset -->
+    <div class="sm:ml-64">
+        <main class="main-content p-4">
+            <header class="header">
+                <div class="header-left">
+                    <button class="back-button" onclick="window.location.href='/users/dashboard/'">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h2 class="page-title">{% trans "Profile" %}</h2>
+                </div>
+                <div class="header-actions">
+                    {% include 'partials/notification_icon.html' %}
+                    <div class="user-info welcome-message">
+                        <span class="user-name">{% blocktrans with name=user_data.first_name %}Welcome, {{ name }}!{% endblocktrans %}</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Profile content -->
+            <div class="content-wrapper">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>{% trans "Profile Information" %}</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="profile-form">
+                            <!-- Profile Photo Section -->
+                            <div class="form-group profile-photo-section">
+                                <label>{% trans "Profile Photo" %}</label>
+                                <div class="profile-photo-container">
+                                    <div class="profile-photo-preview" id="profile-photo-preview">
+                                        <img id="profile-photo-img" src="" alt="Profile Photo" style="display: none;">
+                                        <div class="profile-photo-placeholder" id="profile-photo-placeholder">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                    </div>
+                                    <div class="profile-photo-actions">
+                                        <input type="file" id="profile-photo-input" accept="image/*" style="display: none;">
+                                        <button type="button" class="btn-secondary" id="upload-photo-btn">
+                                            <i class="fas fa-upload"></i> {% trans "Upload Photo" %}
+                                        </button>
+                                        <button type="button" class="btn-danger" id="remove-photo-btn" style="display: none;">
+                                            <i class="fas fa-trash"></i> {% trans "Remove" %}
+                                        </button>
+                                        <small class="form-text text-muted">{% trans "Recommended: Square image, at least 200x200px, max. 5 MB" %}</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="profile-first-name">{% trans "First Name" %}</label>
+                                <input type="text" id="profile-first-name" name="first-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="profile-last-name">{% trans "Last Name" %}</label>
+                                <input type="text" id="profile-last-name" name="last-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="profile-email">{% trans "Email" %}</label>
+                                <input type="email" id="profile-email" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="profile-phone">{% trans "Phone Number" %}</label>
+                                <input type="tel" id="profile-phone" name="phone">
+                            </div>
+                            <div class="form-group">
+                                <label for="profile-languages">{% trans "Languages" %}</label>
+                                <div class="language-select-wrapper">
+                                    <div class="language-search-container">
+                                        <input type="text" id="language-search" class="language-search-input" placeholder="{% trans 'Search languages...' %}" autocomplete="off" aria-label="{% trans 'Search languages' %}">
+                                        <i class="fas fa-search search-icon"></i>
+                                    </div>
+                                    <div class="language-dropdown" id="language-dropdown" style="display: none;">
+                                        <!-- Language options will be populated by JavaScript -->
+                                    </div>
+                                    <div class="selected-languages" id="selected-languages">
+                                        <!-- Selected language chips will appear here -->
+                                    </div>
+                                    <input type="hidden" id="profile-languages" name="languages">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="profile-position">{% trans "Position" %}</label>
+                                <input type="text" id="profile-position" name="position" maxlength="250" placeholder="{% trans 'e.g., Stylist, Hairdresser...' %}">
+                                <small class="form-text text-muted">{% trans "Maximum 250 characters" %}</small>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary">{% trans "Save Profile" %}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- JavaScript - Only include what's needed for profile page -->
+    <script>
+        // Get API_BASE_URL from Django template context (environment variable)
+        window.API_BASE_URL = "{{ API_BASE_URL }}";
+        window.userData = {{ user_data_json|safe }};
+        window.userCompanyId = "{{ company_id }}";
+
+        // Pass translations to JavaScript
+        window.settingsTranslations = {
+            profileUpdatedSuccess: "{% trans 'Profile updated successfully!' %}",
+            errorUpdatingProfile: "{% trans 'Error updating profile' %}",
+            cancel: "{% trans 'Cancel' %}"
+        };
+
+        // Mobile sidebar toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const sidebar = document.querySelector('.sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+            if (mobileMenuToggle && sidebar && sidebarOverlay) {
+                // Toggle sidebar on mobile menu button click
+                mobileMenuToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                    sidebarOverlay.classList.toggle('active');
+
+                    // Reposition toggle button when sidebar is active
+                    if (sidebar.classList.contains('active')) {
+                        mobileMenuToggle.style.left = '295px'; // 280px sidebar + 15px spacing
+                    } else {
+                        mobileMenuToggle.style.left = '15px';
+                    }
+                });
+
+                // Close sidebar when clicking overlay
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                    mobileMenuToggle.style.left = '15px'; // Reset position
+                });
+
+                // Close sidebar when clicking any nav item on mobile
+                const navItems = sidebar.querySelectorAll('.nav-item');
+                navItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        if (window.innerWidth <= 768) {
+                            sidebar.classList.remove('active');
+                            sidebarOverlay.classList.remove('active');
+                            mobileMenuToggle.style.left = '15px'; // Reset position
+                        }
+                    });
+                });
+
+                // Handle window resize to properly hide/show mobile elements
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth > 768) {
+                        sidebar.classList.remove('active');
+                        sidebarOverlay.classList.remove('active');
+                        mobileMenuToggle.style.left = '15px';
+                    }
+                });
+            }
+        });
+    </script>
+    <script src="{% static 'js/utils.js' %}"></script>
+    <script src="{% static 'js/auth.js' %}"></script>
+    <script src="{% static 'js/ui.js' %}"></script>
+    <script src="{% static 'js/api-client.js' %}"></script>
+    <script src="{% static 'js/profile.js' %}"></script>
+    <script src="{% static 'js/notifications.js' %}"></script>
+
+    <!-- Flowbite JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
+</body>
+</html>
