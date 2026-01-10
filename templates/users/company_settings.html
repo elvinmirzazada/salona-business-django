@@ -55,237 +55,225 @@
             <!-- Settings content -->
             <div class="content-wrapper">
                 <!-- Create Company Section - Only show if no company exists -->
-                            {% if not company_id or company_id == '' %}
-                            <div class="card mb-4">
-                                <div class="card-header">
-                                    <h2>{% trans "Create Company" %}</h2>
-                                    <button id="create-company-btn" class="btn-primary">
-                                        <i class="fas fa-plus"></i> {% trans "Create Company" %}
+                {% if not company_id or company_id == '' %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h2>{% trans "Create Company" %}</h2>
+                        <button id="create-company-btn" class="btn-primary">
+                            <i class="fas fa-plus"></i> {% trans "Create Company" %}
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <form id="create-company-form" style="display: none;">
+                            <div class="form-group">
+                                <label for="company-name">{% trans "Company Name" %}</label>
+                                <input type="text" id="company-name" name="company-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="company-type">{% trans "Business Type" %}</label>
+                                <input type="text" id="company-type" name="company-type">
+                            </div>
+                            <div class="form-group">
+                                <label for="company-logo-url">{% trans "Company Logo URL" %}</label>
+                                <input type="url" id="company-logo-url" name="company-logo-url" placeholder="https://example.com/logo.png">
+                            </div>
+                            <div class="form-group">
+                                <label for="company-website">{% trans "Website" %}</label>
+                                <input type="url" id="company-website" name="company-website">
+                            </div>
+                            <div class="form-group">
+                                <label for="company-description">{% trans "Description" %}</label>
+                                <textarea id="company-description" name="company-description" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="company-team-size">{% trans "Team Size" %}</label>
+                                <input type="number" id="company-team-size" name="company-team-size" min="1">
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary">{% trans "Save Company" %}</button>
+                            </div>
+                        </form>
+                        <div id="company-loading" class="loading-container" style="display: none;">
+                            <div class="spinner"></div>
+                        </div>
+                        <div id="company-message" class="alert" style="display: none; margin-top: 20px; padding: 10px 15px; border-radius: 4px;"></div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Tabs Navigation -->
+                <div class="card">
+                    <div class="tabs-container">
+                        <div class="tabs-header">
+                            <button class="tab-button active" data-tab="company-details">
+                                <i class="fas fa-building"></i>
+                                <span>{% trans "Company Details" %}</span>
+                            </button>
+                            <button class="tab-button" data-tab="company-emails">
+                                <i class="fas fa-envelope"></i>
+                                <span>{% trans "Company Emails" %}</span>
+                            </button>
+                            <button class="tab-button" data-tab="company-phones">
+                                <i class="fas fa-phone"></i>
+                                <span>{% trans "Phone Numbers" %}</span>
+                            </button>
+                            <button class="tab-button" data-tab="company-address">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>{% trans "Company Address" %}</span>
+                            </button>
+                        </div>
+
+                        <!-- Tab Content -->
+                        <div class="tabs-content">
+                            <!-- Tab 1: Company Details -->
+                            <div class="tab-panel active" id="company-details">
+                                <form id="company-details-form">
+                                    <div class="form-group">
+                                        <label for="details-company-name">{% trans "Company Name" %}</label>
+                                        <input type="text" id="details-company-name" name="company-name" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="details-company-logo-url">{% trans "Company Logo URL" %}</label>
+                                        <input type="url" id="details-company-logo-url" name="company-logo-url" placeholder="https://example.com/logo.png">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="details-company-website">{% trans "Website" %}</label>
+                                        <input type="url" id="details-company-website" name="company-website">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="details-company-description">{% trans "Description" %}</label>
+                                        <textarea id="details-company-description" name="company-description" rows="3"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="details-company-team-size">{% trans "Team Size" %}</label>
+                                        <input type="number" id="details-company-team-size" name="company-team-size" min="1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="details-company-type">{% trans "Business Type" %}</label>
+                                        <input type="text" id="details-company-type" name="company-type">
+                                    </div>
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn-primary">{% trans "Save Details" %}</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Tab 2: Company Emails -->
+                            <div class="tab-panel" id="company-emails">
+                                <div class="tab-panel-header">
+                                    <button id="add-email-btn" class="btn-primary">
+                                        <i class="fas fa-plus"></i> {% trans "Add Email" %}
                                     </button>
                                 </div>
-                                <div class="card-body">
-                                    <form id="create-company-form" style="display: none;">
-                                        <div class="form-group">
-                                            <label for="company-name">{% trans "Company Name" %}</label>
-                                            <input type="text" id="company-name" name="company-name" required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="company-type">{% trans "Business Type" %}</label>
-                                            <input type="text" id="company-type" name="company-type">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="company-logo-url">{% trans "Company Logo URL" %}</label>
-                                            <input type="url" id="company-logo-url" name="company-logo-url" placeholder="https://example.com/logo.png">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="company-website">{% trans "Website" %}</label>
-                                            <input type="url" id="company-website" name="company-website">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="company-description">{% trans "Description" %}</label>
-                                            <textarea id="company-description" name="company-description" rows="3"></textarea>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="company-team-size">{% trans "Team Size" %}</label>
-                                            <input type="number" id="company-team-size" name="company-team-size" min="1">
-                                        </div>
-                                        <div class="form-actions">
-                                            <button type="submit" class="btn-primary">{% trans "Save Company" %}</button>
-                                        </div>
-                                    </form>
-                                    <div id="company-loading" class="loading-container" style="display: none;">
-                                        <div class="spinner"></div>
-                                    </div>
-                                    <div id="company-message" class="alert" style="display: none; margin-top: 20px; padding: 10px 15px; border-radius: 4px;"></div>
-                                </div>
-                            </div>
-                            {% endif %}
-
-                            <!-- Section 1: Company Details -->
-                            <div class="card mb-4">
-                                <div class="card-header collapsible-header" data-target="company-details-content">
-                                    <div class="header-left">
-                                        <h2>{% trans "Company Details" %}</h2>
-                                    </div>
-                                    <button type="button" class="collapse-toggle" aria-expanded="false">
-                                        <i class="fas fa-chevron-up"></i>
-                                    </button>
-                                </div>
-                                <div class="card-body collapsible-content collapsed" id="company-details-content">
-                                    <form id="company-details-form">
-                                        <div class="form-group">
-                                            <label for="details-company-name">{% trans "Company Name" %}</label>
-                                            <input type="text" id="details-company-name" name="company-name" required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="details-company-logo-url">{% trans "Company Logo URL" %}</label>
-                                            <input type="url" id="details-company-logo-url" name="company-logo-url" placeholder="https://example.com/logo.png">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="details-company-website">{% trans "Website" %}</label>
-                                            <input type="url" id="details-company-website" name="company-website">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="details-company-description">{% trans "Description" %}</label>
-                                            <textarea id="details-company-description" name="company-description" rows="3"></textarea>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="details-company-team-size">{% trans "Team Size" %}</label>
-                                            <input type="number" id="details-company-team-size" name="company-team-size" min="1">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="details-company-type">{% trans "Business Type" %}</label>
-                                            <input type="text" id="details-company-type" name="company-type">
-                                        </div>
-                                        <div class="form-actions">
-                                            <button type="submit" class="btn-primary">{% trans "Save Details" %}</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-
-                            <!-- Section 2: Company Emails -->
-                            <div class="card mb-4">
-                                <div class="card-header collapsible-header" data-target="company-emails-content">
-                                    <div class="header-left">
-                                        <h2>{% trans "Company Emails" %}</h2>
-                                    </div>
-                                    <div class="header-actions">
-                                        <button id="add-email-btn" class="btn-primary">
-                                            <i class="fas fa-plus"></i> {% trans "Add Email" %}
-                                        </button>
-                                        <button type="button" class="collapse-toggle" aria-expanded="false">
-                                            <i class="fas fa-chevron-up"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="card-body collapsible-content collapsed" id="company-emails-content">
-                                    <form id="company-emails-form">
-                                        <div id="emails-container">
-                                            <!-- Initial email field -->
-                                            <div class="email-entry">
-                                                <div class="form-row">
-                                                    <div class="form-group flex-grow-1">
-                                                        <label for="company-email-0">{% trans "Email" %}</label>
-                                                        <input type="email" id="company-email-0" name="company-email-0" class="company-email" required>
-                                                    </div>
-                                                    <div class="form-group email-type-group">
-                                                        <label for="company-email-type-0">{% trans "Type" %}</label>
-                                                        <select id="company-email-type-0" name="company-email-type-0" class="email-type">
-                                                            <option value="primary">{% trans "Primary" %}</option>
-                                                            <option value="billing">{% trans "Billing" %}</option>
-                                                            <option value="support">{% trans "Support" %}</option>
-                                                            <option value="other">{% trans "Other" %}</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="form-group delete-btn-container">
-                                                        <label>&nbsp;</label>
-                                                        <button type="button" class="btn-danger delete-email-btn" data-index="0" disabled>
-                                                            <i class="fas fa-trash-alt"></i>
-                                                        </button>
-                                                    </div>
+                                <form id="company-emails-form">
+                                    <div id="emails-container">
+                                        <!-- Initial email field -->
+                                        <div class="email-entry">
+                                            <div class="form-row">
+                                                <div class="form-group flex-grow-1">
+                                                    <label for="company-email-0">{% trans "Email" %}</label>
+                                                    <input type="email" id="company-email-0" name="company-email-0" class="company-email" required>
+                                                </div>
+                                                <div class="form-group email-type-group">
+                                                    <label for="company-email-type-0">{% trans "Type" %}</label>
+                                                    <select id="company-email-type-0" name="company-email-type-0" class="email-type">
+                                                        <option value="primary">{% trans "Primary" %}</option>
+                                                        <option value="billing">{% trans "Billing" %}</option>
+                                                        <option value="support">{% trans "Support" %}</option>
+                                                        <option value="other">{% trans "Other" %}</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group delete-btn-container">
+                                                    <label>&nbsp;</label>
+                                                    <button type="button" class="btn-danger delete-email-btn" data-index="0" disabled>
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
                                                 </div>
                                             </div>
-                                            <!-- Additional email entries will be added dynamically -->
                                         </div>
-                                        <div class="form-actions">
-                                            <button type="submit" class="btn-primary">{% trans "Save Emails" %}</button>
-                                        </div>
-                                    </form>
-                                </div>
+                                        <!-- Additional email entries will be added dynamically -->
+                                    </div>
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn-primary">{% trans "Save Emails" %}</button>
+                                    </div>
+                                </form>
                             </div>
 
-                            <!-- Section 3: Company Phone Numbers -->
-                            <div class="card mb-4">
-                                <div class="card-header collapsible-header" data-target="company-phones-content">
-                                    <div class="header-left">
-                                        <h2>{% trans "Company Phone Numbers" %}</h2>
-                                    </div>
-                                    <div class="header-actions">
-                                        <button id="add-phone-btn" class="btn-primary">
-                                            <i class="fas fa-plus"></i> {% trans "Add Phone" %}
-                                        </button>
-                                        <button type="button" class="collapse-toggle" aria-expanded="false">
-                                            <i class="fas fa-chevron-up"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="card-body collapsible-content collapsed" id="company-phones-content">
-                                    <form id="company-phones-form">
-                                        <div id="phones-container">
-                                            <!-- Initial phone field -->
-                                            <div class="phone-entry">
-                                                <div class="form-row">
-                                                    <div class="form-group flex-grow-1">
-                                                        <label for="company-phone-0">{% trans "Phone Number" %}</label>
-                                                        <input type="tel" id="company-phone-0" name="company-phone-0" class="company-phone" required>
-                                                    </div>
-                                                    <div class="form-group phone-type-group">
-                                                        <label for="company-phone-type-0">{% trans "Type" %}</label>
-                                                        <select id="company-phone-type-0" name="company-phone-type-0" class="phone-type">
-                                                            <option value="primary">{% trans "Primary" %}</option>
-                                                            <option value="business">{% trans "Business" %}</option>
-                                                            <option value="mobile">{% trans "Mobile" %}</option>
-                                                            <option value="fax">{% trans "Fax" %}</option>
-                                                            <option value="other">{% trans "Other" %}</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="form-group delete-btn-container">
-                                                        <label>&nbsp;</label>
-                                                        <button type="button" class="btn-danger delete-phone-btn" data-index="0" disabled>
-                                                            <i class="fas fa-trash-alt"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- Additional phone entries will be added dynamically -->
-                                        </div>
-                                        <div class="form-actions">
-                                            <button type="submit" class="btn-primary">{% trans "Save Phone Numbers" %}</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-
-                            <!-- Section 4: Company Address -->
-                            <div class="card">
-                                <div class="card-header collapsible-header" data-target="company-address-content">
-                                    <div class="header-left">
-                                        <h2>{% trans "Company Address" %}</h2>
-                                    </div>
-                                    <button type="button" class="collapse-toggle" aria-expanded="false">
-                                        <i class="fas fa-chevron-up"></i>
+                            <!-- Tab 3: Company Phone Numbers -->
+                            <div class="tab-panel" id="company-phones">
+                                <div class="tab-panel-header">
+                                    <button id="add-phone-btn" class="btn-primary">
+                                        <i class="fas fa-plus"></i> {% trans "Add Phone" %}
                                     </button>
                                 </div>
-                                <div class="card-body collapsible-content collapsed" id="company-address-content">
-                                    <form id="company-address-form">
+                                <form id="company-phones-form">
+                                    <div id="phones-container">
+                                        <!-- Initial phone field -->
+                                        <div class="phone-entry">
+                                            <div class="form-row">
+                                                <div class="form-group flex-grow-1">
+                                                    <label for="company-phone-0">{% trans "Phone Number" %}</label>
+                                                    <input type="tel" id="company-phone-0" name="company-phone-0" class="company-phone" required>
+                                                </div>
+                                                <div class="form-group phone-type-group">
+                                                    <label for="company-phone-type-0">{% trans "Type" %}</label>
+                                                    <select id="company-phone-type-0" name="company-phone-type-0" class="phone-type">
+                                                        <option value="primary">{% trans "Primary" %}</option>
+                                                        <option value="business">{% trans "Business" %}</option>
+                                                        <option value="mobile">{% trans "Mobile" %}</option>
+                                                        <option value="fax">{% trans "Fax" %}</option>
+                                                        <option value="other">{% trans "Other" %}</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group delete-btn-container">
+                                                    <label>&nbsp;</label>
+                                                    <button type="button" class="btn-danger delete-phone-btn" data-index="0" disabled>
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Additional phone entries will be added dynamically -->
+                                    </div>
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn-primary">{% trans "Save Phone Numbers" %}</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Tab 4: Company Address -->
+                            <div class="tab-panel" id="company-address">
+                                <form id="company-address-form">
+                                    <div class="form-group">
+                                        <label for="company-address">{% trans "Street Address" %}</label>
+                                        <input type="text" id="company-address" name="company-address">
+                                    </div>
+                                    <div class="form-row">
                                         <div class="form-group">
-                                            <label for="company-address">{% trans "Street Address" %}</label>
-                                            <input type="text" id="company-address" name="company-address">
-                                        </div>
-                                        <div class="form-row">
-                                            <div class="form-group">
-                                                <label for="company-city">{% trans "City" %}</label>
-                                                <input type="text" id="company-city" name="company-city">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="company-state">{% trans "State/Province" %}</label>
-                                                <input type="text" id="company-state" name="company-state">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="company-zip">{% trans "ZIP/Postal Code" %}</label>
-                                                <input type="text" id="company-zip" name="company-zip">
-                                            </div>
+                                            <label for="company-city">{% trans "City" %}</label>
+                                            <input type="text" id="company-city" name="company-city">
                                         </div>
                                         <div class="form-group">
-                                            <label for="company-phone">{% trans "Phone Number" %}</label>
-                                            <input type="tel" id="company-phone" name="company-phone">
+                                            <label for="company-state">{% trans "State/Province" %}</label>
+                                            <input type="text" id="company-state" name="company-state">
                                         </div>
-                                        <div class="form-actions">
-                                            <button type="submit" class="btn-primary">{% trans "Save Address" %}</button>
+                                        <div class="form-group">
+                                            <label for="company-zip">{% trans "ZIP/Postal Code" %}</label>
+                                            <input type="text" id="company-zip" name="company-zip">
                                         </div>
-                                    </form>
-                                </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="company-phone">{% trans "Phone Number" %}</label>
+                                        <input type="tel" id="company-phone" name="company-phone">
+                                    </div>
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn-primary">{% trans "Save Address" %}</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>

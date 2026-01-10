@@ -1,5 +1,50 @@
 /* Flowbite Sidebar Overrides for Salona Business */
 
+/* Button overrides to prevent Flowbite from removing background colors */
+button.btn-primary,
+button[type="submit"].btn-primary,
+button[type="button"].btn-primary {
+    background-color: #4a90e2 !important;
+    background-image: none !important;
+    color: white !important;
+    border: none !important;
+}
+
+button.btn-primary:hover,
+button[type="submit"].btn-primary:hover,
+button[type="button"].btn-primary:hover {
+    background-color: #3a7bc8 !important;
+    background-image: none !important;
+}
+
+button.btn-secondary,
+button[type="button"].btn-secondary {
+    background-color: #e0e0e0 !important;
+    background-image: none !important;
+    color: #333 !important;
+    border: none !important;
+}
+
+button.btn-secondary:hover,
+button[type="button"].btn-secondary:hover {
+    background-color: #d0d0d0 !important;
+    background-image: none !important;
+}
+
+button.btn-danger,
+button[type="button"].btn-danger {
+    background-color: #e74c3c !important;
+    background-image: none !important;
+    color: white !important;
+    border: none !important;
+}
+
+button.btn-danger:hover,
+button[type="button"].btn-danger:hover {
+    background-color: #c0392b !important;
+    background-image: none !important;
+}
+
 /* Z-index layering hierarchy */
 .bg-shape {
     z-index: 0;

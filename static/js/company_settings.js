@@ -65,14 +65,40 @@ const CompanySettings = (() => {
         return cookieValue;
     };
 
+    // Initialize tab switching
+    const setupTabs = () => {
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabPanels = document.querySelectorAll('.tab-panel');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetTab = button.getAttribute('data-tab');
+
+                // Remove active class from all buttons and panels
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabPanels.forEach(panel => panel.classList.remove('active'));
+
+                // Add active class to clicked button and corresponding panel
+                button.classList.add('active');
+                const targetPanel = document.getElementById(targetTab);
+                if (targetPanel) {
+                    targetPanel.classList.add('active');
+                }
+            });
+        });
+    };
+
     // Initialize the company settings page
     const init = async () => {
         console.log('Initializing company settings page');
 
+        // Setup tabs
+        setupTabs();
+
         // Setup company creation functionality
         setupCreateCompanyForm();
 
-        // Setup collapsible sections
+        // Setup collapsible sections (if any remain)
         setupCollapsibleSections();
 
         // Setup company forms
@@ -334,6 +360,13 @@ const CompanySettings = (() => {
 
     // Save company details
     const saveCompanyDetails = async () => {
+        // Validate required fields using the correct unique IDs
+        const nameInput = document.getElementById('details-company-name');
+        if (!nameInput.value.trim()) {
+            showToast('Company name is required', 'error');
+            nameInput.focus();
+            return;
+        }
         const formData = {
             name: document.getElementById('details-company-name').value.trim(),
             logo_url: document.getElementById('details-company-logo-url').value.trim(),
@@ -342,28 +375,25 @@ const CompanySettings = (() => {
             team_size: parseInt(document.getElementById('details-company-team-size').value) || 1,
             type: document.getElementById('details-company-type').value.trim()
         };
+        UI.showLoader();
 
         try {
-            const response = await fetch(`${window.API_BASE_URL}/api/v1/companies`, {
+            // Send request to update company details using api-client
+            const result = await api.request('/users/api/v1/companies', {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include',
                 body: JSON.stringify(formData)
             });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                showToast(window.settingsTranslations?.companyUpdatedSuccess || 'Company details updated successfully!', 'success');
+            UI.hideLoader();
+            if (result.success) {
+                UI.showToast(window.settingsTranslations?.companyUpdatedSuccess || 'Company details updated successfully!', 'success');
                 window.companyInfo = { ...window.companyInfo, ...formData };
             } else {
-                showToast(data.message || window.settingsTranslations?.errorUpdatingCompany || 'Failed to update company details', 'error');
+                UI.showToast(result.message || window.settingsTranslations?.errorUpdatingCompany || 'Failed to update company details', 'error');
             }
         } catch (error) {
+            UI.hideLoader();
             console.error('Error updating company details:', error);
-            showToast(window.settingsTranslations?.errorUpdatingCompany || 'Error updating company details', 'error');
+            UI.showToast(window.settingsTranslations?.errorUpdatingCompany || 'Error updating company details', 'error');
         }
     };
 
@@ -534,6 +564,7 @@ const CompanySettings = (() => {
     const saveCompanyEmails = async () => {
         const emailEntries = document.querySelectorAll('.email-entry');
         const emails = [];
+        UI.showLoader();
 
         emailEntries.forEach((entry, index) => {
             const emailInput = entry.querySelector(`#company-email-${index}`);
@@ -542,34 +573,44 @@ const CompanySettings = (() => {
 
             if (emailInput && emailInput.value.trim()) {
                 emails.push({
-                    id: emailId || null,
                     email: emailInput.value.trim(),
-                    type: typeSelect ? typeSelect.value : 'other'
+                    status: typeSelect ? typeSelect.value : 'other',
                 });
             }
         });
 
+        // Get company ID from window object
+        const companyId = window.userCompanyId || window.companyInfo?.id;
+
+        if (!companyId) {
+            UI.hideLoader();
+            UI.showToast('Company ID not found', 'error');
+            return;
+        }
+
         try {
-            const response = await fetch(`${window.API_BASE_URL}/api/v1/companies/emails`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include',
-                body: JSON.stringify({ emails })
+            const requestBody = {
+                emails: emails,
+                company_id: companyId
+            };
+
+            const result = await api.request('/users/api/v1/companies/emails', {
+                body: JSON.stringify(requestBody),
+                method: 'POST'
             });
 
-            const data = await response.json();
+            UI.hideLoader();
 
-            if (response.ok) {
-                showToast(window.settingsTranslations?.emailsSavedSuccess || 'Company emails saved successfully!', 'success');
+            if (result.success) {
+                UI.showToast(window.settingsTranslations?.emailsSavedSuccess || 'Company emails saved successfully!', 'success');
                 await loadCompanyEmails();
             } else {
-                showToast(data.message || window.settingsTranslations?.errorSavingEmails || 'Failed to save emails', 'error');
+                UI.showToast(result.message || window.settingsTranslations?.errorSavingEmails || 'Failed to save emails', 'error');
             }
         } catch (error) {
+            UI.hideLoader();
             console.error('Error saving emails:', error);
-            showToast(window.settingsTranslations?.errorSavingEmails || 'Error saving emails', 'error');
+            UI.showToast(window.settingsTranslations?.errorSavingEmails || 'Error saving emails', 'error');
         }
     };
 
@@ -740,6 +781,7 @@ const CompanySettings = (() => {
     const saveCompanyPhones = async () => {
         const phoneEntries = document.querySelectorAll('.phone-entry');
         const phones = [];
+        UI.showLoader();
 
         phoneEntries.forEach((entry, index) => {
             const phoneInput = entry.querySelector(`#company-phone-${index}`);
@@ -750,32 +792,44 @@ const CompanySettings = (() => {
                 phones.push({
                     id: phoneId || null,
                     phone: phoneInput.value.trim(),
-                    type: typeSelect ? typeSelect.value : 'other'
+                    status: typeSelect ? typeSelect.value : 'other',
+                    status: 'active' // Default status
                 });
             }
         });
 
+        // Get company ID from window object
+        const companyId = window.userCompanyId || window.companyInfo?.id;
+
+        if (!companyId) {
+            UI.hideLoader();
+            UI.showToast('Company ID not found', 'error');
+            return;
+        }
+
         try {
-            const response = await fetch(`${window.API_BASE_URL}/api/v1/companies/phones`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include',
-                body: JSON.stringify({ phones })
+            const requestBody = {
+                phones: phones,
+                company_id: companyId
+            };
+
+            const result = await api.request('/users/api/v1/companies/phones', {
+                body: JSON.stringify(requestBody),
+                method: 'POST'
             });
 
-            const data = await response.json();
+            UI.hideLoader();
 
-            if (response.ok) {
-                showToast(window.settingsTranslations?.phonesSavedSuccess || 'Company phones saved successfully!', 'success');
+            if (result.success) {
+                UI.showToast(window.settingsTranslations?.phonesSavedSuccess || 'Company phones saved successfully!', 'success');
                 await loadCompanyPhones();
             } else {
-                showToast(data.message || window.settingsTranslations?.errorSavingPhones || 'Failed to save phones', 'error');
+                UI.showToast(result.message || window.settingsTranslations?.errorSavingPhones || 'Failed to save phones', 'error');
             }
         } catch (error) {
+            UI.hideLoader();
             console.error('Error saving phones:', error);
-            showToast(window.settingsTranslations?.errorSavingPhones || 'Error saving phones', 'error');
+            UI.showToast(window.settingsTranslations?.errorSavingPhones || 'Error saving phones', 'error');
         }
     };
 
