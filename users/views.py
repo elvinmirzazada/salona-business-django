@@ -956,7 +956,7 @@ class CompanySettingsView(GeneralView):
             return None
 
         try:
-            api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/companies/emails"
+            api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/companies/all/emails"
             cookies = {'access_token': access_token}
 
             response = requests.get(api_url, headers=self.get_header(), cookies=cookies, timeout=10)
@@ -977,7 +977,34 @@ class CompanySettingsView(GeneralView):
             return None
 
         try:
-            api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/companies/phones"
+            api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/companies/all/phones"
+            cookies = {'access_token': access_token}
+
+            response = requests.get(api_url, headers=self.get_header(), cookies=cookies, timeout=10)
+
+            if response.status_code == 200:
+                data = response.json()
+                return data.get('data')
+            return None
+
+        except requests.exceptions.RequestException:
+            return None
+
+    def get_company_address(self, request):
+        """Get company address from external API"""
+        access_token = request.COOKIES.get('access_token')
+
+        if not access_token:
+            return None
+
+        try:
+            user_data = self.get_current_user(request)
+            company_id = user_data.get('company_id') if user_data else None
+
+            if not company_id:
+                return None
+
+            api_url = f"{getattr(settings, 'API_BASE_URL', 'https://api.salona.me')}/api/v1/companies/{company_id}/address"
             cookies = {'access_token': access_token}
 
             response = requests.get(api_url, headers=self.get_header(), cookies=cookies, timeout=10)
@@ -1015,6 +1042,7 @@ class CompanySettingsView(GeneralView):
         company_info = self.get_company_info(request)
         company_emails = self.get_company_emails(request)
         company_phones = self.get_company_phones(request)
+        company_address = self.get_company_address(request)
 
         # Token and user data are valid, serve company settings page
         return render(request, 'users/company_settings.html', {
@@ -1029,6 +1057,8 @@ class CompanySettingsView(GeneralView):
             'company_emails_json': json.dumps(company_emails) if company_emails else json.dumps([]),
             'company_phones': company_phones,
             'company_phones_json': json.dumps(company_phones) if company_phones else json.dumps([]),
+            'company_address': company_address,
+            'company_address_json': json.dumps(company_address) if company_address else json.dumps({}),
             'API_BASE_URL': getattr(settings, 'API_BASE_URL', 'https://api.salona.me')
         })
 

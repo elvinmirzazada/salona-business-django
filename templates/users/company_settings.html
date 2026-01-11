@@ -117,7 +117,7 @@
                                 <i class="fas fa-phone"></i>
                                 <span>{% trans "Phone Numbers" %}</span>
                             </button>
-                            <button class="tab-button" data-tab="company-address">
+                            <button class="tab-button" data-tab="company-address-tab">
                                 <i class="fas fa-map-marker-alt"></i>
                                 <span>{% trans "Company Address" %}</span>
                             </button>
@@ -242,7 +242,7 @@
                             </div>
 
                             <!-- Tab 4: Company Address -->
-                            <div class="tab-panel" id="company-address">
+                            <div class="tab-panel" id="company-address-tab">
                                 <form id="company-address-form">
                                     <div class="form-group">
                                         <label for="company-address">{% trans "Street Address" %}</label>
@@ -254,17 +254,13 @@
                                             <input type="text" id="company-city" name="company-city">
                                         </div>
                                         <div class="form-group">
-                                            <label for="company-state">{% trans "State/Province" %}</label>
-                                            <input type="text" id="company-state" name="company-state">
+                                            <label for="company-country">{% trans "Country" %}</label>
+                                            <input type="text" id="company-country" name="company-country">
                                         </div>
                                         <div class="form-group">
                                             <label for="company-zip">{% trans "ZIP/Postal Code" %}</label>
                                             <input type="text" id="company-zip" name="company-zip">
                                         </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="company-phone">{% trans "Phone Number" %}</label>
-                                        <input type="tel" id="company-phone" name="company-phone">
                                     </div>
                                     <div class="form-actions">
                                         <button type="submit" class="btn-primary">{% trans "Save Address" %}</button>
@@ -322,6 +318,7 @@
         window.companyInfo = {{ company_info_json|safe }};
         window.companyEmails = {{ company_emails_json|safe }};
         window.companyPhones = {{ company_phones_json|safe }};
+        window.companyAddress = {{ company_address_json|safe }};
         window.userCompanyId = "{{ company_id }}";
 
         // Pass translations to JavaScript

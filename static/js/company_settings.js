@@ -114,6 +114,7 @@ const CompanySettings = (() => {
             await loadCompanyDetails();
             await loadCompanyEmails();
             await loadCompanyPhones();
+            await loadCompanyAddress();
         } else {
             console.log('User does not have a company. Showing create company form.');
             const createCompanyForm = document.getElementById('create-company-form');
@@ -342,12 +343,7 @@ const CompanySettings = (() => {
             'details-company-website': companyInfo.website,
             'details-company-description': companyInfo.description,
             'details-company-team-size': companyInfo.team_size,
-            'details-company-type': companyInfo.type,
-            'company-address': companyInfo.address,
-            'company-city': companyInfo.city,
-            'company-state': companyInfo.state,
-            'company-zip': companyInfo.zip,
-            'company-phone': companyInfo.phone
+            'details-company-type': companyInfo.type
         };
 
         Object.entries(fields).forEach(([id, value]) => {
@@ -541,22 +537,28 @@ const CompanySettings = (() => {
 
     // Delete email
     const deleteEmail = async (emailId) => {
+        if (!emailId) return;
         try {
-            const response = await fetch(`${window.API_BASE_URL}/api/v1/companies/emails/${emailId}`, {
-                method: 'DELETE',
-                credentials: 'include'
+            UI.showLoader();
+            const response = await api.request(`/users/api/v1/companies/emails/${emailId}`, {
+                method: 'DELETE'
             });
+            UI.hideLoader();
+            if (response.success) {
+                // Update window.companyEmails by removing the deleted email
+                if (window.companyEmails && Array.isArray(window.companyEmails)) {
+                    window.companyEmails = window.companyEmails.filter(email => email.id !== emailId);
+                }
 
-            if (response.ok) {
-                showToast('Email deleted successfully!', 'success');
+                UI.showToast('Email deleted successfully!', 'success');
                 await loadCompanyEmails();
             } else {
-                const data = await response.json();
-                showToast(data.message || 'Failed to delete email', 'error');
+                UI.showToast(response.message || 'Failed to delete email', 'error');
             }
         } catch (error) {
+            UI.hideLoader();
             console.error('Error deleting email:', error);
-            showToast('Error deleting email', 'error');
+            UI.showToast('Error deleting email', 'error');
         }
     };
 
@@ -602,6 +604,9 @@ const CompanySettings = (() => {
             UI.hideLoader();
 
             if (result.success) {
+                // Update window.companyEmails with the saved data
+                window.companyEmails = emails;
+
                 UI.showToast(window.settingsTranslations?.emailsSavedSuccess || 'Company emails saved successfully!', 'success');
                 await loadCompanyEmails();
             } else {
@@ -758,22 +763,28 @@ const CompanySettings = (() => {
 
     // Delete phone
     const deletePhone = async (phoneId) => {
+        if (!phoneId) return;
         try {
-            const response = await fetch(`${window.API_BASE_URL}/api/v1/companies/phones/${phoneId}`, {
-                method: 'DELETE',
-                credentials: 'include'
+            UI.showLoader();
+            const response = await api.request(`/users/api/v1/companies/phones/${phoneId}`, {
+                method: 'DELETE'
             });
+            UI.hideLoader();
+            if (response.success) {
+                // Update window.companyPhones by removing the deleted phone
+                if (window.companyPhones && Array.isArray(window.companyPhones)) {
+                    window.companyPhones = window.companyPhones.filter(phone => phone.id !== phoneId);
+                }
 
-            if (response.ok) {
-                showToast('Phone deleted successfully!', 'success');
+                UI.showToast('Phone deleted successfully!', 'success');
                 await loadCompanyPhones();
             } else {
-                const data = await response.json();
-                showToast(data.message || 'Failed to delete phone', 'error');
+                UI.showToast(response.message || 'Failed to delete phone', 'error');
             }
         } catch (error) {
+            UI.hideLoader();
             console.error('Error deleting phone:', error);
-            showToast('Error deleting phone', 'error');
+            UI.showToast('Error deleting phone', 'error');
         }
     };
 
@@ -786,14 +797,11 @@ const CompanySettings = (() => {
         phoneEntries.forEach((entry, index) => {
             const phoneInput = entry.querySelector(`#company-phone-${index}`);
             const typeSelect = entry.querySelector(`#company-phone-type-${index}`);
-            const phoneId = entry.getAttribute('data-phone-id');
 
             if (phoneInput && phoneInput.value.trim()) {
                 phones.push({
-                    id: phoneId || null,
                     phone: phoneInput.value.trim(),
-                    status: typeSelect ? typeSelect.value : 'other',
-                    status: 'active' // Default status
+                    is_primary: typeSelect.value === 'primary',
                 });
             }
         });
@@ -809,7 +817,7 @@ const CompanySettings = (() => {
 
         try {
             const requestBody = {
-                phones: phones,
+                company_phones: phones,
                 company_id: companyId
             };
 
@@ -821,6 +829,9 @@ const CompanySettings = (() => {
             UI.hideLoader();
 
             if (result.success) {
+                // Update window.companyPhones with the saved data
+                window.companyPhones = phones;
+
                 UI.showToast(window.settingsTranslations?.phonesSavedSuccess || 'Company phones saved successfully!', 'success');
                 await loadCompanyPhones();
             } else {
@@ -833,37 +844,59 @@ const CompanySettings = (() => {
         }
     };
 
+    // Load company address
+    const loadCompanyAddress = async () => {
+        const address = window.companyAddress;
+        if (!address || typeof address !== 'object') {
+            console.log('No company address found');
+            return;
+        }
+
+        const fields = {
+            'company-address': address.address,
+            'company-city': address.city,
+            'company-country': address.country,
+            'company-zip': address.zip
+        };
+
+        Object.entries(fields).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element && value) {
+                element.value = value;
+            }
+        });
+    };
+
     // Save company address
     const saveCompanyAddress = async () => {
+        UI.showLoader();
         const formData = {
             address: document.getElementById('company-address').value.trim(),
             city: document.getElementById('company-city').value.trim(),
-            state: document.getElementById('company-state').value.trim(),
+            country: document.getElementById('company-country').value.trim(),
             zip: document.getElementById('company-zip').value.trim(),
-            phone: document.getElementById('company-phone').value.trim()
+            is_primary: true
         };
 
         try {
-            const response = await fetch(`${window.API_BASE_URL}/api/v1/companies/address`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include',
+            const result = await api.request(`/users/api/v1/companies/address`, {
+                method: 'POST',
                 body: JSON.stringify(formData)
             });
+            UI.hideLoader();
+            if (result.success) {
+                // Update window.companyAddress with the saved data
+                window.companyAddress = formData;
 
-            const data = await response.json();
+                UI.showToast(window.settingsTranslations?.addressSavedSuccess || 'Company address saved successfully!', 'success');
 
-            if (response.ok) {
-                showToast(window.settingsTranslations?.addressSavedSuccess || 'Company address saved successfully!', 'success');
-                window.companyInfo = { ...window.companyInfo, ...formData };
             } else {
-                showToast(data.message || window.settingsTranslations?.errorSavingAddress || 'Failed to save address', 'error');
+                UI.showToast(result.message || window.settingsTranslations?.errorSavingAddress || 'Failed to save address', 'error');
             }
         } catch (error) {
+            UI.hideLoader();
             console.error('Error saving address:', error);
-            showToast(window.settingsTranslations?.errorSavingAddress || 'Error saving address', 'error');
+            UI.showToast(window.settingsTranslations?.errorSavingAddress || 'Error saving address', 'error');
         }
     };
 
