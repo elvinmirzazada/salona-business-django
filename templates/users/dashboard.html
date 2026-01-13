@@ -82,6 +82,8 @@
         window.userData = {{ user_data_json|safe }};
         window.staff_data = {{ staff_data_json|safe }};
         window.unread_notifications_count = {{ unread_notifications_count }};
+        window.reportsData = {{ reports_data_json|safe }};
+        window.selectedPeriod = "{{ selected_period }}";
         localStorage.setItem("unreadNotificationCount", window.unread_notifications_count);
     </script>
     <script src="{% static_versioned 'js/utils.js' %}"></script>
@@ -89,6 +91,7 @@
     <script src="{% static_versioned 'js/script.js' %}"></script>
     <script src="{% static_versioned 'js/auth.js' %}"></script>
     <script src="{% static_versioned 'js/notifications.js' %}"></script>
+    <script src="{% static_versioned 'js/dashboard-reports.js' %}"></script>
 
     <!-- Flowbite JS -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>

@@ -1,5 +1,6 @@
 import datetime
 import json
+import logging
 from django.shortcuts import render, redirect
 from django.views import View
 from django.http import JsonResponse
@@ -7,6 +8,8 @@ import requests
 from django.conf import settings
 from .api_proxy import APIProxyView
 from django.shortcuts import redirect
+
+logger = logging.getLogger(__name__)
 
 
 class GeneralView(View):
@@ -172,7 +175,10 @@ class GeneralView(View):
 
         if success and response_data:
             data = response_data
-            result = data.get('data').get('user', {})
+            if not data.get('data')['company_id']:
+                result = data.get('data')
+            else:
+                result = data.get('data').get('user', {})
             result['role_status'] = data.get('data').get('status', 'inactive')
             if result['role_status'] != 'active':
                 result['company_id'] = None
@@ -227,7 +233,7 @@ class LoginView(GeneralView):
             if user_data:
                 if not user_data.get('company_id'):
                     # User has no company, redirect to settings
-                    return redirect('users:settings')
+                    return redirect('users:profile')
                 # User has company, redirect to calendar (or dashboard for admin/owner)
                 user_role = user_data.get('role', '').lower()
                 if user_role in ['admin', 'owner']:
@@ -292,7 +298,7 @@ class LoginView(GeneralView):
                         else:
                             redirect_response = redirect('users:calendar')
                     else:
-                        redirect_response = redirect('users:settings')
+                        redirect_response = redirect('users:profile')
 
                     # Set HTTP-only cookies for authentication
                     redirect_response.set_cookie(
@@ -347,7 +353,7 @@ class SignupView(GeneralView):
             if user_data:
                 if not user_data.get('company_id'):
                     # User has no company, redirect to settings
-                    return redirect('users:settings')
+                    return redirect('users:profile')
                 # User has company, redirect to calendar (or dashboard for admin/owner)
                 user_role = user_data.get('role', '').lower()
                 if user_role in ['admin', 'owner']:
@@ -409,7 +415,7 @@ class GoogleAuthCallbackView(GeneralView):
                         else:
                             redirect_response = redirect('users:calendar')
                     else:
-                        redirect_response = redirect('users:settings')
+                        redirect_response = redirect('users:profile')
 
                     # Determine if we're in production (secure) mode
                     is_secure = not settings.DEBUG
@@ -559,7 +565,7 @@ class CalendarView(GeneralView):
             return redirect_response
         elif user_data.get('company_id') is None:
             # User has no company - redirect to settings
-            return redirect('users:settings')
+            return redirect('users:profile')
 
         staff_data = self.get_staff(request)
         unread_notifications_count = self.get_unread_notifications_count(request)
@@ -654,6 +660,22 @@ class DashboardView(GeneralView):
         except requests.exceptions.RequestException:
             return None
 
+    def get_reports_data(self, request, period='week'):
+        """Get reports and analytics data"""
+        access_token = request.COOKIES.get('access_token')
+
+        if not access_token:
+            return None
+
+        from .reports import ReportsManager
+        reports_manager = ReportsManager(access_token)
+
+        try:
+            return reports_manager.generate_bookings_report(period)
+        except Exception as e:
+            logger.error(f"Error generating reports: {str(e)}")
+            return None
+
     def get(self, request):
         # Get current user data
         user_data = self.get_current_user(request)
@@ -670,7 +692,7 @@ class DashboardView(GeneralView):
             return redirect_response
         elif user_data.get('company_id') is None:
             # User has no company - redirect to settings
-            return redirect('users:settings')
+            return redirect('users:profile')
 
         # Check if user is admin or owner
         user_role = user_data.get('role', '').lower()
@@ -680,6 +702,10 @@ class DashboardView(GeneralView):
 
         staff_data = self.get_staff(request)
         unread_notifications_count = self.get_unread_notifications_count(request)
+        
+        # Get period from query params (default to 'week')
+        period = request.GET.get('period', 'week')
+        reports_data = self.get_reports_data(request, period)
 
         # Check if this is an AJAX request
         if request.headers.get('Accept') == 'application/json':
@@ -687,7 +713,8 @@ class DashboardView(GeneralView):
                 'user_data': user_data,
                 'staff_data': staff_data,
                 'unread_notifications_count': unread_notifications_count,
-                'company_id': user_data.get('company_id', '')
+                'company_id': user_data.get('company_id', ''),
+                'reports_data': reports_data
             })
 
         # Token and user data are valid, serve dashboard with user context (for admin/owner only)
@@ -698,7 +725,10 @@ class DashboardView(GeneralView):
             'staff_data': staff_data,
             'staff_data_json': json.dumps(staff_data) if staff_data else json.dumps([]),
             'unread_notifications_count': unread_notifications_count,
-            'company_id': user_data.get('company_id', '')
+            'company_id': user_data.get('company_id', ''),
+            'reports_data': reports_data,
+            'reports_data_json': json.dumps(reports_data) if reports_data else json.dumps({}),
+            'selected_period': period
         })
 
 
@@ -1036,7 +1066,22 @@ class CompanySettingsView(GeneralView):
 
         # Check if user has company
         if not user_data.get('company_id'):
-            return redirect('users:profile')
+            return render(request, 'users/company_settings.html', {
+                'is_authenticated': True,
+                'user_data': user_data,
+                'user_data_json': json.dumps(user_data),
+                'unread_notifications_count': None,
+                'company_id': None,
+                'company_info': None,
+                'company_info_json': None,
+                'company_emails': None,
+                'company_emails_json': None,
+                'company_phones': None,
+                'company_phones_json': None,
+                'company_address': None,
+                'company_address_json': None,
+                'API_BASE_URL': getattr(settings, 'API_BASE_URL', 'https://api.salona.me')
+            })
 
         unread_notifications_count = self.get_unread_notifications_count(request)
         company_info = self.get_company_info(request)
@@ -1643,7 +1688,7 @@ class IntegrationsView(GeneralView):
 
         # Check if user has company
         if not user_data.get('company_id'):
-            return redirect('users:settings')
+            return redirect('users:profile')
 
         unread_notifications_count = self.get_unread_notifications_count(request)
         company_info = self.get_company_info(request)
@@ -1707,7 +1752,7 @@ class OnlineBookingView(GeneralView):
 
         # Check if user has company
         if not user_data.get('company_id'):
-            return redirect('users:settings')
+            return redirect('users:profile')
 
         unread_notifications_count = self.get_unread_notifications_count(request)
         company_info = self.get_company_info(request)
@@ -1770,7 +1815,7 @@ class TelegramBotView(GeneralView):
 
         # Check if user has company
         if not user_data.get('company_id'):
-            return redirect('users:settings')
+            return redirect('users:profile')
 
         unread_notifications_count = self.get_unread_notifications_count(request)
         company_info = self.get_company_info(request)

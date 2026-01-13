@@ -127,27 +127,13 @@ const CompanySettings = (() => {
     // Setup company creation form
     const setupCreateCompanyForm = () => {
         const createCompanyForm = document.getElementById('create-company-form');
-        const createCompanyBtn = document.getElementById('create-company-btn');
-        if (!createCompanyForm || !createCompanyBtn) return;
+        if (!createCompanyForm) return;
 
-        createCompanyBtn.addEventListener('click', () => {
-            if (createCompanyForm.style.display === 'none' || !createCompanyForm.style.display) {
-                createCompanyForm.style.display = 'block';
-                createCompanyBtn.innerHTML = '<i class="fas fa-times"></i> ' + (window.settingsTranslations?.cancel || 'Cancel');
-            } else {
-                createCompanyForm.style.display = 'none';
-                createCompanyBtn.innerHTML = '<i class="fas fa-plus"></i> Create Company';
-            }
-        });
+        // Show the form immediately if it exists
+        createCompanyForm.style.display = 'block';
 
         createCompanyForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const loadingSpinner = document.getElementById('company-loading');
-            const messageContainer = document.getElementById('company-message');
-
-            if (loadingSpinner) loadingSpinner.style.display = 'flex';
-            if (messageContainer) messageContainer.style.display = 'none';
+            e.preventDefault(); // Prevent page refresh
 
             try {
                 const formData = {
@@ -159,43 +145,36 @@ const CompanySettings = (() => {
                     team_size: parseInt(document.getElementById('company-team-size').value) || 1
                 };
 
+                // Show loading state
+                const submitBtn = createCompanyForm.querySelector('button[type="submit"]');
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+
                 const result = await createCompany(formData);
 
-                if (loadingSpinner) loadingSpinner.style.display = 'none';
+                // Restore button state
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
 
                 if (result.success) {
-                    if (messageContainer) {
-                        messageContainer.style.display = 'block';
-                        messageContainer.textContent = window.settingsTranslations?.companyCreatedSuccess || 'Company created successfully!';
-                        messageContainer.style.backgroundColor = '#d4edda';
-                        messageContainer.style.color = '#155724';
-                        messageContainer.style.border = '1px solid #c3e6cb';
-                    }
-
-                    showToast(window.settingsTranslations?.companyCreatedSuccess || 'Company created successfully!', 'success');
+                    UI.showToast(window.settingsTranslations?.companyCreatedSuccess || 'Company created successfully!', 'success');
 
                     setTimeout(() => {
                         window.location.href = '/users/dashboard/';
                     }, 2000);
                 } else {
-                    if (messageContainer) {
-                        messageContainer.style.display = 'block';
-                        messageContainer.textContent = result.message || window.settingsTranslations?.errorSavingCompany || 'Failed to create company';
-                        messageContainer.style.backgroundColor = '#f8d7da';
-                        messageContainer.style.color = '#721c24';
-                        messageContainer.style.border = '1px solid #f5c6cb';
-                    }
+                    UI.showToast(result.message || window.settingsTranslations?.errorSavingCompany || 'Failed to create company');
                 }
             } catch (error) {
                 console.error('Error creating company:', error);
-                if (loadingSpinner) loadingSpinner.style.display = 'none';
+                UI.showToast(window.settingsTranslations?.errorSavingCompany || 'An error occurred', 'error');
 
-                if (messageContainer) {
-                    messageContainer.style.display = 'block';
-                    messageContainer.textContent = window.settingsTranslations?.errorSavingCompany || 'An error occurred';
-                    messageContainer.style.backgroundColor = '#f8d7da';
-                    messageContainer.style.color = '#721c24';
-                    messageContainer.style.border = '1px solid #f5c6cb';
+                // Restore button state
+                const submitBtn = createCompanyForm.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Save Company';
                 }
             }
         });
@@ -204,31 +183,21 @@ const CompanySettings = (() => {
     // Create a new company
     const createCompany = async (companyData) => {
         try {
-            const csrfToken = getCookie('csrftoken');
-
-            const response = await fetch('/users/company-settings/', {
+            const response = await api.request('/users/api/v1/companies', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken
-                },
-                credentials: 'include',
                 body: JSON.stringify(companyData)
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
+            if (!response.success) {
                 return {
                     success: false,
-                    message: data.message || data.error || 'Failed to create company'
+                    message: response.message ||'Failed to create company'
                 };
             }
 
             return {
-                success: data.success || true,
-                message: data.message || 'Company created successfully',
-                data: data.data
+                success: response.success || true,
+                message: response.message || 'Company created successfully'
             };
         } catch (error) {
             console.error('API error:', error);
