@@ -60,10 +60,10 @@ const CustomerManager = (() => {
                 }
 
                 // Add a disabled indicator if the customer is disabled
-                if (customer.status === 'disabled' || customer.status === false) {
-                    option.disabled = true;
-                    displayText += ` [${translations.disabled || 'Disabled'}]`;
-                }
+                // if (customer.status === 'disabled' || customer.status === false) {
+                //     option.disabled = true;
+                //     displayText += ` [${translations.disabled || 'Disabled'}]`;
+                // }
 
                 option.textContent = displayText;
                 customerDropdown.appendChild(option);

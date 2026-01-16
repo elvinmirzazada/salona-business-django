@@ -32,6 +32,8 @@ document.addEventListener('DOMContentLoaded', function() {
         updateMetrics(window.reportsData);
         renderCharts(window.reportsData);
         updateStaffPerformanceTable(window.reportsData);
+        generateInsights(window.reportsData);
+        updateDateRangeDisplay(window.reportsData);
     } else {
         showNoDataMessage();
     }
@@ -312,7 +314,7 @@ function renderServicesChart(data) {
     const values = sortedServices.map(([, data]) => data.count);
 
     servicesChart = new Chart(ctx, {
-        type: 'horizontalBar',
+        type: 'bar',
         data: {
             labels: labels,
             datasets: [{
@@ -324,7 +326,7 @@ function renderServicesChart(data) {
             }]
         },
         options: {
-            indexAxis: 'y',
+            indexAxis: 'y',  // This makes it horizontal
             responsive: true,
             maintainAspectRatio: true,
             plugins: {
@@ -419,6 +421,7 @@ async function changePeriod(period) {
             updateMetrics(result.reports_data);
             renderCharts(result.reports_data);
             updateStaffPerformanceTable(result.reports_data);
+            generateInsights(result.reports_data);
         } else {
             showNoDataMessage();
         }
@@ -561,5 +564,159 @@ function formatCurrency(amount) {
 function formatDate(dateString) {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+/**
+ * Generate business insights based on data analysis
+ */
+function generateInsights(data) {
+    const container = document.getElementById('insights-container');
+    if (!container) return;
+
+    const insights = [];
+
+    // Calculate completion rate
+    const completionRate = data.total_bookings > 0
+        ? (data.completed_bookings / data.total_bookings * 100).toFixed(1)
+        : 0;
+
+    // Insight 1: Completion Rate
+    if (completionRate < 70) {
+        insights.push({
+            icon: 'fa-exclamation-triangle',
+            color: 'warning',
+            title: 'Low Completion Rate',
+            message: `Your completion rate is ${completionRate}%. Consider sending booking reminders to reduce no-shows.`,
+            type: 'warning'
+        });
+    } else if (completionRate >= 90) {
+        insights.push({
+            icon: 'fa-check-circle',
+            color: 'success',
+            title: 'Excellent Completion Rate',
+            message: `Great job! Your ${completionRate}% completion rate shows strong customer commitment.`,
+            type: 'success'
+        });
+    }
+
+    // Insight 2: Revenue trend
+    const revenueChange = data.comparison?.revenue_change || 0;
+    if (revenueChange > 20) {
+        insights.push({
+            icon: 'fa-chart-line',
+            color: 'success',
+            title: 'Revenue Growing',
+            message: `Revenue increased by ${revenueChange.toFixed(1)}%! Keep up the great work.`,
+            type: 'success'
+        });
+    } else if (revenueChange < -10) {
+        insights.push({
+            icon: 'fa-chart-line-down',
+            color: 'danger',
+            title: 'Revenue Declining',
+            message: `Revenue decreased by ${Math.abs(revenueChange).toFixed(1)}%. Consider promotional campaigns.`,
+            type: 'danger'
+        });
+    }
+
+    // Insight 3: Top performing service
+    const services = Object.entries(data.bookings_by_service || {});
+    if (services.length > 0) {
+        const topService = services.sort((a, b) => b[1].count - a[1].count)[0];
+        insights.push({
+            icon: 'fa-star',
+            color: 'info',
+            title: 'Top Service',
+            message: `"${topService[0]}" is your most popular service with ${topService[1].count} bookings.`,
+            type: 'info'
+        });
+    }
+
+    // Insight 4: Staff performance
+    const staffEntries = Object.entries(data.bookings_by_staff || {});
+    if (staffEntries.length > 1) {
+        const topStaff = staffEntries.sort((a, b) => b[1].revenue - a[1].revenue)[0];
+        insights.push({
+            icon: 'fa-user-star',
+            color: 'primary',
+            title: 'Top Performer',
+            message: `${topStaff[1].name} generated ${formatCurrency(topStaff[1].revenue)} in revenue.`,
+            type: 'primary'
+        });
+    }
+
+    // Insight 5: Booking trend
+    const bookingsChange = data.comparison?.bookings_change || 0;
+    if (bookingsChange > 15) {
+        insights.push({
+            icon: 'fa-arrow-trend-up',
+            color: 'success',
+            title: 'Bookings Increasing',
+            message: `Bookings are up ${bookingsChange.toFixed(1)}%! Your business is growing.`,
+            type: 'success'
+        });
+    }
+
+    // Insight 6: Average booking value
+    if (data.average_booking_value > 0) {
+        if (data.average_booking_value < 30) {
+            insights.push({
+                icon: 'fa-hand-holding-dollar',
+                color: 'warning',
+                title: 'Increase Booking Value',
+                message: `Average booking value is ${formatCurrency(data.average_booking_value)}. Consider upselling premium services.`,
+                type: 'warning'
+            });
+        } else if (data.average_booking_value > 80) {
+            insights.push({
+                icon: 'fa-coins',
+                color: 'success',
+                title: 'High Value Bookings',
+                message: `Excellent! Average booking value of ${formatCurrency(data.average_booking_value)} shows premium positioning.`,
+                type: 'success'
+            });
+        }
+    }
+
+    // Render insights
+    if (insights.length === 0) {
+        container.innerHTML = `
+            <div class="col-span-full text-center py-8 text-gray-500">
+                <i class="fas fa-info-circle text-4xl mb-2"></i>
+                <p>Generate more data to receive personalized insights</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = insights.map(insight => `
+        <div class="insight-card insight-${insight.type}">
+            <div class="insight-icon">
+                <i class="fas ${insight.icon}"></i>
+            </div>
+            <div class="insight-content">
+                <h4 class="insight-title">${insight.title}</h4>
+                <p class="insight-message">${insight.message}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+/**
+ * Update date range display
+ */
+function updateDateRangeDisplay(data) {
+    const dateRangeElement = document.getElementById('date-range-display');
+    if (!dateRangeElement) return;
+
+    const startDate = new Date(data.start_date);
+    const endDate = new Date(data.end_date);
+
+    // Format: Jan 1, 2023 - Jan 31, 2023
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    const start = startDate.toLocaleDateString('en-US', options);
+    const end = endDate.toLocaleDateString('en-US', options);
+
+    dateRangeElement.textContent = `${start} - ${end}`;
 }
 

@@ -58,18 +58,209 @@
                 </div>
             </header>
 
-            <!-- Dashboard Content - Placeholder for Reports and Charts -->
+            <!-- Quick Actions Section -->
+            <div class="quick-actions-bar mb-6">
+                <a href="/users/calendar/" class="quick-action-btn">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>{% trans "View Calendar" %}</span>
+                </a>
+                <a href="/users/services/" class="quick-action-btn">
+                    <i class="fas fa-cut"></i>
+                    <span>{% trans "Manage Services" %}</span>
+                </a>
+                <a href="/users/staff/" class="quick-action-btn">
+                    <i class="fas fa-users"></i>
+                    <span>{% trans "Manage Staff" %}</span>
+                </a>
+                <a href="/customers/" class="quick-action-btn">
+                    <i class="fas fa-user-friends"></i>
+                    <span>{% trans "View Customers" %}</span>
+                </a>
+                <a href="/users/settings/" class="quick-action-btn">
+                    <i class="fas fa-cog"></i>
+                    <span>{% trans "Settings" %}</span>
+                </a>
+            </div>
+
+            <!-- Dashboard Content -->
             <div class="dashboard-content">
-                <div style="padding: 3rem; text-align: center; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                    <i class="fas fa-chart-line" style="font-size: 4rem; color: #7c3aed; margin-bottom: 1rem;"></i>
-                    <h3 style="font-size: 1.5rem; color: #333; margin-bottom: 1rem;">{% trans "Dashboard Reports & Analytics" %}</h3>
-                    <p style="color: #666; font-size: 1rem; margin-bottom: 1.5rem;">
-                        {% trans "This section will contain comprehensive reports, analytics, and business insights." %}
-                    </p>
-                    <p style="color: #999; font-size: 0.9rem;">
-                        {% trans "Coming soon: Revenue reports, booking statistics, customer analytics, and more." %}
-                    </p>
+
+                <!-- Period Selector and Export Buttons -->
+                <div class="dashboard-controls-wrapper">
+                    <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
+                        <div class="period-selector flex gap-2 flex-wrap">
+                            <button class="period-btn active" data-period="week" id="period-week">
+                                <i class="fas fa-calendar-week"></i> {% trans "This Week" %}
+                            </button>
+                            <button class="period-btn" data-period="month" id="period-month">
+                                <i class="fas fa-calendar-alt"></i> {% trans "This Month" %}
+                            </button>
+                            <button class="period-btn" data-period="year" id="period-year">
+                                <i class="fas fa-calendar"></i> {% trans "This Year" %}
+                            </button>
+                        </div>
+                        <div class="export-buttons flex gap-2 flex-wrap">
+                            <button class="export-btn" id="export-pdf-btn">
+                                <i class="fas fa-file-pdf"></i> {% trans "Export PDF" %}
+                            </button>
+                            <button class="export-btn" id="export-excel-btn">
+                                <i class="fas fa-file-excel"></i> {% trans "Export CSV" %}
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Date Range Display -->
+                    <div class="date-range-display" id="date-range-display">
+                        <i class="fas fa-calendar-range"></i>
+                        <span id="date-range-text">{% trans "Loading..." %}</span>
+                    </div>
                 </div>
+
+                <!-- Key Metrics Grid -->
+                <div class="metrics-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    <!-- Total Bookings Card -->
+                    <div class="metric-card">
+                        <div class="metric-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3 class="metric-title">{% trans "Total Bookings" %}</h3>
+                            <p class="metric-value" id="metric-total-bookings">0</p>
+                            <div class="metric-change positive" id="metric-bookings-change">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>0%</span> {% trans "vs last period" %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Revenue Card -->
+                    <div class="metric-card">
+                        <div class="metric-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <i class="fas fa-euro-sign"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3 class="metric-title">{% trans "Total Revenue" %}</h3>
+                            <p class="metric-value" id="metric-total-revenue">€0.00</p>
+                            <div class="metric-change positive" id="metric-revenue-change">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>0%</span> {% trans "vs last period" %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Completed Bookings Card -->
+                    <div class="metric-card">
+                        <div class="metric-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3 class="metric-title">{% trans "Completed" %}</h3>
+                            <p class="metric-value" id="metric-completed">0</p>
+                            <p class="metric-subtitle" id="metric-completion-rate">0% completion rate</p>
+                        </div>
+                    </div>
+
+                    <!-- Average Booking Value Card -->
+                    <div class="metric-card">
+                        <div class="metric-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3 class="metric-title">{% trans "Avg. Booking Value" %}</h3>
+                            <p class="metric-value" id="metric-avg-value">€0.00</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="charts-grid grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <!-- Bookings Over Time Chart -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">{% trans "Bookings Over Time" %}</h3>
+                            <p class="chart-subtitle">{% trans "Daily booking trends" %}</p>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="bookings-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Revenue Over Time Chart -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">{% trans "Revenue Over Time" %}</h3>
+                            <p class="chart-subtitle">{% trans "Daily revenue trends" %}</p>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="revenue-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Booking Status Distribution -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">{% trans "Booking Status Distribution" %}</h3>
+                            <p class="chart-subtitle">{% trans "Breakdown by status" %}</p>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="status-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Top Services Chart -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">{% trans "Top Services" %}</h3>
+                            <p class="chart-subtitle">{% trans "Most popular services" %}</p>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="services-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Staff Performance Table -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3 class="table-title">
+                            <i class="fas fa-users"></i> {% trans "Staff Performance" %}
+                        </h3>
+                        <p class="table-subtitle">{% trans "Bookings and revenue by staff member" %}</p>
+                    </div>
+                    <div class="table-container">
+                        <table class="performance-table">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Staff Member" %}</th>
+                                    <th>{% trans "Bookings" %}</th>
+                                    <th>{% trans "Revenue" %}</th>
+                                    <th>{% trans "Avg. per Booking" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="staff-performance-tbody">
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-gray-500">
+                                        {% trans "Loading..." %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Business Insights Section -->
+                <div class="insights-section mt-8">
+                    <div class="insights-header mb-4">
+                        <h3 class="text-xl font-semibold text-gray-900">
+                            <i class="fas fa-lightbulb text-yellow-500"></i> {% trans "Business Insights" %}
+                        </h3>
+                        <p class="text-sm text-gray-600 mt-1">{% trans "AI-powered recommendations based on your data" %}</p>
+                    </div>
+
+                    <div class="insights-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="insights-container">
+                        <!-- Insights will be dynamically loaded here -->
+                    </div>
+                </div>
+
             </div>
 
         </main>
@@ -91,6 +282,10 @@
     <script src="{% static_versioned 'js/script.js' %}"></script>
     <script src="{% static_versioned 'js/auth.js' %}"></script>
     <script src="{% static_versioned 'js/notifications.js' %}"></script>
+
+    <!-- Chart.js for dashboard charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
     <script src="{% static_versioned 'js/dashboard-reports.js' %}"></script>
 
     <!-- Flowbite JS -->

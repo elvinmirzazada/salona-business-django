@@ -195,8 +195,9 @@ const BookingService = (() => {
             const description = document.getElementById('booking-description').value;
 
             // Format the start and end times in ISO format
-            const startAt = `${startDate}T${startTime}:00Z`;
-            const endAt = `${endDate}T${endTime}:00Z`;
+            const startDateTime = new Date(`${startDate}T${startTime}:00`);
+            const startAt = startDateTime.toISOString();
+            // const endAt = `${endDate}T${endTime}:00Z`;
 
             // Get selected services from checkboxes instead of select dropdown
             const selectedServiceCheckboxes = document.querySelectorAll('input[name="booking-service"]:checked');
@@ -217,7 +218,7 @@ const BookingService = (() => {
             // Create booking data object with the correct API structure
             let bookingData = {
                 start_time: startAt,
-                end_time: endAt,
+                // end_time: endAt,
                 notes: description || '',
                 services: []
             };
@@ -277,8 +278,8 @@ const BookingService = (() => {
             // Close the form panel
             document.getElementById('booking-form-panel').classList.remove('active');
 
-            // Refresh the calendar to show the new booking
-            await Calendar.refreshCalendar();
+            // Add a small delay to ensure backend has committed the data
+            await new Promise(resolve => setTimeout(resolve, 500));
 
         } catch (error) {
             // Show error message
@@ -287,6 +288,8 @@ const BookingService = (() => {
         } finally {
             // Hide spinner
             Utils.toggleSpinner(false);
+            // Refresh the calendar to show the new booking
+            await Calendar.refreshCalendar();
         }
     };
 
