@@ -660,7 +660,8 @@ class DashboardView(GeneralView):
         except requests.exceptions.RequestException:
             return None
 
-    def get_reports_data(self, request, period='week'):
+    @staticmethod
+    def get_reports_data(request, period='week'):
         """Get reports and analytics data"""
         access_token = request.COOKIES.get('access_token')
 

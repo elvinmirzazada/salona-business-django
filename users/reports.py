@@ -134,7 +134,7 @@ class ReportsManager:
         # Process current period bookings
         for booking in current_bookings:
             report['total_bookings'] += 1
-
+            booking['total_price'] = float(booking.get('total_price', 0) or 0) / 100  # Convert cents to dollars
             # Count by status
             status = booking.get('status', 'pending').lower()
             if status in report['status_breakdown']:
@@ -153,7 +153,7 @@ class ReportsManager:
                 report['total_revenue'] += price
 
             # Group by day
-            booking_date = booking.get('start_time', '')[:10]  # Extract date part
+            booking_date = booking.get('start_at', '')[:10]  # Extract date part
             if booking_date:
                 report['bookings_by_day'][booking_date] = report['bookings_by_day'].get(booking_date, 0) + 1
                 if status == 'completed':
@@ -161,23 +161,26 @@ class ReportsManager:
                     report['revenue_by_day'][booking_date] = report['revenue_by_day'].get(booking_date, 0) + price
 
             # Group by staff
-            staff_id = booking.get('staff_id', 'Unassigned')
-            staff_name = booking.get('staff_name', 'Unassigned')
-            if staff_id not in report['bookings_by_staff']:
-                report['bookings_by_staff'][staff_id] = {
-                    'name': staff_name,
-                    'count': 0,
-                    'revenue': 0.0
-                }
-            report['bookings_by_staff'][staff_id]['count'] += 1
-            if status == 'completed':
-                price = float(booking.get('total_price', 0) or 0)
-                report['bookings_by_staff'][staff_id]['revenue'] += price
+            services = booking.get('booking_services', [])
+            for service in services:
+                staff_id = service.get('assigned_staff', {}).get('id', 'Unassigned')
+                first_name = service.get('assigned_staff', {}).get('first_name', None)
+                last_name = service.get('assigned_staff', {}).get('last_name', None)
+                staff_name = (f"{first_name} {last_name}".strip()) if first_name or last_name else 'Unassigned'
+                if staff_id not in report['bookings_by_staff']:
+                    report['bookings_by_staff'][staff_id] = {
+                        'name': staff_name,
+                        'count': 0,
+                        'revenue': 0.0
+                    }
+                report['bookings_by_staff'][staff_id]['count'] += 1
+                if status == 'completed':
+                    price = float(booking.get('total_price', 0) or 0)
+                    report['bookings_by_staff'][staff_id]['revenue'] += price
 
             # Group by service
-            services = booking.get('services', [])
             for service in services:
-                service_name = service.get('name', 'Unknown')
+                service_name = service.get('category_service', {}).get('name', 'Unknown')
                 if service_name not in report['bookings_by_service']:
                     report['bookings_by_service'][service_name] = {
                         'count': 0,

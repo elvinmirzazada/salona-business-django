@@ -277,6 +277,7 @@
         window.selectedPeriod = "{{ selected_period }}";
         localStorage.setItem("unreadNotificationCount", window.unread_notifications_count);
     </script>
+    <script src="{% static_versioned 'js/ui.js' %}"></script>
     <script src="{% static_versioned 'js/utils.js' %}"></script>
     <script src="{% static_versioned 'js/api-client.js' %}"></script>
     <script src="{% static_versioned 'js/script.js' %}"></script>

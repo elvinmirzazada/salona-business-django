@@ -404,12 +404,13 @@ async function changePeriod(period) {
 
     try {
         // Fetch new data
+        UI.showLoader('Generating report...');
         const response = await fetch(`${window.location.pathname}?period=${period}`, {
             headers: {
                 'Accept': 'application/json'
             }
         });
-
+        UI.hideLoader();
         if (!response.ok) {
             throw new Error('Failed to fetch data');
         }
@@ -637,7 +638,7 @@ function generateInsights(data) {
     if (staffEntries.length > 1) {
         const topStaff = staffEntries.sort((a, b) => b[1].revenue - a[1].revenue)[0];
         insights.push({
-            icon: 'fa-user-star',
+            icon: 'fa-users',
             color: 'primary',
             title: 'Top Performer',
             message: `${topStaff[1].name} generated ${formatCurrency(topStaff[1].revenue)} in revenue.`,
