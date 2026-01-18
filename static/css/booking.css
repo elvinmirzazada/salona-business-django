@@ -3220,3 +3220,45 @@ html {
 .success-animation {
     animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
+
+/* ===== Country code select styles (moved from templates/customers/booking.html) ===== */
+.country-code-select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    padding: 6px 30px 6px 10px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db; /* neutral-300 */
+    background-color: #fff;
+    background-image: linear-gradient(45deg, transparent 50%, #6b7280 50%), linear-gradient(135deg, #6b7280 50%, transparent 50%);
+    background-position: calc(100% - 12px) calc(1em + 2px), calc(100% - 7px) calc(1em + 2px);
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+    font-size: 14px;
+    color: #111827; /* neutral-900 */
+    cursor: pointer;
+    display: inline-block;
+}
+
+/* Make the select compact inside the phone row */
+.phone-input-row .country-code-select { flex: 0 0 auto; }
+
+/* Ensure the phone input and the select align nicely and look as a unified control */
+.phone-input-row .form-input {
+    border-left: none;
+    border-radius: 8px;
+    -webkit-border-top-left-radius: 0;
+    -webkit-border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    padding-left: 12px;
+}
+
+/* Slight spacing tweak for very small screens */
+@media (max-width: 420px) {
+    .phone-input-row { gap: 6px; }
+    .country-code-select { padding-left: 8px; padding-right: 22px; }
+}
+
+/* ===== end country code select styles ===== */
+

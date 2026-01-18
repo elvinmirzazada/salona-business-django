@@ -7,6 +7,7 @@
     {% load static %}
     <link rel="icon" type="image/png" href="{% static 'images/salona-icon.png' %}">
     <link rel="stylesheet" href="{% static 'css/booking.css' %}">
+    <!-- Country-code select styles moved to static/css/booking.css -->
     <!-- Preload critical resources -->
     <link rel="preconnect" href="{{ API_BASE_URL }}">
 </head>
@@ -276,7 +277,12 @@
 
                             <div class="form-group">
                                 <label class="form-label" for="phone">Phone Number *</label>
-                                <input type="tel" class="form-input" id="phone" placeholder="+1 (555) 123-4567" required>
+                                <div class="phone-input-row" style="display:flex;gap:3px;">
+                                    <select id="phone-country-code" class="country-code-select" aria-label="Country code">
+                                        <!-- options populated by script -->
+                                    </select>
+                                    <input type="tel" class="form-input" id="phone" placeholder="1234567" required style="flex:1;min-width:0;">
+                                </div>
                             </div>
 
                             <div class="form-group full-width">
@@ -367,8 +373,100 @@
             currentMonth: new Date(),
             availableTimeSlots: [],
             monthlyAvailability: {} // Store monthly availability data: { 'YYYY-MM-DD': [time_slots] }
-        };
+            ,phoneDialCode: '+372'
+            ,phoneCountry: 'EE'
+          };
     </script>
+    <script>
+    (function(){
+         // Minimal country dial list; extend as needed.
+         const countries = [
+            { code: 'EE', dial: '+372', name: 'Estonia' },
+             { code: 'US', dial: '+1', name: 'United States' },
+             { code: 'CA', dial: '+1', name: 'Canada' },
+             { code: 'GB', dial: '+44', name: 'United Kingdom' },
+             { code: 'DE', dial: '+49', name: 'Germany' },
+             { code: 'FR', dial: '+33', name: 'France' },
+             { code: 'ES', dial: '+34', name: 'Spain' },
+             { code: 'IT', dial: '+39', name: 'Italy' },
+             { code: 'IN', dial: '+91', name: 'India' },
+             { code: 'TR', dial: '+90', name: 'Turkey' },
+             { code: 'AZ', dial: '+994', name: 'Azerbaijan' }
+         ];
+
+         const select = document.getElementById('phone-country-code');
+         const phoneInput = document.getElementById('phone');
+
+         if (!select || !phoneInput) return;
+
+         function getBrowserRegion(){
+             try{
+                 if (typeof Intl === 'object' && Intl.Locale){
+                     const loc = new Intl.Locale(navigator.language || navigator.userLanguage || '');
+                     return loc.region || null;
+                 }
+                 const lang = navigator.language || navigator.userLanguage || '';
+                 const parts = lang.split('-');
+                 if (parts.length > 1) return parts[parts.length - 1].toUpperCase();
+             }catch(e){ }
+             return null;
+         }
+
+         function formatOption(c){
+            // Add flag emoji and clear label: "🇪🇪 Estonia +372"
+            const flag = countryCodeToFlagEmoji(c.code);
+            return `${flag} ${c.name} ${c.dial}`;
+         }
+
+         // populate select
+         // Helper: convert ISO country code to emoji flag
+         function countryCodeToFlagEmoji(cc) {
+             if (!cc) return '';
+             // A -> Regional Indicator Symbol Letter A = 127462 (0x1F1E6)
+             return cc.toUpperCase().replace(/./g, char => String.fromCodePoint(127397 + char.charCodeAt(0)));
+         }
+
+         countries.forEach(c => {
+             const opt = document.createElement('option');
+             opt.value = c.dial;
+             opt.dataset.code = c.code;
+             opt.title = `${c.name} ${c.dial}`;
+             opt.textContent = formatOption(c);
+             select.appendChild(opt);
+         });
+
+        let defaultIndex = 0;
+        const estIndex = countries.findIndex(c => c.code === 'EE');
+        if (estIndex >= 0) {
+            defaultIndex = estIndex;
+        } else {
+            const region = getBrowserRegion();
+            if (region){
+                const match = countries.findIndex(c => c.code === region);
+                if (match >= 0) defaultIndex = match;
+            }
+        }
+         select.selectedIndex = defaultIndex;
+
+         // initialize bookingState fields
+         window.bookingState = window.bookingState || {};
+         window.bookingState.phoneDialCode = select.value;
+         window.bookingState.phoneCountry = select.options[select.selectedIndex]?.dataset.code || null;
+
+        function updatePhonePlaceholder(){
+            const example = '123-4567';
+            phoneInput.placeholder = example;
+        }
+        updatePhonePlaceholder();
+
+         // When the user changes the country select, update bookingState
+         select.addEventListener('change', function(){
+             window.bookingState.phoneDialCode = this.value;
+             window.bookingState.phoneCountry = this.options[this.selectedIndex].dataset.code || null;
+             updatePhonePlaceholder();
+         });
+     })();
+     </script>
     <script src="{% static 'js/booking.js' %}"></script>
 </body>
 </html>

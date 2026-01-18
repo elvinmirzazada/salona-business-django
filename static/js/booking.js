@@ -1232,6 +1232,16 @@ function setupEventListeners() {
         input.addEventListener('input', updateBookButton);
     });
 
+    // Phone country code select should also affect validation
+    const phoneCountrySelect = document.getElementById('phone-country-code');
+    if (phoneCountrySelect) {
+        phoneCountrySelect.addEventListener('change', function() {
+            bookingState.phoneDialCode = this.value;
+            bookingState.phoneCountry = this.options[this.selectedIndex]?.dataset.code || null;
+            updateBookButton();
+        });
+    }
+
     // Terms checkbox validation
     const termsCheckbox = document.getElementById('terms-agreement');
     if (termsCheckbox) {
@@ -1260,7 +1270,22 @@ async function submitBooking() {
     const firstName = document.getElementById('first-name').value;
     const lastName = document.getElementById('last-name').value;
     const email = document.getElementById('email').value;
-    const phone = document.getElementById('phone').value;
+    const rawPhone = document.getElementById('phone').value || '';
+    const countryDial = document.getElementById('phone-country-code')?.value || '';
+    let phone = rawPhone.trim();
+
+    // If user entered a full international number (starts with '+'), keep it.
+    // Otherwise, combine selected country dial and the digits of the phone input.
+    if (!phone.startsWith('+')) {
+        const phoneDigits = phone.replace(/\D/g, '');
+        const dialDigits = countryDial.replace(/\D/g, '').replace(/^0+/, '');
+        if (dialDigits) {
+            phone = '+' + dialDigits + phoneDigits;
+        } else {
+            // Fallback: keep only digits
+            phone = phoneDigits;
+        }
+    }
     const notes = document.getElementById('notes').value;
 
     if (!firstName || !lastName || !email || !phone) {
