@@ -27,6 +27,7 @@
     <link rel="stylesheet" href="{% static 'css/flowbite-overrides.css' %}">
 </head>
 <body>
+    {% include 'partials/profile_image_modal.html' %}
     <!-- Full Page Loading Spinner -->
     <div id="page-loader" class="page-loader">
         <div class="loader-container">
@@ -55,9 +56,7 @@
                 </div>
                 <div class="header-actions">
                     {% include 'partials/notification_icon.html' %}
-                    <div class="user-info welcome-message">
-                        <span class="user-name">{% blocktrans with name=user_data.first_name %}Welcome, {{ name }}!{% endblocktrans %}</span>
-                    </div>
+                    {% include 'partials/user_welcome.html' %}
                 </div>
             </header>
 

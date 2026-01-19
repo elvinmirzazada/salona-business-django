@@ -27,6 +27,7 @@
 </head>
 <body>
     {% include 'partials/messages.html' %}
+    {% include 'partials/profile_image_modal.html' %}
     <!-- 3D Background Shapes -->
     <div class="bg-shape bg-shape-1"></div>
     <div class="bg-shape bg-shape-2"></div>
@@ -47,9 +48,7 @@
                 </div>
                 <div class="header-actions">
                     {% include 'partials/notification_icon.html' %}
-                    <div class="user-info welcome-message">
-                        <span class="user-name">{% blocktrans with name=user_data.first_name %}Welcome, {{ name }}!{% endblocktrans %}</span>
-                    </div>
+                    {% include 'partials/user_welcome.html' %}
                 </div>
             </header>
 
