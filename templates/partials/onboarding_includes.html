@@ -1,0 +1,7 @@
+{% load static %}
+<!-- Onboarding includes: Shepherd + onboarding helper -->
+<link rel="stylesheet" href="https://unpkg.com/shepherd.js/dist/css/shepherd.css">
+<script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
+<script src="{% static 'js/onboarding.js' %}"></script>
+<!-- Optional: meta csrf token for JS to read (renders token value if available) -->
+<meta name="csrf-token" content="{{ csrf_token }}">

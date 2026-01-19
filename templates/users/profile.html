@@ -22,7 +22,8 @@
 
     <!-- Flowbite Overrides -->
     <link rel="stylesheet" href="{% static 'css/flowbite-overrides.css' %}">
-
+    <!-- Onboarding includes (Shepherd + helper) -->
+    {% include 'partials/onboarding_includes.html' %}
 </head>
 <body>
     {% include 'partials/messages.html' %}
@@ -143,6 +144,43 @@
             errorUpdatingProfile: "{% trans 'Error updating profile' %}",
             cancel: "{% trans 'Cancel' %}"
         };
+
+        // If company is missing, start onboarding tour to guide user to create a company and update profile
+        {% if not company_id or company_id == '' %}
+        (function () {
+            console.debug('[Company Settings] No company detected — initializing onboarding tour');
+            var steps = [
+                { selector: '.user-name', text: 'This is your profile/name.' , attachTo: 'bottom'},
+                { selector: '#profile-nav', text: 'Update profile information', attachTo: 'right' },
+                { selector: '#company-settings-nav', text: 'Create a company to continue', attachTo: 'right' },
+                { text: 'You are all set!'},
+            ];
+
+            function startWhenReady() {
+                if (window.Onboarding && typeof window.Onboarding.startIfNotCompleted === 'function') {
+                    try {
+                        window.Onboarding.startIfNotCompleted('company_settings_no_company', steps);
+                        console.debug('[Company Settings] Onboarding.startIfNotCompleted called for company_settings_no_company');
+                    } catch (e) {
+                        console.warn('[Company Settings] Onboarding.startIfNotCompleted threw', e);
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+            if (!startWhenReady()) {
+                var waited = 0;
+                var intv = setInterval(function () {
+                    waited += 100;
+                    if (startWhenReady() || waited >= 5000) {
+                        clearInterval(intv);
+                        if (waited >= 5000) console.warn('[Company Settings] Onboarding API did not become available in time');
+                    }
+                }, 100);
+            }
+        })();
+        {% endif %}
 
         // Mobile sidebar toggle functionality
         document.addEventListener('DOMContentLoaded', function() {

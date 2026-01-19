@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import views_onboarding
 
 app_name = 'users'
 
@@ -28,6 +29,11 @@ urlpatterns = [
     path('profile/', views.ProfileView.as_view(), name='profile'),
     path('company-settings/', views.CompanySettingsView.as_view(), name='company_settings'),
     path('settings/', views.SettingsView.as_view(), name='settings'),
+
+    # Onboarding API endpoints (placed before the generic API proxy so they're not shadowed)
+    path('api/onboarding/status/<str:tour_name>/', views_onboarding.onboarding_status, name='onboarding_status'),
+    path('api/onboarding/complete/<str:tour_name>/', views_onboarding.onboarding_mark_complete, name='onboarding_complete'),
+
     # Keep API proxy only for authenticated API calls (like /users/me)
     path('api/<path:path>', views.APIProxyView.as_view(), name='api_proxy'),
 ]
