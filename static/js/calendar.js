@@ -79,22 +79,43 @@ const Calendar = (() => {
             const staffIds = getBookingStaffIds(event);
             const staffColors = staffIds.map(id => getStaffColor(id));
 
-            let backgroundColor = '#f8f9fa !important'; // light gray background to match page design
-            let borderColor = '#00A884 !important'; // default to primary color (teal)
-            let textColor = '#2c3e50 !important'; // dark blue-gray text for readability
+            let backgroundColor = '#f8f9fa'; // default light gray background
+            let borderColor = '#00A884'; // default to primary color (teal)
+            let textColor = '#2c3e50'; // dark blue-gray text for readability
 
-            // Use first staff color for border if available
-            if (staffColors.length > 0) {
-                borderColor = staffColors[0];
-            }
-
-            // Override with status colors for cancelled/completed
-            if (event.status === 'cancelled') {
-                backgroundColor = '#fee !important'; // very light red background
-                textColor = '#c0392b !important'; // darker red text
-            } else if (event.status === 'completed') {
-                backgroundColor = '#f0f9f4 !important'; // very light green background
-                textColor = '#1e8449 !important'; // darker green text
+            // Apply status-based colors with more bold/saturated colors
+            switch (event.status) {
+                case 'pending':
+                case 'scheduled':
+                    // Bold Yellow/Amber for pending bookings
+                    backgroundColor = 'rgba(251, 191, 36, 0.35)';
+                    borderColor = '#F59E0B';
+                    textColor = '#B45309';
+                    break;
+                case 'confirmed':
+                    // Bold Green for confirmed bookings
+                    backgroundColor = 'rgba(34, 197, 94, 0.35)';
+                    borderColor = '#22C55E';
+                    textColor = '#15803D';
+                    break;
+                case 'completed':
+                    // Bold Blue for completed bookings
+                    backgroundColor = 'rgba(59, 130, 246, 0.35)';
+                    borderColor = '#3B82F6';
+                    textColor = '#1E40AF';
+                    break;
+                case 'cancelled':
+                    // Bold Red for cancelled bookings
+                    backgroundColor = 'rgba(239, 68, 68, 0.35)';
+                    borderColor = '#EF4444';
+                    textColor = '#B91C1C';
+                    break;
+                default:
+                    // Use staff color for border if available and no specific status
+                    if (staffColors.length > 0) {
+                        borderColor = staffColors[0];
+                    }
+                    break;
             }
 
             events.push({
