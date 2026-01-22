@@ -172,6 +172,10 @@
             }
         }
 
+        function ensureZ(iso) {
+          return iso.endsWith('Z') ? iso : iso + 'Z';
+        }
+
         // Display booking data on the page
         function displayBookingData(bookingData) {
             // Update customer email
@@ -228,8 +232,10 @@
             // Update date and time
             const datetimeInfo = document.getElementById('datetime-info');
             if (bookingData.start_at) {
-                const startDate = new Date(bookingData.start_at);
-                const endDate = bookingData.end_at ? new Date(bookingData.end_at) : null;
+                const start_at = ensureZ(bookingData.start_at)
+                const end_at =  bookingData.end_at ? ensureZ(bookingData.end_at) : null;
+                const startDate = new Date(start_at);
+                const endDate = end_at ? new Date(end_at) : null;
 
                 // Format date
                 const dateStr = startDate.toLocaleDateString('en-US', {
