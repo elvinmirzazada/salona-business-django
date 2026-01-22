@@ -876,15 +876,30 @@ async function fetchMonthlyAvailability() {
         const month = bookingState.currentMonth.getMonth();
         const dateFrom = `${year}-${String(month + 1).padStart(2, '0')}-01`;
 
+        // Collect selected service IDs
+        const serviceIds = Array.from(bookingState.selectedServices);
+
+        // Build query parameters
+        const queryParams = new URLSearchParams({
+            date_from: dateFrom,
+            availability_type: 'monthly'
+        });
+
+        // Add service IDs to query parameters (multiple service_ids)
+        serviceIds.forEach(serviceId => {
+            queryParams.append('service_ids', serviceId);
+        });
+
         let url, response, data;
 
         // Call different endpoint based on staff selection
         if (staffId === 'any') {
             // Call company-level availabilities endpoint for "any" staff
-            url = `${apiUrl}/api/v1/companies/${bookingState.companyId}/availabilities?date_from=${dateFrom}&availability_type=monthly`;
+            url = `${apiUrl}/api/v1/companies/${bookingState.companyId}/availabilities?${queryParams.toString()}`;
         } else {
+
             // Call user-specific availability endpoint
-            url = `${apiUrl}/api/v1/companies/${bookingState.companyId}/users/${staffId}/availability?date_from=${dateFrom}&availability_type=monthly`;
+            url = `${apiUrl}/api/v1/companies/${bookingState.companyId}/users/${staffId}/availability?${queryParams.toString()}`;
         }
 
         console.log('Fetching monthly availability from:', url);
@@ -1050,6 +1065,23 @@ async function fetchAvailableSlots() {
     }
 }
 
+function convertTimeToISO(timeString) {
+    const custom_date_str = "2025-01-01T" + timeString + ".000Z";
+    return convertISOToTime(custom_date_str);
+}
+
+function convertISOToTime(isoString) {
+    try {
+        const date = new Date(isoString);
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${hours}:${minutes}`;
+    } catch (error) {
+        console.error('Failed to parse ISO datetime:', error);
+        // Return default time if parsing fails
+        return '09:00';
+    }
+}
 // Convert API time ranges into 30-minute slots
 function convertTimeRangesToSlots(timeRanges) {
     const slots = [];
@@ -1057,8 +1089,12 @@ function convertTimeRangesToSlots(timeRanges) {
     timeRanges.forEach(range => {
         if (!range.is_available) return;
 
-        const [startHour, startMin] = range.start_time.split(':').map(Number);
-        const [endHour, endMin] = range.end_time.split(':').map(Number);
+        // Extract time from either ISO datetime format or HH:MM format
+        const startTime = convertTimeToISO(range.start_time);
+        const endTime = convertTimeToISO(range.end_time);
+
+        const [startHour, startMin] = startTime.split(':').map(Number);
+        const [endHour, endMin] = endTime.split(':').map(Number);
 
         // Convert to minutes for easier calculation
         let currentMinutes = startHour * 60 + startMin;

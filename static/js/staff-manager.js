@@ -577,17 +577,50 @@ class StaffManager {
 
             if (dayToggle && startTimeInput && endTimeInput) {
                 const isAvailable = dayToggle.checked;
+                const startTime = startTimeInput.value || '09:00';
+                const endTime = endTimeInput.value || '17:00';
 
                 availabilities.push({
                     day_of_week: day,
-                    start_time: startTimeInput.value || '09:00',
-                    end_time: endTimeInput.value || '17:00',
+                    start_time: this.convertTimeToISO(startTime),
+                    end_time: this.convertTimeToISO(endTime),
                     is_available: isAvailable
                 });
             }
         }
 
         return availabilities;
+    }
+
+    /**
+     * Convert time string (HH:MM) to ISO datetime string
+     * Uses today's date as base for creating ISO datetime
+     */
+    convertTimeToISO(timeString) {
+        const [hours, minutes] = timeString.split(':');
+        const date = new Date();
+        date.setHours(parseInt(hours, 10));
+        date.setMinutes(parseInt(minutes, 10));
+        date.setSeconds(0);
+        date.setMilliseconds(0);
+        return this.convertISOToTime(date.toISOString());
+    }
+
+    /**
+     * Convert ISO datetime string to time string (HH:MM)
+     * Extracts just the time portion from ISO datetime
+     */
+    convertISOToTime(isoString) {
+        try {
+            const date = new Date(isoString.replace(/Z$/, ''));
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${hours}:${minutes}`;
+        } catch (error) {
+            console.error('Failed to parse ISO datetime:', error);
+            // Return default time if parsing fails
+            return '09:00';
+        }
     }
 
     /**
