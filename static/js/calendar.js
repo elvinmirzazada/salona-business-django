@@ -110,6 +110,12 @@ const Calendar = (() => {
                     borderColor = '#EF4444';
                     textColor = '#B91C1C';
                     break;
+                case 'no_show':
+                    // Bold Purple/Violet for no-show bookings
+                    backgroundColor = 'rgba(168, 85, 247, 0.35)';
+                    borderColor = '#A855F7';
+                    textColor = '#7E22CE';
+                    break;
                 default:
                     // Use staff color for border if available and no specific status
                     if (staffColors.length > 0) {
@@ -755,6 +761,11 @@ const Calendar = (() => {
                 backgroundColor = 'rgba(239, 68, 68, 0.35)';
                 borderColor = '#EF4444';
                 textColor = '#B91C1C';
+                break;
+            case 'no_show':
+                backgroundColor = 'rgba(168, 85, 247, 0.35)';
+                borderColor = '#A855F7';
+                textColor = '#7E22CE';
                 break;
             default:
                 if (staffColors.length > 0) {

@@ -3203,6 +3203,26 @@
     transform: scale(1.1);
 }
 
+.event-popup-no-show-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 6px;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.event-popup-no-show-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
 
 .event-popup-close {
     cursor: pointer;
@@ -4656,6 +4676,7 @@ select[multiple] {
   .event-popup-delete-btn,
   .event-popup-edit-btn,
   .event-popup-completed-btn,
+  .event-popup-no-show-btn,
   .event-popup-close {
     width: 28px;
     height: 28px;

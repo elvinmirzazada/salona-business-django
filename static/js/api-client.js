@@ -368,6 +368,12 @@ class APIClient {
         });
     }
 
+    async markBookingNoShow(bookingId) {
+        return this.request(`/users/api/v1/bookings/${bookingId}/no-show`, {
+            method: 'PUT'
+        });
+    }
+
     async getCompanyServices(params = {}) {
         // Add cache-busting timestamp to prevent browser caching
         const cacheBuster = { _t: Date.now(), ...params };

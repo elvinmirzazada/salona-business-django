@@ -79,6 +79,10 @@
                     <span style="font-size: 14px; color: #4a5568;">{% trans "Cancelled" %}</span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="display: inline-block; width: 20px; height: 20px; border-radius: 4px; background: rgba(168, 85, 247, 0.4); border: 3px solid #A855F7;"></span>
+                    <span style="font-size: 14px; color: #4a5568;">{% trans "No Show" %}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
                     <span style="display: inline-block; width: 20px; height: 20px; border-radius: 4px; background: #95a5a6; border: 3px solid #7f8c8d;"></span>
                     <span style="font-size: 14px; color: #4a5568;">{% trans "Time Off" %}</span>
                 </div>
@@ -104,6 +108,9 @@
                 </button>
                 <button id="event-popup-completed" class="event-popup-completed-btn" title="{% trans 'Complete booking' %}" style="display: none;">
                     <i class="fas fa-check-circle"></i>
+                </button>
+                <button id="event-popup-no-show" class="event-popup-no-show-btn" title="{% trans 'Mark as No Show' %}" style="display: none;">
+                    <i class="fas fa-user-slash"></i>
                 </button>
                 <button id="event-popup-edit" class="event-popup-edit-btn" title="{% trans 'Edit booking' %}">
                     <i class="fas fa-edit"></i>

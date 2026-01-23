@@ -465,6 +465,67 @@ const UI = (() => {
             completedButton.style.display = 'none';
         }
 
+        // Setup no-show button
+        const noShowButton = document.getElementById('event-popup-no-show');
+        if (noShowButton) {
+            // Show no-show button for confirmed or scheduled bookings
+            if (event.status === 'confirmed' || event.status === 'scheduled') {
+                noShowButton.style.display = 'block';
+            } else {
+                noShowButton.style.display = 'none';
+            }
+
+            const newNoShowButton = noShowButton.cloneNode(true);
+            noShowButton.parentNode.replaceChild(newNoShowButton, noShowButton);
+
+            newNoShowButton.addEventListener('click', () => {
+                const customerName = event.customer
+                    ? `${event.customer.first_name || 'unknown'} ${event.customer.last_name || 'customer'}`
+                    : 'this customer';
+
+                showConfirmationPopup(
+                    `Are you sure you want to mark this booking for ${customerName} as No Show?`,
+                    async () => {
+                        try {
+                            // Show spinner
+                            UI.showLoader();
+
+                            const response = await api.markBookingNoShow(event.id);
+
+                            // Check if response status is no_show
+                            if (response && response.success === true && response.data.status === 'no_show') {
+                                // Update the booking event in the calendar
+                                const updatedBooking = response.data;
+                                if (updatedBooking) {
+                                    // Convert the booking to event format
+                                    const bookingEvent = BookingService.convertBookingsToEvents([updatedBooking])[0];
+                                    // Update the event in calendar directly
+                                    Calendar.updateBookingEvent(bookingEvent);
+                                    console.log('✅ Booking marked as no-show and updated in calendar');
+                                }
+
+                                // Update the event object status
+                                event.status = 'no_show';
+
+                                // Hide the no-show button after marking
+                                newNoShowButton.style.display = 'none';
+
+                                // Show success message
+                                UI.showToast('Booking marked as No Show', 'success');
+                            }
+
+                            popup.style.display = 'none';
+                        } catch (error) {
+                            console.error('Error marking booking as no-show:', error);
+                            UI.showToast('Failed to mark booking as No Show', 'error');
+                        } finally {
+                            // Hide spinner
+                            UI.hideLoader();
+                        }
+                    }
+                );
+            });
+        }
 
         // Setup edit button
         const editButton = document.getElementById('event-popup-edit');
@@ -540,7 +601,7 @@ const UI = (() => {
         statusElement.className = `status-${event.status}`;
 
         // Display price
-        const priceText = event.totalPrice ? `$${event.totalPrice}` : 'Not specified';
+        const priceText = event.totalPrice ? `$${event.totalPrice / 100}` : 'Not specified';
         document.querySelector('#event-popup-price-value').textContent = priceText;
 
         // Populate customer information
