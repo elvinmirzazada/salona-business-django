@@ -489,45 +489,11 @@ const UI = (() => {
                     ? `${event.customer.first_name || 'unknown'} ${event.customer.last_name || 'customer'}`
                     : 'unknown customer';
 
-                showConfirmationPopup(
-                    `Are you sure you want to delete this booking for ${customerName}?`,
-                    async () => {
-                            try {
-                                // Show spinner
-                                const spinner = document.getElementById('booking-spinner');
-                                if (spinner) {
-                                    spinner.style.display = 'flex';
-                                }
+                // Hide the popup first
+                popup.style.display = 'none';
 
-                                const response = await api.deleteBooking(event.id);
-
-                                // Check if response status is cancelled
-                                if (response && response.success === true && response.data.status === 'cancelled') {
-                                    // Find and remove the booking event element from the calendar
-                                    const bookingElement = document.querySelector(`[data-event-id="${event.id}"].event`);
-                                    if (bookingElement) {
-                                        // Remove the element from the DOM
-                                        bookingElement.remove();
-                                    }
-
-                                    // Update the event object status
-                                    event.status = 'cancelled';
-
-                                }
-
-                                popup.style.display = 'none';
-                            } catch (error) {
-                                console.error('Error deleting booking:', error);
-                                UI.showMessage('Failed to delete booking', 'error');
-                            } finally {
-                                // Hide spinner
-                                const spinner = document.getElementById('booking-spinner');
-                                if (spinner) {
-                                    spinner.style.display = 'none';
-                                }
-                            }
-                        }
-                );
+                // Use BookingService.deleteBooking which handles calendar update and confirmation automatically
+                BookingService.deleteBooking(event.id, customerName);
             });
         }
 

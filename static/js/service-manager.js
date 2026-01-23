@@ -1026,8 +1026,9 @@ class ServiceManager {
      */
     static async loadServices() {
         try {
+            UI.showLoader('Loading services...');
             const response = await window.api.getCompanyServices();
-
+            UI.hideLoader();
             if (!response || !response.data) {
                 console.warn('No services data received');
                 return;

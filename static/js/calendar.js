@@ -722,11 +722,142 @@ const Calendar = (() => {
         }
     };
 
+    // Add a single booking event to calendar
+    const addBookingEvent = (bookingEvent) => {
+        if (!calendar) return;
+
+        const staffIds = getBookingStaffIds(bookingEvent);
+        const staffColors = staffIds.map(id => getStaffColor(id));
+
+        let backgroundColor = '#f8f9fa';
+        let borderColor = '#00A884';
+        let textColor = '#2c3e50';
+
+        // Apply status-based colors
+        switch (bookingEvent.status) {
+            case 'pending':
+            case 'scheduled':
+                backgroundColor = 'rgba(251, 191, 36, 0.35)';
+                borderColor = '#F59E0B';
+                textColor = '#B45309';
+                break;
+            case 'confirmed':
+                backgroundColor = 'rgba(34, 197, 94, 0.35)';
+                borderColor = '#22C55E';
+                textColor = '#15803D';
+                break;
+            case 'completed':
+                backgroundColor = 'rgba(59, 130, 246, 0.35)';
+                borderColor = '#3B82F6';
+                textColor = '#1E40AF';
+                break;
+            case 'cancelled':
+                backgroundColor = 'rgba(239, 68, 68, 0.35)';
+                borderColor = '#EF4444';
+                textColor = '#B91C1C';
+                break;
+            default:
+                if (staffColors.length > 0) {
+                    borderColor = staffColors[0];
+                }
+                break;
+        }
+
+        const fullCalendarEvent = {
+            id: `booking-${bookingEvent.id}`,
+            title: bookingEvent.title,
+            start: bookingEvent.start,
+            end: bookingEvent.end,
+            backgroundColor: backgroundColor,
+            borderColor: borderColor,
+            textColor: textColor,
+            extendedProps: {
+                type: 'booking',
+                originalEvent: bookingEvent,
+                staffColors: staffColors,
+                staffIds: staffIds
+            }
+        };
+
+        calendar.addEvent(fullCalendarEvent);
+        console.log('✅ Added booking event to calendar:', bookingEvent.id);
+    };
+
+    // Update a single booking event in calendar
+    const updateBookingEvent = (bookingEvent) => {
+        if (!calendar) return;
+
+        const eventId = `booking-${bookingEvent.id}`;
+        const existingEvent = calendar.getEventById(eventId);
+
+        if (existingEvent) {
+            // Remove old event
+            existingEvent.remove();
+        }
+
+        // Add updated event
+        addBookingEvent(bookingEvent);
+        console.log('✅ Updated booking event in calendar:', bookingEvent.id);
+    };
+
+    // Remove a single booking event from calendar
+    const removeBookingEvent = (bookingId) => {
+        if (!calendar) return;
+
+        const eventId = `booking-${bookingId}`;
+        const event = calendar.getEventById(eventId);
+
+        if (event) {
+            event.remove();
+            console.log('✅ Removed booking event from calendar:', bookingId);
+        }
+    };
+
+    // Add a single time-off event to calendar
+    const addTimeOffEvent = (timeOffEvent) => {
+        if (!calendar) return;
+
+        const fullCalendarEvent = {
+            id: `timeoff-${timeOffEvent.id}`,
+            title: timeOffEvent.title,
+            start: timeOffEvent.start,
+            end: timeOffEvent.end,
+            backgroundColor: '#95a5a6',
+            borderColor: '#7f8c8d',
+            textColor: '#ffffff',
+            extendedProps: {
+                type: 'timeoff',
+                originalEvent: timeOffEvent
+            }
+        };
+
+        calendar.addEvent(fullCalendarEvent);
+        console.log('✅ Added time-off event to calendar:', timeOffEvent.id);
+    };
+
+    // Remove a single time-off event from calendar
+    const removeTimeOffEvent = (timeOffId) => {
+        if (!calendar) return;
+
+        const eventId = `timeoff-${timeOffId}`;
+        const event = calendar.getEventById(eventId);
+
+        if (event) {
+            event.remove();
+            console.log('✅ Removed time-off event from calendar:', timeOffId);
+        }
+    };
+
     return {
         init,
         getCurrentDate: () => currentDate,
         setViewMode,
-        refreshCalendar
+        refreshCalendar,
+        addBookingEvent,
+        updateBookingEvent,
+        removeBookingEvent,
+        addTimeOffEvent,
+        removeTimeOffEvent
     };
 })();
 

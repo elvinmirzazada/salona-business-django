@@ -179,7 +179,7 @@ const BookingService = (() => {
     const submitBooking = async () => {
         try {
             // Show spinner
-            Utils.toggleSpinner(true);
+            UI.showLoader();
             
             // Clear message
             const messageBox = document.getElementById('booking-message');
@@ -205,13 +205,13 @@ const BookingService = (() => {
             if (selectedServiceCheckboxes.length === 0) {
                 alert('Please select at least one service');
                 UI.goToStep(1); // Go back to service selection
-                Utils.toggleSpinner(false);
+                UI.hideLoader();
                 return;
             }
 
             if (!workerId) {
                 alert('Please select a staff member');
-                Utils.toggleSpinner(false);
+                UI.hideLoader();
                 return;
             }
 
@@ -270,7 +270,7 @@ const BookingService = (() => {
             }
 
             // Show success message
-            UI.showMessage('Booking created successfully', 'success');
+            UI.showToast('Booking created successfully', 'success');
 
             // Clear the booking cache to ensure fresh data on next fetch
             clearCache();
@@ -278,8 +278,15 @@ const BookingService = (() => {
             // Close the form panel
             document.getElementById('booking-form-panel').classList.remove('active');
 
-            // Add a small delay to ensure backend has committed the data
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Convert the created booking to calendar event format and add it to calendar
+            const createdBooking = response.data;
+            if (createdBooking) {
+                // Convert the booking to event format
+                const bookingEvent = convertBookingsToEvents([createdBooking])[0];
+                // Add the event to calendar directly
+                Calendar.addBookingEvent(bookingEvent);
+                console.log('✅ New booking added to calendar without full refresh');
+            }
 
         } catch (error) {
             // Show error message
@@ -287,9 +294,7 @@ const BookingService = (() => {
             console.error('Error creating booking:', error);
         } finally {
             // Hide spinner
-            Utils.toggleSpinner(false);
-            // Refresh the calendar to show the new booking
-            await Calendar.refreshCalendar();
+            UI.hideLoader();
         }
     };
 
@@ -299,7 +304,7 @@ const BookingService = (() => {
         
         try {
             // Show spinner
-            Utils.toggleSpinner(true);
+            UI.showLoader();
             
             // Clear message
             const messageBox = document.getElementById('booking-message');
@@ -324,13 +329,13 @@ const BookingService = (() => {
             if (selectedServiceCheckboxes.length === 0) {
                 alert('Please select at least one service');
                 UI.goToStep(1); // Go back to service selection
-                Utils.toggleSpinner(false);
+                UI.hideLoader();
                 return;
             }
 
             if (!workerId) {
                 alert('Please select a staff member');
-                Utils.toggleSpinner(false);
+                UI.hideLoader();
                 return;
             }
 
@@ -390,7 +395,7 @@ const BookingService = (() => {
             }
 
             // Show success message
-            Utils.showMessage('Booking updated successfully!', 'success');
+            UI.showToast('Booking updated successfully!', 'success');
 
             // Clear the booking cache to ensure fresh data on next fetch
             clearCache();
@@ -408,16 +413,23 @@ const BookingService = (() => {
                 submitBooking();
             };
 
-            // Refresh the calendar to show the updated booking
-            await Calendar.refreshCalendar();
+            // Convert the updated booking to calendar event format and update it in calendar
+            const updatedBooking = response.data;
+            if (updatedBooking) {
+                // Convert the booking to event format
+                const bookingEvent = convertBookingsToEvents([updatedBooking])[0];
+                // Update the event in calendar directly
+                Calendar.updateBookingEvent(bookingEvent);
+                console.log('✅ Booking updated in calendar without full refresh');
+            }
 
         } catch (error) {
             // Show error message
-            Utils.showMessage(`Failed to update booking: ${error.message}`, 'error', 8000);
+            UI.showToast(`Failed to update booking: ${error.message}`, 'error', 8000);
             console.error('Error updating booking:', error);
         } finally {
             // Hide spinner
-            Utils.toggleSpinner(false);
+            UI.hideLoader();
         }
     };
     
@@ -428,7 +440,7 @@ const BookingService = (() => {
         
         try {
             // Show spinner while fetching booking details
-            Utils.toggleSpinner(true);
+            UI.showLoader();
             
             // Clear message
             const messageBox = document.getElementById('booking-message');
@@ -498,11 +510,11 @@ const BookingService = (() => {
             
         } catch (error) {
             // Show error message
-            Utils.showMessage(error.message, 'error', 8000);
+            UI.showToast(error.message, 'error', 8000);
             console.error('Error fetching booking details:', error);
         } finally {
             // Hide spinner
-            Utils.toggleSpinner(false);
+            UI.hideLoader();
         }
     };
     
@@ -727,14 +739,26 @@ const BookingService = (() => {
     };
 
     // Delete a booking
-    const deleteBooking = async (bookingId) => {
-        if (!confirm('Are you sure you want to delete this booking?')) {
-            return;
-        }
+    const deleteBooking = async (bookingId, customerName = null) => {
+        const message = customerName
+            ? `Are you sure you want to delete this booking for ${customerName}?`
+            : 'Are you sure you want to delete this booking?';
 
+        // Use custom confirmation popup if available, otherwise fall back to native confirm
+        if (window.UI && window.UI.showConfirmationPopup) {
+            window.UI.showConfirmationPopup(message, async () => {
+                await performDelete(bookingId);
+            });
+        } else if (confirm(message)) {
+            await performDelete(bookingId);
+        }
+    };
+
+    // Internal function to perform the actual delete operation
+    const performDelete = async (bookingId) => {
         try {
             // Show spinner
-            Utils.toggleSpinner(true);
+            UI.showLoader();
 
             // Use API client instead of direct fetch
             const response = await api.deleteBooking(bookingId);
@@ -744,21 +768,19 @@ const BookingService = (() => {
             }
 
             // Show success message
-            Utils.showMessage('Booking deleted successfully!', 'success');
+            UI.showToast('Booking deleted successfully!', 'success');
 
-            // Clear the booking cache to ensure fresh data on next fetch
-            clearCache();
-
-            // Refresh the calendar to remove the deleted booking
-            await Calendar.refreshCalendar();
+            // Remove the event from calendar directly
+            Calendar.removeBookingEvent(bookingId);
+            console.log('✅ Booking removed from calendar without full refresh');
 
         } catch (error) {
             // Show error message
-            Utils.showMessage(`Failed to delete booking: ${error.message}`, 'error', 8000);
+            UI.showToast(`Failed to delete booking: ${error.message}`, 'error', 8000);
             console.error('Error deleting booking:', error);
         } finally {
             // Hide spinner
-            Utils.toggleSpinner(false);
+            UI.hideLoader();
         }
     };
 
@@ -844,7 +866,7 @@ const BookingService = (() => {
     const submitTimeOff = async (timeOffData) => {
         try {
             // Show spinner
-            Utils.toggleSpinner(true);
+            UI.showLoader();
 
             console.log('Creating time off with data:', timeOffData);
 
@@ -856,7 +878,7 @@ const BookingService = (() => {
             }
 
             // Show success message
-            Utils.showMessage('Time off scheduled successfully!', 'success');
+            UI.showToast('Time off scheduled successfully!', 'success');
 
             // Close the time off panel
             document.getElementById('time-off-panel').classList.remove('active');
@@ -864,16 +886,23 @@ const BookingService = (() => {
             // Clear the form
             TimeOffManager.clearTimeOffForm();
 
-            // Refresh the calendar to show the new time off
-            await Calendar.refreshCalendar();
+            // Convert the created time-off to calendar event format and add it to calendar
+            const createdTimeOff = response.data;
+            if (createdTimeOff) {
+                // Convert the time-off to event format
+                const timeOffEvent = convertTimeOffsToEvents([createdTimeOff])[0];
+                // Add the event to calendar directly
+                Calendar.addTimeOffEvent(timeOffEvent);
+                console.log('✅ Time-off added to calendar without full refresh');
+            }
 
         } catch (error) {
             // Show error message
-            Utils.showMessage(`Failed to create time off: ${error.message}`, 'error', 8000);
+            UI.showToast(`Failed to create time off: ${error.message}`, 'error', 8000);
             console.error('Error creating time off:', error);
         } finally {
             // Hide spinner
-            Utils.toggleSpinner(false);
+            UI.hideLoader();
         }
     };
 
@@ -881,7 +910,7 @@ const BookingService = (() => {
     const deleteTimeOff = async (timeOffId) => {
         try {
             // Show spinner
-            Utils.toggleSpinner(true);
+            UI.showLoader();
 
             console.log('Deleting time off with ID:', timeOffId);
 
@@ -893,21 +922,19 @@ const BookingService = (() => {
             }
 
             // Show success message
-            Utils.showMessage('Time off deleted successfully!', 'success');
+            UI.showToast('Time off deleted successfully!', 'success');
 
-            // Remove the time off event element from the calendar DOM
-            const timeOffElement = document.querySelector(`.event[data-event-id="${timeOffId}"]`);
-            if (timeOffElement) {
-                timeOffElement.remove();
-            }
+            // Remove the event from calendar directly
+            Calendar.removeTimeOffEvent(timeOffId);
+            console.log('✅ Time-off removed from calendar without full refresh');
 
         } catch (error) {
             // Show error message
-            Utils.showMessage(`Failed to delete time off: ${error.message}`, 'error', 8000);
+            UI.showToast(`Failed to delete time off: ${error.message}`, 'error', 8000);
             console.error('Error deleting time off:', error);
         } finally {
             // Hide spinner
-            Utils.toggleSpinner(false);
+            UI.hideLoader();
         }
     };
 

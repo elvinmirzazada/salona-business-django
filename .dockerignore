@@ -1,0 +1,25 @@
+# Ignore Python bytecode files
+__pycache__/
+*.pyc
+
+# Ignore Git directory
+.git/
+.gitignore
+
+# Ignore Docker files
+Dockerfile
+.dockerignore
+
+# Ignore database file
+db.sqlite3
+
+# Ignore local development files
+.idea/
+.vscode/
+
+# Ignore static files (they will be collected by Django's collectstatic)
+staticfiles/
+
+# Ignore environment files
+.env
+
