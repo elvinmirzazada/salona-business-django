@@ -26,6 +26,9 @@ class ServiceManager {
             this.setupTabSwitching();
             this.setupEventListeners();
             
+            // Load categories first to ensure they're available for service modal
+            await this.loadCategories();
+
             // Initialize DataTables
             await this.initializeServicesDataTable();
             await this.initializeCategoriesDataTable();
@@ -34,6 +37,21 @@ class ServiceManager {
             await this.loadStaffData();
         } catch (error) {
             console.error('Failed to initialize service manager:', error);
+        }
+    }
+
+    /**
+     * Load categories from API
+     */
+    async loadCategories() {
+        try {
+            const response = await window.api.getCategories();
+            if (response && response.data) {
+                this.categories = response.data;
+            }
+        } catch (error) {
+            console.error('Failed to load categories:', error);
+            this.categories = [];
         }
     }
 
@@ -395,7 +413,7 @@ class ServiceManager {
         const imagePreview = document.getElementById('image-preview');
 
         if (addBtn) {
-            addBtn.addEventListener('click', () => this.showServiceModal());
+            addBtn.addEventListener('click', async () => await this.showServiceModal());
         }
 
         if (form) {
@@ -568,12 +586,20 @@ class ServiceManager {
     /**
      * Show service modal
      */
-    showServiceModal(serviceId = null) {
+    async showServiceModal(serviceId = null) {
         const modal = document.getElementById('service-modal');
         const modalTitle = document.getElementById('service-modal-title');
         const form = document.getElementById('service-form');
 
         if (!modal) return;
+
+        // Ensure categories are loaded
+        if (!this.categories || this.categories.length === 0) {
+            console.log('Categories not loaded, loading now...');
+            await this.loadCategories();
+        }
+
+        console.log('Categories available:', this.categories.length, this.categories);
 
         // Populate category dropdown
         const categorySelect = document.getElementById('service-category');
@@ -771,24 +797,18 @@ class ServiceManager {
             staff_ids: staffIds
         };
 
-        let serviceData;
+        // Always use FormData for consistency
+        // FastAPI expects 'service_in' as a form field containing JSON
+        const serviceData = new FormData();
 
+        // Send service data as JSON string in 'service_in' field
+        // FastAPI will parse this into CategoryServiceCreate Pydantic model
+        const jsonString = JSON.stringify(serviceDataObj);
+        serviceData.append('service_in', jsonString);
+
+        // Only add the image file if one was selected
         if (hasImageFile) {
-            // Use FormData when we have an image file
-            // FastAPI expects 'service_in' as a form field containing JSON
-            serviceData = new FormData();
-
-            // Send service data as JSON string in 'service_in' field
-            // FastAPI will parse this into CategoryServiceCreate Pydantic model
-            const jsonString = JSON.stringify(serviceDataObj);
-            serviceData.append('service_in', jsonString);
-
-            // Add the image file with the key 'image'
             serviceData.append('image', serviceImage.files[0]);
-
-        } else {
-            // Use JSON when no image file
-            serviceData = serviceDataObj;
         }
 
         try {
@@ -826,8 +846,8 @@ class ServiceManager {
     /**
      * Edit service
      */
-    editService(serviceId) {
-        this.showServiceModal(serviceId);
+    async editService(serviceId) {
+        await this.showServiceModal(serviceId);
     }
 
     /**
