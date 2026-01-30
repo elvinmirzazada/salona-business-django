@@ -80,6 +80,15 @@ class ServiceManager {
                 },
                 dataSrc: function(json) {
                     if (json && json.data) {
+                        // Extract categories from response
+                        self.categories = json.data.map(category => ({
+                            id: category.id,
+                            name: category.name,
+                            description: category.description,
+                            color: category.color,
+                            icon: category.icon
+                        }));
+
                         // Flatten services from categorized response
                         self.services = [];
                         json.data.forEach(category => {
