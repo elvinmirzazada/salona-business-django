@@ -1479,7 +1479,7 @@ body {
 .service-name {
     font-weight: 700;
     color: var(--text-primary);
-    font-size: 1.05rem;
+    font-size: 0.9rem;
     line-height: 1.4;
     flex: 1;
 }
@@ -1580,6 +1580,30 @@ body {
     color: var(--primary-color);
     font-size: 1.25rem;
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.service-price-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+}
+
+.service-price-original {
+    font-size: 0.9rem;
+    color: #999;
+    text-decoration: line-through;
+    font-weight: 500;
+}
+
+.service-price-discount {
+    font-weight: 800;
+    color: #22c55e;
+    font-size: 1.25rem;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

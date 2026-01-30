@@ -350,13 +350,14 @@ function renderServices(category) {
                 cat.services.forEach(service => {
                     if (service.status === 'active') {
                         hasServices = true;
-                        const price = service.discount_price || service.price;
+                        const finalPrice = service.discount_price || service.price;
+                        const hasDiscount = service.discount_price && service.discount_price > 0 && service.discount_price < service.price;
                         const isSelected = bookingState.selectedServices.has(service.id);
 
                         const card = document.createElement('div');
                         card.className = `service-card ${isSelected ? 'selected' : ''}`;
                         card.dataset.id = service.id;
-                        card.dataset.price = price;
+                        card.dataset.price = finalPrice;
                         card.dataset.duration = service.duration;
                         card.dataset.category = cat.name; // Add category name for search
 
@@ -372,6 +373,14 @@ function renderServices(category) {
                             ? `<div class="service-description">${service.additional_info}</div>`
                             : '';
 
+                        // Build price HTML with discount support
+                        const priceHTML = hasDiscount
+                            ? `<div class="service-price-container">
+                                <div class="service-price-original">€${service.price}</div>
+                                <div class="service-price-discount">€${service.discount_price}</div>
+                               </div>`
+                            : `<div class="service-price">€${service.price}</div>`;
+
                         card.innerHTML = `
                             ${imageHTML}
                             <div class="service-card-header">
@@ -381,10 +390,10 @@ function renderServices(category) {
                             ${descriptionHTML}
                             <div class="service-meta">
                                 <div class="service-duration">⏱ ${service.duration} min</div>
-                                <div class="service-price">€${price}</div>
+                                ${priceHTML}
                             </div>
                         `;
-                        card.addEventListener('click', () => toggleService(service.id, service.name, price, service.duration));
+                        card.addEventListener('click', () => toggleService(service.id, service.name, finalPrice, service.duration));
                         grid.appendChild(card);
                     }
                 });

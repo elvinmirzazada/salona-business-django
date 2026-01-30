@@ -803,6 +803,9 @@ class ServiceManager {
 
         // Send service data as JSON string in 'service_in' field
         // FastAPI will parse this into CategoryServiceCreate Pydantic model
+        if (!hasImageFile) {
+            serviceDataObj['remove_image'] = true;
+        }
         const jsonString = JSON.stringify(serviceDataObj);
         serviceData.append('service_in', jsonString);
 
